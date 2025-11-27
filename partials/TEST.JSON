@@ -1,0 +1,26 @@
+[
+    
+        "AREAOFCONCERN":"A",
+        "AREAOFCONCERN_DEC":"Service Provision"{
+    "Standard": "A1",
+    "Standarddesc":"The facility provides Comprehensive Primary Healthcare Services"
+    {{
+"ReferenceNo":"ME A1.1",
+"MeasurableElements":"The facility provides care in Pregnancy & child birth services",
+"Checkpoints":"Availability of functional ANC services  with minimum 4 ANC check-ups",
+"Means of Verification":"Services for early registration, screening including lab investigation ,counselling & identification of  high risk and  danger signs ",
+"Assessment Method": "SI/ RR"
+    };
+{
+"ReferenceNo":"ME A1.1",
+"MeasurableElements":"The facility provides care in Pregnancy & child birth services",
+"Checkpoints":"Availability of functional ANC services  with minimum 4 ANC check-ups",
+"Means of Verification":"Services for early registration, screening including lab investigation ,counselling & identification of  high risk and  danger signs ",
+"Assessment Method": "SI/ RR"
+    }};
+
+
+}
+        
+    
+]
