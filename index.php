@@ -18,7 +18,7 @@ $row = mysqli_fetch_array($result12, MYSQLI_ASSOC);
 $count = $row['id'];
 $_SESSION['count'] = $count;
 ?>
-<div id="dashboard-content">
+
    <div class="pcoded-main-container">
       <div class="pcoded-content">
          <div class="pagetitle mb-2">
@@ -247,7 +247,7 @@ $_SESSION['count'] = $count;
          </div>
       </form>
    </div>
-</div>
+
 <script>
    document.addEventListener("DOMContentLoaded", () => {
       fetch('assets/get/index_fetchoverallass.php')

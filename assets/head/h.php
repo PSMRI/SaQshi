@@ -14,11 +14,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 	<meta name="author" content="Phoenixcoded" />
 	<!-- Favicon icon -->
 	<link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
-
-
 	<script src="assets/js/plugins/min.js"></script>
-
-
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 	<link rel="stylesheet" href="assets/datatables/leaflet.css" />
 	<script src="assets/datatables/leaflet.js"></script>
@@ -84,25 +80,25 @@ include(__DIR__ . "/../../assets/conn/session.php");
 									<span class="pcoded-micon"><i class="feather icon-grid"></i></span>
 									<span class="pcoded-mtext">Overall Dept.Ass. Dash</span>
 								</a>
-							</li>						
+							</li>
 
-							
+
 						<?php
 						}
 
 						?>
 						<li class="nav-item">
-								<a href="deptask.php" class="nav-link">
-									<span class="pcoded-micon"><i class="feather icon-settings"></i></span>
-									<span class="pcoded-mtext">Assessment Setup</span>
-								</a>
-							</li>
-<li class="nav-item">
-								<a href="facprofile.php" class="nav-link">
-									<span class="pcoded-micon"><i class="bi bi-hospital"></i></span>
-									<span class="pcoded-mtext">Facility Profile</span>
-								</a>
-							</li>
+							<a href="deptask.php" class="nav-link">
+								<span class="pcoded-micon"><i class="feather icon-settings"></i></span>
+								<span class="pcoded-mtext">Assessment Setup</span>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="facprofile.php" class="nav-link">
+								<span class="pcoded-micon"><i class="bi bi-hospital"></i></span>
+								<span class="pcoded-mtext">Facility Profile</span>
+							</a>
+						</li>
 						<li class="nav-item pcoded-menu-caption">
 							<label>Assessment Modules</label>
 						</li>
@@ -152,7 +148,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 								<li><a href="freports2.php">Reports</a></li>
 							</ul>
 						</li>
-						
+
 						<li class="nav-item pcoded-menu-caption">
 							<label>Resources</label>
 						</li>
@@ -346,7 +342,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
                 WHERE
                  receiver_facility_id = $facility_id and is_read=0
                 ORDER BY message_date DESC ";
-               
+
 					$notif_result = mysqli_query($con, $notif_query);
 					// For badge count → count total messages from Admin to this facility or All
 					$count_query = "SELECT COUNT(*) as cnt 
