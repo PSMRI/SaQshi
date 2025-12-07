@@ -23,7 +23,7 @@ if ($row = mysqli_fetch_assoc($result)) {
     $facname = $row['fac_name'];
 }
 
-$lang = $_SESSION['lang'] ?? 1;
+$lang = $_SESSION['lang'] ?? 5;
 $langMap = [1 => 'assam', 2 => 'ben', 3 => 'hin', 4 => 'odia', 5 => ''];
 $suffix = $langMap[$lang] ?? '';
 
