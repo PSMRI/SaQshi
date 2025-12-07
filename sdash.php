@@ -2,7 +2,7 @@
 include("assets/head/h.php");
 ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
 ?>
-<div id="dashboard-content">
+
     <div class="pcoded-main-container">
         <div class="pcoded-content">
             <div class="pagetitle mb-2">
@@ -943,7 +943,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                         </div>
                     </div>
                 </div>
-            </div>
+       
 
 
             <button class="btn btn-success mb-3" onclick="window.location.href='assets/get/fetch_phc_kpi_statedash_data.php'">
