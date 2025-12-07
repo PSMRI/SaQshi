@@ -42,10 +42,13 @@ $con->next_result();
       <div class="col-sm-9 py-3">
         <h4 class="<?= $percentage_class ?>"><?= $score_percentage ?>%</h4>
         <h6>Overall Score</h6>
-        <small>
-          <i class="bi bi-arrow-down-circle-fill me-1"></i>
-          <a href="assets/export/export_deprt_score_card.php">Download Data</a>
-        </small>
+       <small style="color:white;">
+  <a href="assets/export/export_deprt_score_card.php" style="color:white; text-decoration: underline;"><i class="bi bi-arrow-down-circle-fill me-1" style="color:white;"></i>
+  </a>
+   
+  
+</small>
+
       </div>
     </div>
   </div>

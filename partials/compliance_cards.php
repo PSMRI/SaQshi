@@ -29,10 +29,12 @@ $compliance_cards = [
       <div class="col-sm-9 py-3">
         <h4><?= $card['value'] ?></h4>
         <h6><?= $card['label'] ?> Compliance</h6>
-        <small>
-          <i class="bi bi-arrow-down-circle-fill me-1"></i>
-          <a href="<?= $card['file'] ?>">Download Data</a>
-        </small>
+       <small>
+  <a href="<?= $card['file'] ?>" class="text-white text-decoration-none">
+    <i class="bi bi-arrow-down-circle-fill me-1"></i>
+     </a>
+</small>
+
       </div>
     </div>
   </div>

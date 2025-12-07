@@ -147,5 +147,59 @@ $(document).ready(function() {
     </form>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Event Delegation → works for forms loaded AFTER submit too
+    document.addEventListener("submit", function (e) {
+
+        const form = e.target;
+
+        // Only validate forms with class 'actionForm'
+        if (!form.classList.contains("actionForm")) return;
+
+        // Only validate when SAVE button is clicked (not skip)
+        const activeBtn = document.activeElement;
+        if (!activeBtn || !activeBtn.classList.contains("saveBtn")) return;
+
+        let review      = form.querySelector("select[name='f']").value;
+        let responsible = form.querySelector("input[name='res']").value.trim();
+        let date        = form.querySelector("input[name='todate']").value.trim();
+        let comment     = form.querySelector("textarea[name='comment']").value.trim();
+
+        // CASE 1 — Dept Review not selected
+        if (review === "0" || review === "3") {
+            e.preventDefault();
+            Swal.fire({
+                icon: "warning",
+                title: "Dept. Review Required",
+                text: "Kindly select Dept. Review: Achievable or Non-achievable.",
+            });
+            return false;
+        }
+
+        // CASE 2 — Achievable requires more fields
+        if (review === "1") {
+
+            if (responsible === "" || date === "" || comment === "") {
+                e.preventDefault();
+                Swal.fire({
+                    icon: "warning",
+                    title: "Missing Details",
+                    text: "Please enter Responsible Person, Time Period Date, and Action Plan.",
+                });
+                return false;
+            }
+        }
+    });
+
+});
+</script>
+
+
 
 <?php include("assets/head/f.php"); ?>

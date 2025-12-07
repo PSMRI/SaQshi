@@ -58,10 +58,14 @@ $_SESSION['count'] = $count;
                            <h4 id="checkpoints-container" class="mb-0 me-2">Checkpoints</h4>
                         </div>
                         <h6>CheckPoints</h6>
-                        <small>
-                           <i class="bi bi-arrow-down-circle-fill me-1"></i>
-                           <a href="assets/export/export_deprt_indicators.php">Download Data</a>
-                        </small>
+                       <small>
+    <a href="assets/export/export_deprt_indicators.php" 
+       class="text-white text-decoration-none" 
+       download>
+        <i class="bi bi-arrow-down-circle-fill me-1 text-white"></i>
+    </a>
+</small>
+
                      </div>
                   </div>
                </div>

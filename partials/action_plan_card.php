@@ -95,29 +95,48 @@
         <div class="col-md-6">
           <div class="card card-body border-top border-3 border-success">
             <div class="fw-semibold text-muted"><i class="bi bi-pencil-square me-1 text-success"></i>Action Taken</div>
-            <textarea class="form-control form-control-sm mt-2" rows="3" name="Action_Taken" placeholder="Describe action taken..." required></textarea>
+            <textarea class="form-control form-control-sm mt-2" rows="3" name="Action_Taken" placeholder="Describe action taken..."></textarea>
+
           </div>
         </div>
       </div>
 
-      <!-- Final Row: Compliance + Submit -->
+      <!-- Final Row: Compliance + Buttons -->
       <div class="row g-3">
         <div class="col-md-6">
           <div class="card card-body border-top border-3 border-success">
             <label class="form-label text-success small fw-semibold">Update Compliance</label>
             <select class="mb-1 form-control form-control-sm" name="f">
-
-              <option value="3">Select</option>              
+              <option value="3">Select</option>
               <option value="1">1</option>
               <option value="2">2</option>
             </select>
           </div>
         </div>
-        <div class="col-md-6 ">
-         <div class="card card-body border-top border-3 border-success">
+
+        <div class="col-md-6">
+          <div class="card card-body border-top border-3 border-success">
+
+            <!-- REQUIRED HIDDEN FIELDS -->
             <input type="hidden" name="csqa_id1" value="<?php echo $_SESSION['q1']; ?>">
             <input type="hidden" name="csqa_id" value="<?php echo $row['ass_id']; ?>">
-            <button type="submit" name="postsubmit2" class="btn btn-primary btn-sm w-100">Save & Next</button>
+
+
+            <!-- BUTTONS -->
+            <div class="d-flex gap-2">
+
+              <!-- Save Button -->
+              <button type="submit" name="postsubmit2" class="btn btn-primary btn-sm w-50">
+                Save & Next
+              </button>
+
+              <!-- Skip Button -->
+              <button type="submit" name="skip" class="btn btn-warning btn-sm w-50">
+                Skip & Next
+              </button>
+
+            </div>
+
           </div>
         </div>
       </div>
@@ -125,3 +144,4 @@
     </form>
   </div>
 </div>
+<?php include("assets/head/f.php"); ?>
