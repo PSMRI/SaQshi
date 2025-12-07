@@ -1,446 +1,355 @@
 <?php
 include("assets/head/h.php");
 
-
-$facid = $_SESSION['u_facilityid'];
-$factype = $_SESSION['f_type_id'];
-$assid =  $_SESSION['assperiod'];
-$facname = $_SESSION['facname'];
+$facid        = $_SESSION['u_facilityid'];
+$factype      = $_SESSION['f_type_id'];
+$assid        = $_SESSION['assperiod'];
+$facname      = $_SESSION['facname'];
 $factypename1 = $_SESSION['factypename'];
 
-// Handle form submission
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_form2'])) {
-    $_SESSION['dept_id1'] = $_POST['department_id'];
-    // echo "<div class='alert alert-success'>Department selected successfully!</div>";
-}
+// =======================
+// Handle Assessment Switch
+// =======================
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_form1'])) {
     $_SESSION['assperiod'] = $_POST['assis'];
-    // echo "<div class='alert alert-success'>Department selected successfully!</div>";
+}
+
+// =======================
+// Handle department select
+// =======================
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_form2'])) {
+    $_SESSION['dept_id1'] = $_POST['department_id'];
+}
+?>
+
+<?php
+// =======================
+// Fetch Current Assessment Name
+// =======================
+$assessmentName = '';
+if (!empty($_SESSION['assperiod'])) {
+    $stmt = $con->prepare("SELECT ass_name FROM assessment_desc WHERE id = ?");
+    $stmt->bind_param("i", $_SESSION['assperiod']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $assessmentName = $row['ass_name'];
+    }
+    $stmt->close();
 }
 ?>
 
 <div class="pcoded-main-container">
     <div class="pcoded-content">
+
         <div class="pagetitle mb-2">
-            <?php
-            $assessmentName = '';
-            if (!empty($_SESSION['assperiod'])) {
-                $stmt = $con->prepare("SELECT ass_name FROM assessment_desc WHERE id = ?");
-                $stmt->bind_param("i", $_SESSION['assperiod']);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                if ($row = $result->fetch_assoc()) {
-                    $assessmentName = $row['ass_name'];
-                }
-                $stmt->close();
-            }
-            ?>
             <h5 class="fw-bold text-primary mb-1">
                 <i class="bi bi-question-circle-fill me-2"></i>
-                Facility setup for assessment. Current Assessment is
+                Facility setup for assessment. Current Assessment:
                 <span class="text-warning"><?= htmlspecialchars($assessmentName) ?></span>
             </h5>
-
         </div>
+
         <div class="row">
 
-            <div class="col-sm-6">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white fw-bold">
-                        Begin New Assessment Cycle
+            <!-- =====================================================
+        LEFT SIDE  → BEGIN NEW ASSESSMENT CYCLE
+====================================================== -->
+            <div class="col-sm-12">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white fw-bold">
+            Begin New Assessment Cycle
+        </div>
+
+        <div class="card-body">
+
+            <?php
+            $today      = date("Y-m-d");
+            $maxEndDate = date("Y-m-d", strtotime("+1 month"));
+            ?>
+
+            <form method="post" action="assets/get/create_assessment.php">
+
+                <div class="row g-2 align-items-end">
+
+                    <!-- Name -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold text-primary small">Assessment Name</label>
+                        <input type="text" name="ass_name" class="form-control form-control-sm" required>
                     </div>
-                    <div class="card-body">
-                        <form method="post" action="assets/get/create_assessment.php">
-                            <div class="mb-3">
-                                <label for="ass_name" class="form-label fw-semibold text-primary small">
-                                    Name of New Assessment Cycle
-                                </label>
-                                <input type="text" id="ass_name" name="ass_name" class="form-control form-control-sm" required>
-                            </div>
-                            <div class="text-center">
-                                <button type="submit" name="save_assessor" class="btn btn-sm btn-primary px-4">
-                                    <i class="bi bi-save2-fill me-1"></i> Submit
-                                </button>
-                            </div>
-                        </form>
+
+                    <!-- Start Date -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold small text-primary">Start Date</label>
+                        <input type="date" name="f_date" class="form-control form-control-sm"
+                               value="<?= $today ?>" readonly required>
                     </div>
-                    <?php if (!empty($_SESSION['ass_create_success'])): ?>
-                        <div class="alert alert-success">
-                            <?= htmlspecialchars($_SESSION['success']) ?>
-                        </div>
-                        <?php unset($_SESSION['ass_create_success'], $_SESSION['success']); ?>
-                    <?php elseif (!empty($_SESSION['error'])): ?>
-                        <div class="alert alert-danger">
-                            <?= htmlspecialchars($_SESSION['error']) ?>
-                        </div>
-                        <?php unset($_SESSION['error']); ?>
-                    <?php endif; ?>
+
+                    <!-- End Date -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold small text-primary">End Date</label>
+                        <input type="date" name="t_date" class="form-control form-control-sm"
+                               min="<?= $today ?>" max="<?= $maxEndDate ?>" required>
+                    </div>
+
+                    <!-- Button -->
+                    <div class="col-md-2 text-center">
+                        <button type="submit" name="save_assessor" class="btn btn-success btn-sm w-100 mt-4">
+                            <i class="bi bi-save2-fill me-1"></i> Create
+                        </button>
+                    </div>
+
                 </div>
+
+                <small class="text-muted d-block mt-1">
+                    End date must be within 1 month from today.
+                </small>
+
+                <input type="hidden" name="fac_id_fk" value="<?= $facid ?>">
+                <input type="hidden" name="u_id_fk" value="<?= $_SESSION['user_id'] ?? 0 ?>">
+
+            </form>
+
+        </div>
+
+        <?php if (!empty($_SESSION['ass_create_success'])): ?>
+            <div class="alert alert-success m-2">
+                <?= htmlspecialchars($_SESSION['success']) ?>
             </div>
-            <div class="col-sm-6">
-                <div class="card">
-                    <div class="card-header bg-primary text-white fw-bold">
-                        Current assessment setup
-                    </div>
+            <?php unset($_SESSION['ass_create_success'], $_SESSION['success']); ?>
+        <?php elseif (!empty($_SESSION['error'])): ?>
+            <div class="alert alert-danger m-2">
+                <?= htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
+            </div>
+        <?php endif; ?>
+
+    </div>
+</div>
+
+
+            <!-- =====================================================
+        RIGHT SIDE  → SWITCH ASSESSMENT
+====================================================== -->
+            <div class="col-sm-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white fw-bold">Current Assessment Setup</div>
+
                     <div class="card-body">
+
                         <form method="POST" action="">
-                            <p>
-                                <strong>Switch Assesment</strong>
-                                <select class="mb-3 form-control form-control-sm" id="assis" name="assis" required>
+                            <label class="fw-bold small">Switch Assessment Cycle</label>
 
-                                    <option value="">-- Select --</option>
-                                    <?php
-                                    $query = "SELECT ass_name,id 
-                                      FROM assessment_desc
-                                      WHERE fac_id_fk = ?";
-                                    $stmt = $con->prepare($query);
-                                    $stmt->bind_param("i", $facid);
-                                    $stmt->execute();
-                                    $result = $stmt->get_result();
+                            <select class="form-control form-control-sm mb-2" id="assis" name="assis" required>
+                                <option value="">-- Select --</option>
+                                <?php
+                                $stmt = $con->prepare("SELECT ass_name,id FROM assessment_desc WHERE fac_id_fk = ?");
+                                $stmt->bind_param("i", $facid);
+                                $stmt->execute();
+                                $rs = $stmt->get_result();
+                                while ($row = $rs->fetch_assoc()) {
+                                    echo "<option value='{$row['id']}'>{$row['ass_name']}</option>";
+                                }
+                                ?>
+                            </select>
 
-                                    while ($row = $result->fetch_assoc()) {
-                                        echo "<option value='{$row['id']}'>{$row['ass_name']}</option>";
-                                    }
-                                    ?>
-                                    </strong> departments. Please select the department for which the assessment will be carried out.
-                                </select>
-                            </p>
-
-                            <button type="submit" name="submit_form1" class="btn btn-primary">Update current assessment</button>
+                            <button type="submit" name="submit_form1" class="btn btn-primary btn-sm">Update</button>
                         </form>
 
                         <?php
                         if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_form1'])) {
-                            $_SESSION['assperiod'] = $_POST['assis'];
-
                             $selectedId = $_POST['assis'];
                             $stmt = $con->prepare("SELECT ass_name FROM assessment_desc WHERE id = ?");
                             $stmt->bind_param("i", $selectedId);
                             $stmt->execute();
-                            $result = $stmt->get_result();
+                            $data = $stmt->get_result()->fetch_assoc();
 
-                            if ($row = $result->fetch_assoc()) {
-                                echo "<div class='alert alert-success'>You have selected <strong>" . htmlspecialchars($row['ass_name']) . "</strong> for current assessment.</div>";
-                            }
-
-                            $stmt->close();
+                            echo "<div class='alert alert-success mt-2'>Selected <strong>{$data['ass_name']}</strong> as current assessment.</div>";
                         }
                         ?>
 
                     </div>
                 </div>
             </div>
-            <!--div class="col-sm-6">
+
+        </div> <!-- row -->
+
+        <!-- =====================================================
+        ACTIVATE / DISABLE DEPARTMENTS FOR ASSESSMENT
+====================================================== -->
+
+        <?php
+        $facilityId       = $_SESSION['u_facilityid'];
+        $assessmentPeriod = $_SESSION['assperiod'];
+
+        // Count active departments
+        $ac = $con->prepare("SELECT COUNT(*) FROM fac_dept_map WHERE fac_id=? AND acc_id=?");
+        $ac->bind_param("ii", $facilityId, $assessmentPeriod);
+        $ac->execute();
+        $ac->bind_result($activeCount);
+        $ac->fetch();
+        $ac->close();
+
+        $isSingleDept = ($factype == 8);
+        ?>
+
+        <div class="row mt-3">
+            <div class="col-lg-12">
                 <div class="card">
                     <div class="card-header bg-primary text-white fw-bold">
-                        Department/Assesment package Setup for Current Assessment
+                        <?= ($factype == 8) ? "Assessment Package Setup" : "Department Setup" ?>
                     </div>
+
                     <div class="card-body">
-                        <form method="POST" action="">
-
-                            <?php
-                            if ($factype == 8) {
-
-                            ?>
-                                <strong>select the assessment package. </strong>
-                            <?php } else {
-                            ?>
-                                <strong>select the Department. </strong>
-                            <?php } ?>
-                            <select class="mb-3 form-control form-control-sm" id="department_id" name="department_id" required>
-
-                                <option value="">-- Select --</option>
-                                <?php
-                                $query = "SELECT DISTINCT a.fac_dept_id_fk, b.dept_name 
-                                              FROM concern_subtype_chklist AS a 
-                                              JOIN fac_department AS b ON a.fac_dept_id_fk = b.fac_dept_id 
-                                              WHERE a.fac_type_id_fk = ? AND a.fac_dept_id_fk IN (
-                                                 SELECT fac_dept_id FROM fac_dept_map WHERE fac_id = ? AND acc_id = ?
-                                                     )";
-                                $stmt = $con->prepare($query);
-                                $stmt->bind_param("iii", $factype, $facid, $assid);
-                                $stmt->execute();
-                                $result = $stmt->get_result();
-
-                                while ($row = $result->fetch_assoc()) {
-                                    echo "<option value='{$row['fac_dept_id_fk']}'>{$row['dept_name']}</option>";
-                                }
-
-                                $stmt->close();
-                                // $con->close();
-                                ?>
-                            </select>
-
-                            <button type="submit" name="submit_form2" class="btn btn-primary">Submit</button>
-                        </form>
 
                         <?php
-                        if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_form2'])) {
-                            $_SESSION['dept_id1'] = $_POST['department_id'];
+                        // =====================
+                        // ACTIVATE DEPARTMENT
+                        // =====================
+                        if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['activate_department_id'])) {
 
-                            $selectedId = $_POST['department_id'];
-                            $stmt = $con->prepare("SELECT dept_name FROM fac_department WHERE fac_dept_id = ?");
-                            $stmt->bind_param("i", $selectedId);
-                            $stmt->execute();
-                            $result = $stmt->get_result();
+                            $deptId = intval($_POST['activate_department_id']);
 
-                            if ($row = $result->fetch_assoc()) {
-                                echo "<div class='alert alert-success'>You have selected <strong>" . htmlspecialchars($row['dept_name']) . "</strong> for current assessment.</div>";
+                            if ($isSingleDept && $activeCount >= 1) {
+                                echo "<div class='alert alert-danger'>Only 1 package allowed. Create new cycle for more.</div>";
+                            } else {
+
+                                // Prevent duplicates
+                                $chk = $con->prepare("SELECT 1 FROM fac_dept_map WHERE fac_id=? AND acc_id=? AND fac_dept_id=?");
+                                $chk->bind_param("iii", $facilityId, $assessmentPeriod, $deptId);
+                                $chk->execute();
+                                $chk->store_result();
+
+                                if ($chk->num_rows == 0) {
+                                    $ins = $con->prepare("INSERT INTO fac_dept_map(fac_id,acc_id,fac_dept_id) VALUES (?,?,?)");
+                                    $ins->bind_param("iii", $facilityId, $assessmentPeriod, $deptId);
+                                    $ins->execute();
+                                    $ins->close();
+
+                                    echo "<div class='alert alert-success'>Activated successfully!</div>";
+                                    $activeCount++;
+                                } else {
+                                    echo "<div class='alert alert-info'>Already activated.</div>";
+                                }
+
+                                $chk->close();
                             }
+                        }
 
-                            $stmt->close();
+                        // =====================
+                        // DISABLE DEPARTMENT
+                        // =====================
+                        if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['disable_department_id'])) {
+
+                            $deptId = intval($_POST['disable_department_id']);
+
+                            $del = $con->prepare("DELETE FROM fac_dept_map WHERE fac_id=? AND acc_id=? AND fac_dept_id=?");
+                            $del->bind_param("iii", $facilityId, $assessmentPeriod, $deptId);
+                            $del->execute();
+                            $del->close();
+
+                            echo "<div class='alert alert-warning'>Department disabled.</div>";
+                            $activeCount--;
                         }
                         ?>
 
-                    </div>
-                </div>
-            </div--->
-        </div>
-        <div class="row">
-    <div class="col-lg-12">
-        <div class="card">
+                        <?php
+                        // Fetch Programs + Departments
+                        $stmt = $con->prepare("
+    SELECT DISTINCT a.fac_dept_id_fk AS dept_id, b.dept_name, b.program_tag
+    FROM concern_subtype_chklist a
+    JOIN fac_department b ON a.fac_dept_id_fk = b.fac_dept_id
+    WHERE a.fac_type_id_fk = ? AND b.active_status = 1
+    ORDER BY b.program_tag, b.dept_name
+");
+                        $stmt->bind_param("i", $factype);
+                        $stmt->execute();
+                        $rows = $stmt->get_result();
 
-            <!-- HEADER TITLE -->
-            <div class="card-header bg-primary text-white fw-bold">
-                <?= ($factype == 8) 
-                    ? "Assessment package setup for current assessment" 
-                    : "Department setup for current assessment" ?>
-            </div>
-
-            <div class="card-body">
-
-                <?php
-                $facilityId       = $_SESSION['u_facilityid'];
-                $assessmentPeriod = $_SESSION['assperiod'];
-
-                // -----------------------------------------------------
-                // Count how many departments already active
-                // -----------------------------------------------------
-                $activeCountStmt = $con->prepare("
-                    SELECT COUNT(*) FROM fac_dept_map 
-                    WHERE fac_id = ? AND acc_id = ?
-                ");
-                $activeCountStmt->bind_param("ii", $facilityId, $assessmentPeriod);
-                $activeCountStmt->execute();
-                $activeCountStmt->bind_result($activeCount);
-                $activeCountStmt->fetch();
-                $activeCountStmt->close();
-
-                $isSingleDeptFacility = ($factype == 8);  // Only 1 allowed
-                ?>
-
-                <?php
-                // -----------------------------------------------------
-                // ACTIVATE DEPARTMENT
-                // -----------------------------------------------------
-                if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['activate_department_id'])) {
-
-                    $deptId = intval($_POST['activate_department_id']);
-
-                    if ($isSingleDeptFacility && $activeCount >= 1) {
-
-                        echo "<div class='alert alert-danger fw-bold'>
-                                Only one department/package can be activated for this assessment.<br>
-                                If you want to start another package, kindly create a new assessment cycle.
-                              </div>";
-
-                    } else {
-
-                        // Prevent duplicate activation
-                        $chk = $con->prepare("
-                            SELECT 1 FROM fac_dept_map 
-                            WHERE fac_id = ? AND acc_id = ? AND fac_dept_id = ?
-                        ");
-                        $chk->bind_param("iii", $facilityId, $assessmentPeriod, $deptId);
-                        $chk->execute();
-                        $chk->store_result();
-
-                        if ($chk->num_rows === 0) {
-
-                            $insert = $con->prepare("
-                                INSERT INTO fac_dept_map (fac_id, acc_id, fac_dept_id)
-                                VALUES (?, ?, ?)
-                            ");
-                            $insert->bind_param("iii", $facilityId, $assessmentPeriod, $deptId);
-                            $insert->execute();
-                            $insert->close();
-
-                            echo "<div class='alert alert-success'>Department activated successfully!</div>";
-                            $activeCount++;
-
-                        } else {
-                            echo "<div class='alert alert-info'>Department already activated.</div>";
+                        $programTabs = [];
+                        while ($row = $rows->fetch_assoc()) {
+                            $programTabs[$row['program_tag']][] = $row;
                         }
+                        $stmt->close();
+                        ?>
 
-                        $chk->close();
-                    }
-                }
+                        <ul class="nav nav-tabs mb-3">
+                            <?php $first = true;
+                            foreach ($programTabs as $program => $deptRows): ?>
+                                <li class="nav-item">
+                                    <a class="nav-link <?= $first ? 'active' : '' ?>" data-toggle="tab" href="#tab_<?= strtolower($program) ?>">
+                                        <?= htmlspecialchars($program) ?>
+                                    </a>
+                                </li>
+                            <?php $first = false;
+                            endforeach; ?>
+                        </ul>
 
+                        <div class="tab-content">
+                            <?php $first = true;
+                            foreach ($programTabs as $program => $deptRows): ?>
 
-                // -----------------------------------------------------
-                // DISABLE DEPARTMENT
-                // -----------------------------------------------------
-                if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['disable_department_id'])) {
+                                <div class="tab-pane fade <?= $first ? 'show active' : '' ?>" id="tab_<?= strtolower($program) ?>">
 
-                    $deptId = intval($_POST['disable_department_id']);
+                                    <table class="table table-bordered table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Department</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
 
-                    $delete = $con->prepare("
-                        DELETE FROM fac_dept_map 
-                        WHERE fac_id = ? AND acc_id = ? AND fac_dept_id = ?
-                    ");
-                    $delete->bind_param("iii", $facilityId, $assessmentPeriod, $deptId);
+                                            <?php foreach ($deptRows as $d):
+                                                $deptId = $d['dept_id'];
 
-                    if ($delete->execute()) {
-                        echo "<div class='alert alert-warning'>Department disabled successfully!</div>";
-                        $activeCount--;
-                    }
-                    $delete->close();
-                }
-                ?>
+                                                $chk = $con->prepare("SELECT 1 FROM fac_dept_map WHERE fac_id=? AND acc_id=? AND fac_dept_id=?");
+                                                $chk->bind_param("iii", $facilityId, $assessmentPeriod, $deptId);
+                                                $chk->execute();
+                                                $chk->store_result();
+                                                $isActive = $chk->num_rows > 0;
+                                                $chk->close();
+                                            ?>
+                                                <tr>
+                                                    <td><?= $d['dept_name'] ?></td>
+                                                    <td>
 
+                                                        <?php if ($isActive): ?>
 
-                <?php
-                // -----------------------------------------------------
-                // FETCH ALL DEPARTMENTS GROUPED BY PROGRAM TAG
-                // -----------------------------------------------------
-                $stmt = $con->prepare("
-                    SELECT DISTINCT 
-                        a.fac_dept_id_fk AS dept_id,
-                        b.dept_name,
-                        b.program_tag
-                    FROM concern_subtype_chklist a
-                    JOIN fac_department b ON a.fac_dept_id_fk = b.fac_dept_id
-                    WHERE a.fac_type_id_fk = ?
-                      AND b.active_status = 1
-                    ORDER BY b.program_tag, b.dept_name
-                ");
-                $stmt->bind_param("i", $factype);
-                $stmt->execute();
-                $result = $stmt->get_result();
+                                                            <form method="POST" style="display:inline;">
+                                                                <input type="hidden" name="disable_department_id" value="<?= $deptId ?>">
+                                                                <button class="btn btn-sm btn-danger">Disable</button>
+                                                            </form>
 
-                $programTabs = [];
+                                                            <span class="btn btn-sm btn-success disabled">Active</span>
 
-                while ($row = $result->fetch_assoc()) {
-                    $programTabs[$row['program_tag']][] = $row;
-                }
+                                                        <?php else: ?>
 
-                $stmt->close();
-                ?>
+                                                            <?php if ($isSingleDept && $activeCount >= 1): ?>
+                                                                <button class="btn btn-sm btn-secondary disabled">Activate</button>
+                                                            <?php else: ?>
+                                                                <form method="POST" style="display:inline;">
+                                                                    <input type="hidden" name="activate_department_id" value="<?= $deptId ?>">
+                                                                    <button class="btn btn-sm btn-primary">Activate</button>
+                                                                </form>
+                                                            <?php endif; ?>
 
-                <!-- ============================================================
-                     PROGRAM TABS (Auto Generated)
-                ===============================================================-->
-                <ul class="nav nav-tabs mb-3">
-                    <?php 
-                    $first = true;
-                    foreach ($programTabs as $program => $rows): ?>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $first ? 'active' : '' ?>"
-                               data-toggle="tab" href="#tab_<?= strtolower($program) ?>">
-                               <?= htmlspecialchars($program) ?>
-                            </a>
-                        </li>
-                    <?php 
-                    $first = false;
-                    endforeach; 
-                    ?>
-                </ul>
+                                                        <?php endif; ?>
 
-                <!-- ============================================================
-                     TAB CONTENT — Departments under each Program
-                ===============================================================-->
-                <div class="tab-content">
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
 
-                    <?php 
-                    $first = true;
-                    foreach ($programTabs as $program => $rows): ?>
-                        
-                        <div class="tab-pane fade <?= $first ? 'show active' : '' ?>"
-                             id="tab_<?= strtolower($program) ?>">
+                                        </tbody>
+                                    </table>
 
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Department Name</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
+                                </div>
 
-                                    <tbody>
-                                        <?php foreach ($rows as $d): 
-                                            $deptId = $d['dept_id'];
-
-                                            // Check active status
-                                            $chk = $con->prepare("
-                                                SELECT 1 FROM fac_dept_map
-                                                WHERE fac_id = ? AND acc_id = ? AND fac_dept_id = ?
-                                            ");
-                                            $chk->bind_param("iii", $facilityId, $assessmentPeriod, $deptId);
-                                            $chk->execute();
-                                            $chk->store_result();
-                                            $isActive = $chk->num_rows > 0;
-                                            $chk->close();
-                                        ?>
-
-                                        <tr>
-                                            <td><?= $d['dept_name'] ?></td>
-                                            <td>
-
-                                                <?php if ($isActive): ?>
-
-                                                    <form method="POST" style="display:inline;">
-                                                        <input type="hidden" name="disable_department_id" value="<?= $deptId ?>">
-                                                        <button class="btn btn-sm btn-danger">Disable</button>
-                                                    </form>
-
-                                                    <span class="btn btn-sm btn-success disabled">Active</span>
-
-                                                <?php else: ?>
-
-                                                    <?php if ($isSingleDeptFacility && $activeCount >= 1): ?>
-
-                                                        <button class="btn btn-sm btn-secondary disabled">
-                                                            Activate
-                                                        </button>
-
-                                                    <?php else: ?>
-
-                                                        <form method="POST" style="display:inline;">
-                                                            <input type="hidden" name="activate_department_id" value="<?= $deptId ?>">
-                                                            <button class="btn btn-sm btn-primary">Activate</button>
-                                                        </form>
-
-                                                    <?php endif; ?>
-
-                                                <?php endif; ?>
-
-                                            </td>
-                                        </tr>
-
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-
+                            <?php $first = false;
+                            endforeach; ?>
                         </div>
 
-                    <?php 
-                    $first = false;
-                    endforeach; 
-                    ?>
-
+                    </div>
                 </div>
-
             </div>
-        </div>
-    </div>
-</div>
 
-
-
-    </div>
-</div>
-
-
-<?php include("assets/head/f.php"); ?>
+            <?php include("assets/head/f.php"); ?>
