@@ -55,9 +55,15 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                             <th>Facility Type</th>
                                             <th>Certification Type</th>
                                             <th>Details</th>
-                                            <th>Certification Issue Date</th>
+                                            <th>Issue Date</th>
                                             <th>Validity</th>
+                                            <th>Score</th> <!-- NEW -->
+                                            <th>Cert Status</th> <!-- NEW -->
+                                            <th>Assessment Mode</th> <!-- NEW -->
+                                            <th>Assessment Date</th> <!-- NEW -->
+                                            <th>District</th> <!-- NEW -->
                                         </tr>
+
                                     </thead>
                                     <tbody></tbody>
                                 </table>
@@ -70,7 +76,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
             <!-- ==================== MAP SCRIPT ==================== -->
             <script>
                 $(document).ready(function() {
-                    var map = L.map('map').setView([25.2, 85.5], 8);
+                    var map = L.map('map').setView([25.32, 82.99], 9);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         maxZoom: 18
                     }).addTo(map);
@@ -94,16 +100,18 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                         }
                         return new L.Icon({
                             iconUrl: iconUrl,
-                            iconSize: [10, 16],
-                            iconAnchor: [8, 26],
-                            popupAnchor: [1, -20],
+                            iconSize: [8, 12], // smaller icon
+                            iconAnchor: [4, 12], // adjust anchor for smaller icon
+                            popupAnchor: [1, -10], // adjust popup position
                             shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                            shadowSize: [10, 10]
+                            shadowSize: [4, 4] // smaller shadow
                         });
+
                     }
 
                     // Fetch facility data
                     $.getJSON('assets/get/get_cert_data_state.php', function(facilities) {
+
                         let tableData = [];
                         let expiredFacilities = [];
                         let stateCount = 0,
@@ -111,7 +119,10 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                         const today = new Date();
 
                         facilities.forEach(function(facility) {
-                            // Check expiry
+
+                            // --------------------------
+                            // Expiry Check
+                            // --------------------------
                             let isExpired = false;
                             if (facility.validity) {
                                 const validDate = new Date(facility.validity);
@@ -119,19 +130,30 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                             }
                             if (isExpired) expiredFacilities.push(facility);
 
-                            // Marker
+                            // --------------------------
+                            // Marker on Map
+                            // --------------------------
                             if (facility.lat && facility.longi) {
+
                                 const icon = getMarkerIcon(facility.cert_type, isExpired);
+
                                 const marker = L.marker([facility.lat, facility.longi], {
                                     icon
                                 }).addTo(map);
+
                                 const tooltip = `
-                  <b>${facility.fac_name}</b><br>
-                  Type: ${facility.fac_type}<br>
-                  Certification: ${facility.cert_type}<br>
-                  Validity: ${facility.validity || 'N/A'}<br>
-                  Details: ${facility.cert_detailscol || ''}
-                `;
+                <b>${facility.fac_name}</b><br>
+                Type: ${facility.fac_type}<br>
+                Certification: ${facility.cert_type}<br>
+                Score: ${facility.score ?? 'N/A'}<br>
+                Status: ${facility.Cert_status ?? 'N/A'}<br>
+                Mode: ${facility.ass_mod ?? 'N/A'}<br>
+                Assessment Date: ${facility.date_of_ass ?? 'N/A'}<br>
+                Validity: ${facility.validity || 'N/A'}<br>
+                Details: ${facility.cert_detailscol || ''}<br>
+                District: ${facility.dist ?? 'N/A'}
+            `;
+
                                 marker.bindTooltip(tooltip, {
                                     permanent: false,
                                     direction: 'top',
@@ -139,7 +161,9 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                 });
                             }
 
-                            // Row
+                            // --------------------------
+                            // Table Row Data
+                            // --------------------------
                             tableData.push({
                                 data: [
                                     facility.fac_name,
@@ -148,20 +172,30 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                     facility.cert_detailscol,
                                     facility.cert_issue,
                                     facility.validity,
+                                    facility.score, // NEW
+                                    facility.Cert_status, // NEW
+                                    facility.ass_mod, // NEW
+                                    facility.date_of_ass, // NEW
+                                    facility.dist // NEW
                                 ],
                                 expired: isExpired
                             });
 
+                            // Count types
                             if ((facility.cert_type || '').toLowerCase() === 'state') stateCount++;
                             if ((facility.cert_type || '').toLowerCase() === 'national') nationalCount++;
                         });
 
-                        // Update counts
+                        // --------------------------
+                        // Update Counts
+                        // --------------------------
                         $('#state-cert-count').text(stateCount);
                         $('#national-cert-count').text(nationalCount);
                         $('#expired-count').text(expiredFacilities.length);
 
+                        // --------------------------
                         // DataTable
+                        // --------------------------
                         if ($.fn.DataTable && $.fn.DataTable.isDataTable('#facTable')) {
                             $('#facTable').DataTable().clear().destroy();
                         }
@@ -172,56 +206,77 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                     title: "Facility Name"
                                 },
                                 {
-                                    title: "Facility Type"
+                                    title: "Type"
                                 },
                                 {
-                                    title: "Certification Type"
+                                    title: "Cert. Type"
                                 },
                                 {
                                     title: "Details"
                                 },
                                 {
-                                    title: "Certification Issue Date"
+                                    title: "Issue Date"
                                 },
                                 {
                                     title: "Validity"
-                                }
+                                },
+                                {
+                                    title: "Score"
+                                }, // NEW
+                                {
+                                    title: "Cert Status"
+                                }, // NEW
+                                {
+                                    title: "Assessment Mode"
+                                }, // NEW
+                                {
+                                    title: "Assessment Date"
+                                }, // NEW
+                                {
+                                    title: "District"
+                                } // NEW
                             ],
                             createdRow: function(row, data, dataIndex) {
                                 const rowInfo = tableData[dataIndex];
-                                if (rowInfo.expired) {
-                                    $(row).addClass('expired-row');
-                                }
+                                if (rowInfo.expired) $(row).addClass('expired-row');
                             },
                             pageLength: 5,
                             dom: 'Bfrtip',
                             buttons: [{
                                 extend: 'excelHtml5',
-                                title: 'Facility Certification Overview',
+                                title: 'State Certification Overview',
                                 text: '📥 Export to Excel'
                             }]
                         });
 
-                        // Download expired list
+                        // --------------------------
+                        // CSV Download for Expired
+                        // --------------------------
                         $('#download-expired').on('click', function(e) {
                             e.preventDefault();
+
                             if (expiredFacilities.length === 0) {
-                                alert('No expired facilities found.');
+                                alert("No expired facilities found.");
                                 return;
                             }
-                            let csv = "Facility Name,Facility Type,Certification Type,Details,Certification Issue Date,Validity\n";
+
+                            let csv = "Facility Name,Facility Type,Cert Type,Details,Issue Date,Validity,Score,Status,Mode,Assessment Date,District\n";
+
                             expiredFacilities.forEach(f => {
-                                csv += `"${f.fac_name}","${f.fac_type}","${f.cert_type}","${f.cert_detailscol}","${f.cert_issue}","${f.validity}"\n`;
+                                csv += `"${f.fac_name}","${f.fac_type}","${f.cert_type}","${f.cert_detailscol}","${f.cert_issue}","${f.validity}","${f.score}","${f.Cert_status}","${f.ass_mod}","${f.date_of_ass}","${f.dist}"\n`;
                             });
+
                             const blob = new Blob([csv], {
-                                type: 'text/csv;charset=utf-8;'
+                                type: "text/csv;charset=utf-8;"
                             });
                             const link = document.createElement('a');
                             link.href = URL.createObjectURL(blob);
                             link.download = 'Expired_Facility_List.csv';
                             link.click();
                         });
+
                     });
+
                 });
             </script>
 
@@ -235,104 +290,104 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
 
             <!-- ==================== REST OF YOUR DASHBOARD ==================== -->
             <!-- ================== Assessment Summary Section ================== -->
-<div class="card shadow-sm border rounded-3 mt-3">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-1">
-      <h6 class="fw-bold text-primary mb-0">
-        Assessment Summary by Performance Category
-      </h6>
-      <div class="text-end">
-          <span class="small d-block fw-semibold text-primary">
-          * Total number of assessments done by facilities — shows total assessments and % distribution
-        </span>
-        <span class="small d-block fw-semibold text-primary">
-          * Categories represent assessments scoring  &lt;50%, 50–80%, &gt;80%.
-        </span>
-      </div>
-    </div>
+            <div class="card shadow-sm border rounded-3 mt-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-1">
+                        <h6 class="fw-bold text-primary mb-0">
+                            Assessment Summary by Performance Category
+                        </h6>
+                        <div class="text-end">
+                            <span class="small d-block fw-semibold text-primary">
+                                * Total number of assessments done by facilities — shows total assessments and % distribution
+                            </span>
+                            <span class="small d-block fw-semibold text-primary">
+                                * Categories represent assessments scoring &lt;50%, 50–80%, &gt;80%.
+                            </span>
+                        </div>
+                    </div>
 
-    <?php
-    $call_count = "SELECT Dist_Name,p1 FROM state_dash_view WHERE p <> 0";
-    $count = mysqli_query($con, $call_count);
+                    <?php
+                    $call_count = "SELECT Dist_Name,p1 FROM state_dash_view WHERE p <> 0";
+                    $count = mysqli_query($con, $call_count);
 
-    // Initialize counters
-    $gt80 = 0;
-    $btw50_80 = 0;
-    $lt50 = 0;
-    $total_facilities_assessments = 0;
-    $total_p_sum = 0;
-    $top90_100 = 0; // >=90
-    $low_lt40 = 0;  // <40
+                    // Initialize counters
+                    $gt80 = 0;
+                    $btw50_80 = 0;
+                    $lt50 = 0;
+                    $total_facilities_assessments = 0;
+                    $total_p_sum = 0;
+                    $top90_100 = 0; // >=90
+                    $low_lt40 = 0;  // <40
 
-    while ($row = mysqli_fetch_assoc($count)) {
-        $p = floatval($row['p1']);
-        $total_facilities_assessments++;
-        $total_p_sum += $p;
+                    while ($row = mysqli_fetch_assoc($count)) {
+                        $p = floatval($row['p1']);
+                        $total_facilities_assessments++;
+                        $total_p_sum += $p;
 
-        if ($p > 80) {
-            $gt80++;
-        } elseif ($p >= 50 && $p <= 80) {
-            $btw50_80++;
-        } elseif ($p < 50) {
-            $lt50++;
-        }
+                        if ($p > 80) {
+                            $gt80++;
+                        } elseif ($p >= 50 && $p <= 80) {
+                            $btw50_80++;
+                        } elseif ($p < 50) {
+                            $lt50++;
+                        }
 
-      //  if ($p >= 90 && $p <= 100) {
-      //      $top90_100++;
-      //  }
-       // if ($p < 40) {
-       //     $low_lt40++;
-       // }
-    }
+                        //  if ($p >= 90 && $p <= 100) {
+                        //      $top90_100++;
+                        //  }
+                        // if ($p < 40) {
+                        //     $low_lt40++;
+                        // }
+                    }
 
-    // Calculate Average %
-    $avg_p = $total_facilities_assessments > 0 ? round($total_p_sum / $total_facilities_assessments, 2) : 0;
+                    // Calculate Average %
+                    $avg_p = $total_facilities_assessments > 0 ? round($total_p_sum / $total_facilities_assessments, 2) : 0;
 
-    // Prepare cards
-    $cards = [
-        [
-            'icon' => 'bi bi-award-fill',
-            'comp' => $gt80,
-            'total' => $total_facilities_assessments,
-            'label' => '>80%',
-            'colorClass' => 'bg-success text-white'
-        ],
-        [
-            'icon' => 'bi bi-bar-chart-line-fill',
-            'comp' => $btw50_80,
-            'total' => $total_facilities_assessments,
-            'label' => '50%-80%',
-            'colorClass' => 'bg-warning text-dark'
-        ],
-        [
-            'icon' => 'bi bi-exclamation-circle-fill',
-            'comp' => $lt50,
-            'total' => $total_facilities_assessments,
-            'label' => '<50%',
-            'colorClass' => 'bg-danger text-white'
-        ],
-        //[
-        //    'icon' => 'bi bi-star-fill',
-       //     'comp' => $top90_100,
-       //     'total' => $total_facilities_assessments,
-       //     'label' => '≥90%',
-       //     'colorClass' => 'bg-primary text-white'
-      //  ],
-       // [
-        //    'icon' => 'bi bi-emoji-frown-fill',
-        //    'comp' => $low_lt40,
-        //    'total' => $total_facilities_assessments,
-         //   'label' => '<40%',
-         //   'colorClass' => 'bg-secondary text-white'
-       // ]
-    ];
-    ?>
+                    // Prepare cards
+                    $cards = [
+                        [
+                            'icon' => 'bi bi-award-fill',
+                            'comp' => $gt80,
+                            'total' => $total_facilities_assessments,
+                            'label' => '>80%',
+                            'colorClass' => 'bg-success text-white'
+                        ],
+                        [
+                            'icon' => 'bi bi-bar-chart-line-fill',
+                            'comp' => $btw50_80,
+                            'total' => $total_facilities_assessments,
+                            'label' => '50%-80%',
+                            'colorClass' => 'bg-warning text-dark'
+                        ],
+                        [
+                            'icon' => 'bi bi-exclamation-circle-fill',
+                            'comp' => $lt50,
+                            'total' => $total_facilities_assessments,
+                            'label' => '<50%',
+                            'colorClass' => 'bg-danger text-white'
+                        ],
+                        //[
+                        //    'icon' => 'bi bi-star-fill',
+                        //     'comp' => $top90_100,
+                        //     'total' => $total_facilities_assessments,
+                        //     'label' => '≥90%',
+                        //     'colorClass' => 'bg-primary text-white'
+                        //  ],
+                        // [
+                        //    'icon' => 'bi bi-emoji-frown-fill',
+                        //    'comp' => $low_lt40,
+                        //    'total' => $total_facilities_assessments,
+                        //   'label' => '<40%',
+                        //   'colorClass' => 'bg-secondary text-white'
+                        // ]
+                    ];
+                    ?>
 
-    <!-- Cards in Single Line -->
-    <div class="d-flex justify-content-between align-items-stretch text-center">
-      <?php
-      foreach ($cards as $data) {
-          echo "
+                    <!-- Cards in Single Line -->
+                    <div class="d-flex justify-content-between align-items-stretch text-center">
+                        <?php
+                        foreach ($cards as $data) {
+                            echo "
           <div class='card {$data['colorClass']} shadow-sm border-0 flex-fill mx-1' 
                style='border-radius:10px; min-width:150px;'>
               <div class='card-body p-2'>
@@ -341,30 +396,31 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                   <div class='fw-semibold' style='font-size: 13px;'>{$data['label']}</div>
               </div>
           </div>";
-      }
-      ?>
-    </div>
+                        }
+                        ?>
+                    </div>
 
-    <!-- Average Display -->
-    <div class="text-end mt-2">
-     
-      <small class="text-muted fst-italic text-primary">
-        Average compliance score across all assessments: <strong><?= $avg_p ?>%</strong>
-      </small>
-    </div>
-  </div>
-</div>
+                    <!-- Average Display -->
+                    <div class="text-end mt-2">
 
-<!-- Optional: Hover Effect -->
-<style>
-  .card.shadow-sm {
-    transition: all 0.2s ease-in-out;
-  }
-  .card.shadow-sm:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  }
-</style>
+                        <small class="text-muted fst-italic text-primary">
+                            Average compliance score across all assessments: <strong><?= $avg_p ?>%</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optional: Hover Effect -->
+            <style>
+                .card.shadow-sm {
+                    transition: all 0.2s ease-in-out;
+                }
+
+                .card.shadow-sm:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+                }
+            </style>
 
 
 
@@ -422,10 +478,6 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
             }
 
             ?>
-
-
-
-
 
             <div class="row">
                 <div class="col-sm-12">
@@ -528,7 +580,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                         $green_zone[] = $entry;
                                     } elseif ($p >= 50 && $p <= 79.99) {
                                         $yellow_zone[] = $entry;
-                                    } else{
+                                    } else {
                                         $red_zone[] = $entry;
                                     }
                                 }
@@ -648,7 +700,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                 <ul style="margin-bottom: 15px;">
                                     <li>State Certified Facilities: <strong><span id="state-cert-count">...</span></strong></li>
                                     <li>National Certified Facilities: <strong><span id="national-cert-count">...</span></strong></li>
-                                </ul>                              
+                                </ul>
 
                                 <p>
                                     District-wise performance charts reflect that some districts consistently perform above 80%, while others show a concentration of low-scoring facilities.
@@ -811,16 +863,16 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                     <div class="card">
                         <div class="card-body">
                             <h6 class="card-title">
-                               Assessment Summary by Facility
+                                Assessment Summary by Facility
                                 <a href="assets/export/export_state_score_card.php">
                                     <i class="bi bi-arrow-down-circle-fill"></i>
                                 </a>
                             </h6>
-<!-- Note below title -->
-<p class="text-primary small mb-3 fst-italic">
-    * This summary also includes facilities that have not yet started the assessment, 
-    and facilities that have undergone the assessment process twice or thrice.
-</p>
+                            <!-- Note below title -->
+                            <p class="text-primary small mb-3 fst-italic">
+                                * This summary also includes facilities that have not yet started the assessment,
+                                and facilities that have undergone the assessment process twice or thrice.
+                            </p>
                             <div class="table-responsive">
                                 <table class="table datatable table-bordered table-striped table-hover small" id="tbl_exporttable_to_xls">
                                     <thead>

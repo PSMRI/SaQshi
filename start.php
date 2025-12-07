@@ -221,26 +221,40 @@
     #requestDemoBtn:hover {
         background-color: #ff5e3a;
     }
-    #loginBtn {
-        position: fixed;
-        top: 50%;
-        right: 0;
-        transform: translateY(-50%);
-        background-color: #90ee90;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        font-weight: bold;
-        border-radius: 30px 0 0 30px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        cursor: pointer;
-        z-index: 100;
-        transition: background-color 0.3s ease;
-    }
+  #loginBtn {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    
+    /* SIZE */
+    padding: 18px 60px; /* Long & Tall */
+    font-size: 1.15rem;
+    font-weight: 600;
 
-    #loginBtn:hover {
-        background-color: #66cc66;
-    }
+    /* COLOR */
+    background-color: #1A6D2E; /* Strong dark green */
+    color: #fff;
+
+    /* VISUAL STYLE */
+    border: none;
+    border-radius: 50px 0 0 50px; /* Bold rounded end */
+    letter-spacing: 0.5px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+
+    /* INTERACTION */
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.25s ease;
+}
+
+#loginBtn:hover {
+    background-color: #125122; /* darker on hover */
+    transform: translateY(-50%) scale(1.06); /* slightly bigger hover */
+}
+
+
+
  .hero {
     background: url('assets/images/3.png') center center no-repeat;
     background-size: cover;

@@ -34,6 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($userrole == 1) {
                 $stmt2 = $con->prepare("SELECT 
     a.fac_id_fk, 
+    b.NIN_no,
     a.assessment_id, 
     a.dist_id, 
     b.Health_facilty_type, 
@@ -57,6 +58,7 @@ WHERE
                 $_SESSION['assperiod'] = $row['assessment_id'];
                 $_SESSION['facname'] = $row['fac_name'];
                 $_SESSION['factypename'] = $row['fac'];
+                 $_SESSION['factynin'] = $row['NIN_no'];
                 header("location:index.php");
                 exit;
             } elseif ($userrole == 2) {
