@@ -3,7 +3,7 @@ include("assets/conn/db.php");
 ob_start();
 session_start();
 
-// ---------------- DEVICE DETECTION FUNCTIONS ---------------- //
+/* ---------------- DEVICE DETECTION ---------------- */
 function getDeviceType() {
     $ua = strtolower($_SERVER['HTTP_USER_AGENT']);
     if (preg_match('/mobile|android|iphone|ipod|blackberry|webos/', $ua)) return "Mobile";
@@ -31,6 +31,7 @@ function detectBrowser() {
     return "Unknown Browser";
 }
 
+/* ---------------- PROCESS LOGIN ---------------- */
 $error = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -39,7 +40,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mypassword = trim($_POST['mypassword']);
     $_SESSION['lang'] = $_POST['lang'];
 
-    // Fetch user
     $stmt = $con->prepare("SELECT * FROM s_user WHERE u_name = ? AND is_active = 1");
     $stmt->bind_param("s", $myusername);
     $stmt->execute();
@@ -55,126 +55,122 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if (password_verify($mypassword, $stored_password) || $mypassword === $stored_password) {
 
-            // Start secure session
+            /* ---------------- SESSION VARIABLES (CRITICAL) ---------------- */
             session_regenerate_id(true);
             $_SESSION['userid'] = $userid;
             $_SESSION['u_name'] = $myusername;
             $_SESSION['userrole'] = $userrole;
+            $_SESSION['urole'] = $userrole;              // REQUIRED for area-of-concern
             $_SESSION['dist'] = $district_id;
             $_SESSION['login_time'] = date('d M Y h:i A');
 
-            // ---------------- LOG DEVICE DATA ---------------- //
-            $deviceType = getDeviceType();
-            $os = detectOS();
-            $browser = detectBrowser();
-            $screen = $_POST['screen'] ?? '';
-            $ip = $_SERVER['REMOTE_ADDR'];
-
+            /* ---------------- LOG DEVICE ---------------- */
             $logStmt = $con->prepare("
                 INSERT INTO login_log 
                 (user_id, device_type, os, browser, screen_size, ip_address, login_time) 
                 VALUES (?, ?, ?, ?, ?, ?, NOW())
             ");
+            $deviceType = getDeviceType();
+            $os = detectOS();
+            $browser = detectBrowser();
+            $screen = $_POST['screen'] ?? '';
+            $ip = $_SERVER['REMOTE_ADDR'];
             $logStmt->bind_param("isssss", $userid, $deviceType, $os, $browser, $screen, $ip);
             $logStmt->execute();
-            // ------------------------------------------------- //
 
-            // ---------------- ROLE-BASED REDIRECT ---------------- //
+            /* ---------------- ROLE BASED LOGIN LOGIC ---------------- */
             if ($userrole == 1) {
-                $stmt2 = $con->prepare("SELECT a.fac_id_fk, b.NIN_no, a.assessment_id, a.dist_id, b.Health_facilty_type, b.fac_name, c.fac 
+                $stmt2 = $con->prepare("
+                    SELECT a.fac_id_fk, b.NIN_no, a.assessment_id, a.dist_id,
+                           b.Health_facilty_type, b.fac_name, c.fac
                     FROM s_user AS a 
                     JOIN facilities AS b ON a.fac_id_fk = b.fac_id
                     JOIN facilities_type AS c ON b.Health_facilty_type = c.fac_type_id
-                    WHERE a.u_id = ? AND a.is_active = 1");
+                    WHERE a.u_id = ? AND a.is_active = 1
+                ");
                 $stmt2->bind_param("i", $userid);
                 $stmt2->execute();
-                $res = $stmt2->get_result();
-                $row = $res->fetch_assoc();
+                $data = $stmt2->get_result()->fetch_assoc();
 
-                $_SESSION['u_facilityid'] = $row['fac_id_fk'];
-                $_SESSION['f_type_id'] = $row['Health_facilty_type'];
-                $_SESSION['assperiod'] = $row['assessment_id'];
-                $_SESSION['facname'] = $row['fac_name'];
-                $_SESSION['factypename'] = $row['fac'];
-                $_SESSION['factynin'] = $row['NIN_no'];
+                $_SESSION['u_facilityid']   = $data['fac_id_fk'];
+                $_SESSION['f_type_id']      = $data['Health_facilty_type'];
+                $_SESSION['facilty_type']   = $data['Health_facilty_type'];  // Required!!
+                $_SESSION['assperiod']      = $data['assessment_id'];
+                $_SESSION['facname']        = $data['fac_name'];
+                $_SESSION['factypename']    = $data['fac'];
+                $_SESSION['factynin']       = $data['NIN_no'];
 
                 header("location:index.php");
                 exit;
             }
 
             if ($userrole == 2) {
-                $stmt2 = $con->prepare("SELECT a.fac_id_fk, a.dept_id, a.assessment_id, b.Health_facilty_type, b.fac_name 
+                $stmt2 = $con->prepare("
+                    SELECT a.fac_id_fk, a.dept_id, a.assessment_id,
+                           b.Health_facilty_type, b.fac_name
                     FROM s_user AS a 
-                    JOIN facilities AS b ON a.fac_id_fk = b.fac_id 
-                    WHERE a.u_id = ? AND a.is_active = 1");
+                    JOIN facilities AS b ON a.fac_id_fk = b.fac_id
+                    WHERE a.u_id = ? AND a.is_active = 1
+                ");
                 $stmt2->bind_param("i", $userid);
                 $stmt2->execute();
-                $res = $stmt2->get_result();
-                $row = $res->fetch_assoc();
+                $data = $stmt2->get_result()->fetch_assoc();
 
-                $_SESSION['u_facilityid'] = $row['fac_id_fk'];
-                $_SESSION['dept_id1'] = $row['dept_id'];
-                $_SESSION['assperiod'] = $row['assessment_id'];
-                $_SESSION['f_type_id'] = $row['Health_facilty_type'];
-                $_SESSION['facname'] = $row['fac_name'];
+                $_SESSION['u_facilityid']   = $data['fac_id_fk'];
+                $_SESSION['dept_id1']       = $data['dept_id'];
+                $_SESSION['assperiod']      = $data['assessment_id'];
+                $_SESSION['f_type_id']      = $data['Health_facilty_type'];
+                $_SESSION['facilty_type']   = $data['Health_facilty_type']; // Required!!
+                $_SESSION['facname']        = $data['fac_name'];
 
                 header("location:index.php");
                 exit;
             }
 
-            if ($userrole == 3) {
-                header("location:index.php");
-                exit;
-            }
+            /* OTHER ROLES SAME AS BEFORE */
+            if ($userrole == 3) { header("location:index.php"); exit; }
 
             if ($userrole == 4) {
-                $stmt2 = $con->prepare("SELECT a.Dist_id, b.Dist_name FROM facilities AS a 
+                $stmt2 = $con->prepare("
+                    SELECT a.Dist_id, b.Dist_name 
+                    FROM facilities AS a 
                     JOIN dist_master AS b ON a.dist_id = b.Dist_id 
-                    WHERE a.Dist_id = (SELECT dist_id FROM s_user WHERE u_id = ?)");
+                    WHERE a.Dist_id = (SELECT dist_id FROM s_user WHERE u_id = ?)
+                ");
                 $stmt2->bind_param("i", $userid);
                 $stmt2->execute();
-                $res = $stmt2->get_result();
-                $row = $res->fetch_assoc();
-
-                $_SESSION['div_id'] = $row['Dist_id'];
-                $_SESSION['div_name'] = $row['Dist_name'];
-
+                $data = $stmt2->get_result()->fetch_assoc();
+                $_SESSION['div_id'] = $data['Dist_id'];
+                $_SESSION['div_name'] = $data['Dist_name'];
                 header("location:distdash.php");
                 exit;
             }
 
             if ($userrole == 5) {
-                $stmt2 = $con->prepare("SELECT a.division_id, b.division_name 
+                $stmt2 = $con->prepare("
+                    SELECT a.division_id, b.division_name 
                     FROM facilities AS a 
                     JOIN division AS b ON a.division_id = b.iddivision 
-                    WHERE a.division_id = (SELECT division_id FROM s_user WHERE u_id = ?)");
+                    WHERE a.division_id = (SELECT division_id FROM s_user WHERE u_id = ?)
+                ");
                 $stmt2->bind_param("i", $userid);
                 $stmt2->execute();
-                $res = $stmt2->get_result();
-                $row = $res->fetch_assoc();
-
-                $_SESSION['div_id'] = $row['division_id'];
-                $_SESSION['div_name'] = $row['division_name'];
-
+                $data = $stmt2->get_result()->fetch_assoc();
+                $_SESSION['div_id'] = $data['division_id'];
+                $_SESSION['div_name'] = $data['division_name'];
                 header("location:regdash.php");
                 exit;
             }
 
-            if ($userrole == 6) {
-                header("location:index.php");
-                exit;
-            }
+            if ($userrole == 6) { header("location:index.php"); exit; }
 
             if ($userrole == 8) {
                 $_SESSION['block_id'] = $row['block_id'];
-
                 $stmt2 = $con->prepare("SELECT block_name FROM block_master WHERE block_id = ?");
                 $stmt2->bind_param("i", $_SESSION['block_id']);
                 $stmt2->execute();
-                $res = $stmt2->get_result();
-                $row = $res->fetch_assoc();
-
-                $_SESSION['block_name'] = $row['block_name'];
+                $data = $stmt2->get_result()->fetch_assoc();
+                $_SESSION['block_name'] = $data['block_name'];
                 header("location:bdash.php");
                 exit;
             }
@@ -184,12 +180,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("location:sdash.php");
                 exit;
             }
-            // ----------------------------------------------------- //
 
         } else {
             $error = "Invalid password. Please try again.";
         }
-
     } else {
         $error = "Email or password incorrect!";
     }
@@ -287,7 +281,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                             <button class="btn btn-primary btn-block mb-4" type="submit">Login</button>
                             <p class="text-muted mb-0"><?= date('Y') ?> Piramal Swasthya. All Rights Reserved.</p>
-
                         </div>
 
                     </form>
