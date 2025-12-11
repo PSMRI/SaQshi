@@ -108,7 +108,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 
 
 								<li><a href="assessor.php"><span class="pcoded-micon"><i class="bi bi-person-vcard"></i></span><span class="pcoded-mtext">Assessor info</span></a></li>
-								<li><a href="nqst.php"> <span class="pcoded-micon"><i class="bi bi-card-checklist"></i></span><span class="pcoded-mtext">Assessment</span></a></li>
+								<li><a href="assessment.php"> <span class="pcoded-micon"><i class="bi bi-card-checklist"></i></span><span class="pcoded-mtext">Assessment</span></a></li>
 								<li><a href="moic.php"><span class="pcoded-micon"><i class="bi-journal-plus"></i></span><span class="pcoded-mtext">Generate Action Plan</span></a></li>
 								<li><a href="umoic.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Update Action Plan</span></a></li>
 
