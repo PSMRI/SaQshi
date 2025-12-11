@@ -100,6 +100,7 @@ if (isset($_POST['submit1'])) {
                 echo "</div></div></div>";
             }
             echo "</form>";
+            echo "<script src='assets/calculationjs/dhkpi.js'></script>";
         }
     }
 }
@@ -147,28 +148,6 @@ if (isset($_POST['postsubmit3'])) {
 </div>
 
 <script>
-function calculateResult(q) {
-    const inputNum = document.getElementById('input' + (q * 2 - 1));
-    const inputDen = document.getElementById('input' + (q * 2));
-    const result = document.getElementById('result' + q);
-
-    if (!inputNum || !result) return;
-
-    const val = inputNum.value.toLowerCase();
-
-    if (val === 'yes' || val === 'no') {
-        result.value = val.charAt(0).toUpperCase() + val.slice(1);
-    } else if (inputNum.type === 'number' && inputDen && inputDen.type === 'number') {
-        const numerator = parseFloat(inputNum.value);
-        const denominator = parseFloat(inputDen.value);
-        if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-            result.value = ((numerator / denominator) * 100).toFixed(2);
-        } else {
-            result.value = '';
-        }
-    }
-}
-
 function showNextCard(current) {
     const inputNum = document.getElementById('input' + (current * 2 - 1));
     const inputDen = document.getElementById('input' + (current * 2));

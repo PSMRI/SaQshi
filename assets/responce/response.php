@@ -1,9 +1,10 @@
 <?php
 // Database connection
-include ("../conn/db.php");
+include(__DIR__ . "/../../assets/conn/db.php");
+include(__DIR__ . "/../../assets/conn/session.php");
 // Check if POST variable is set
 if (!empty($_POST["cid"])) {
-    include(__DIR__ . "/../../nqst.php");
+   // include(__DIR__ . "/../../assessment.php");
     // Get values from session and post
     $cid = $_POST['cid'];
     $assessmentPeriod = $_SESSION['assperiod'] ?? 0;
@@ -23,7 +24,7 @@ if (!empty($_POST["cid"])) {
                 echo '<option value="' . $row['c_subtype_id'] . '">' . htmlspecialchars($row['area_of_con_subtypedeatils']) . '</option>';
             }
         } else {
-            echo '<option value="0">-Select-</option>';
+            echo '<option value="0">-Checkpoint completed-</option>';
         }
 
         mysqli_free_result($result);
