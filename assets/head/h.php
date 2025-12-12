@@ -156,7 +156,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 						</li>
 						<li class="nav-item">
-							<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a--->
+							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 						</li>
 						<li class="nav-item">
 							<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
@@ -174,7 +174,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 						</li>
 						<li class="nav-item">
-							<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a-->
+							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 						</li>
 						<li class="nav-item">
 							<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
@@ -191,7 +191,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 				</li>
 				<li class="nav-item">
-					<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a--->
+					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 				</li>
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
@@ -262,7 +262,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 				</li>
 				<li class="nav-item">
-					<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a--->
+					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 				</li>
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
@@ -279,7 +279,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 				</li>
 				<li class="nav-item">
-					<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a-->
+					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 				</li>
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
