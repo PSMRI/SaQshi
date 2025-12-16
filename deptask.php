@@ -95,7 +95,7 @@ if (!empty($_SESSION['assperiod'])) {
                     <!-- Button -->
                     <div class="col-md-2 text-center">
                         <button type="submit" name="save_assessor" class="btn btn-success btn-sm w-100 mt-4">
-                            <i class="bi bi-save2-fill me-1"></i> Create
+                             Create
                         </button>
                     </div>
 
@@ -156,15 +156,48 @@ if (!empty($_SESSION['assperiod'])) {
                         </form>
 
                         <?php
-                        if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_form1'])) {
-                            $selectedId = $_POST['assis'];
-                            $stmt = $con->prepare("SELECT ass_name FROM assessment_desc WHERE id = ?");
-                            $stmt->bind_param("i", $selectedId);
-                            $stmt->execute();
-                            $data = $stmt->get_result()->fetch_assoc();
+                      if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_form1'])) {
 
-                            echo "<div class='alert alert-success mt-2'>Selected <strong>{$data['ass_name']}</strong> as current assessment.</div>";
-                        }
+    $selectedId = intval($_POST['assis']);                 // Selected assessment id
+    $facilityId = intval($_SESSION['u_facilityid']);       // Facility id
+
+    // 1. Set all assessments of this facility to 0
+    $con->query("
+        UPDATE assessment_desc 
+        SET current_assment = 0 
+        WHERE fac_id_fk = $facilityId
+    ");
+
+    // 2. Set selected assessment to 1
+    $con->query("
+        UPDATE assessment_desc 
+        SET current_assment = 1 
+        WHERE id = $selectedId
+    ");
+
+    // 3. Update s_user table for all users of this facility
+    $con->query("
+        UPDATE s_user 
+        SET assessment_id = $selectedId
+        WHERE fac_id_fk = $facilityId
+    ");
+
+    // 4. Fetch assessment name for success message
+    $stmt = $con->prepare("SELECT ass_name FROM assessment_desc WHERE id = ?");
+    $stmt->bind_param("i", $selectedId);
+    $stmt->execute();
+    $data = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    // 5. Update session value immediately
+    $_SESSION['assperiod'] = $selectedId;
+
+    echo "<div class='alert alert-success mt-2'>
+            Selected <strong>{$data['ass_name']}</strong> as current assessment.
+          </div>";
+}
+
+
                         ?>
 
                     </div>

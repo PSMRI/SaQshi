@@ -6,7 +6,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
 <div class="pcoded-main-container">
     <div class="pcoded-content">
         <div class="pagetitle mb-2">
-            <h5 class="fw-bold text-primary mb-1">State Dashboard</h5>
+            <h5 class="fw-bold text-primary mb-1">District Dashboard</h5>
         </div>
 
         <!-- ==================== FACILITY MAP ==================== -->
@@ -307,7 +307,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                 </div>
 
                 <?php
-                $call_count = "SELECT Dist_Name,p1 FROM state_dash_view WHERE p <> 0";
+                $call_count = "SELECT Dist_Name,p1 FROM state_dash_view WHERE p <> 0 and fac_id not in (1)";
                 $count = mysqli_query($con, $call_count);
 
                 // Initialize counters
@@ -370,7 +370,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                 ?>
 
                 <!-- Cards in Single Line -->
-                 <div class="d-flex justify-content-between align-items-stretch text-center" style="flex-wrap: wrap;">
+                <div class="d-flex justify-content-between align-items-stretch text-center" style="flex-wrap: wrap;">
                     <?php
                     foreach ($cards as $data) {
                         echo "
@@ -413,7 +413,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
         <?php
 
         // Read block score data
-        $call_block_score = "SELECT Dist_Name,p1 FROM state_dash_view where p <>0";
+        $call_block_score = "SELECT Dist_Name,p1 FROM state_dash_view where p <>0 and fac_id not in (1)";
         $block_score_res = mysqli_query($con, $call_block_score);
 
         // Build Block-wise Score Category counts in PHP
@@ -481,75 +481,145 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                 ">
                             <center>
                                 <h4 class="card-title" style="font-size: 20px; margin-bottom: 5px; color: #0056b3;">
-                                    State Compliance Summary – Report
+                                    District Compliance Summary – Report
                                 </h4>
                                 <h4 style="font-size: 16px; margin-bottom: 15px; color: #333;">
 
-                                    State: <strong> Bihar</strong>
+                                    State: <strong>UP</strong>
                                 </h4>
                             </center>
                             <p class="text-muted mb-1" style="font-size: 13px;">
                                 * Assessments started or Completed vs Registered facilities
                             </p>
-                            <div class="d-flex flex-nowrap overflow-auto">
-                                <?php
-                                $call_q1 = "CALL state_dash_count";
-                                $q22 = mysqli_query($con, $call_q1);
+                           
+                                <style>.fac-card {
+    min-width: 140px;
+    height: 130px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 6px 14px rgba(0,0,0,.08);
+    position: relative;
+    text-align: center;
+    padding-top: 18px;
+}
 
-                                while ($row = mysqli_fetch_array($q22)) {
-                                    $facilities = [
-                                        'DH' => ['total' => $row['DH'], 'comp' => $row['DHcomp'], 'icon' => 'bi bi-hospital'],
-                                        'SDH' => ['total' => $row['SDH'], 'comp' => $row['SDHcomp'], 'icon' => 'bi bi-hospital'],
-                                        'APHC' => ['total' => $row['APHC'], 'comp' => $row['APHCcomp'], 'icon' => 'bi bi-hospital'],
-                                        'CHC' => ['total' => $row['CHC'], 'comp' => $row['CHCcomp'], 'icon' => 'bi bi-hospital'],
-                                        'PHC' => ['total' => $row['PHC'], 'comp' => $row['PHCcomp'], 'icon' => 'bi bi-hospital'],
-                                        'UPHC' => ['total' => $row['UPHC'], 'comp' => $row['UPHCcomp'], 'icon' => 'bi bi-hospital'],
-                                        'HWC' => ['total' => $row['HWC'], 'comp' => $row['HWCcomp'], 'icon' => 'bi bi-hospital']
-                                    ];
+.fac-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 6px;
+    width: 100%;
+    border-radius: 14px 14px 0 0;
+}
 
-                                    foreach ($facilities as $label => $data) {
-                                        $comp = intval($data['comp']);
-                                        $total = intval($data['total']);
+.fac-na {
+    background: #f3f5f7;
+    color: #6c757d;
+}
 
-                                        if ($total == 0) {
-                                            $bgColor = 'bg-secondary';
-                                            $displayValue = 'N/A';
-                                        } elseif ($comp == $total) {
-                                            $bgColor = 'bg-success';
-                                            $displayValue = "$comp/$total";
-                                        } elseif ($comp > 0) {
-                                            $bgColor = 'bg-warning';
-                                            $displayValue = "$comp/$total";
-                                        } else {
-                                            $bgColor = 'bg-danger';
-                                            $displayValue = "$comp/$total";
-                                        }
+.fac-na::before {
+    background: #6c757d;
+}
 
-                                        echo "<div class='card flat-card widget-primary-card $bgColor text-white m-2' style='min-width: 90px;' title='Facility Type: $label | Completed: $comp / Total: $total'>
-                <div class='row-table'>
-                    <div class='col-sm-3 card-body d-flex align-items-center justify-content-between p-2'>
-                        <i class='{$data['icon']} text-white' style='font-size: 20px;'></i>
-                    </div>
-                    <div class='col-sm-9 py-3'>
-                        <h5 class='fw-bold mb-1'>$displayValue</h4>
-                        <h5 class='mb-0'>$label</h5>
-                    </div>
-                </div>
-            </div>";
-                                    }
-                                }
+.fac-danger::before { background: #dc3545; }
+.fac-warning::before { background: #ffc107; }
+.fac-success::before { background: #28a745; }
 
-                                mysqli_free_result($q22);
-                                $con->next_result();
-                                ?>
-                            </div>
+.fac-value {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.fac-percent {
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.fac-label {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .5px;
+}
+
+                                </style>
+                               <div class="d-flex flex-nowrap gap-3 justify-content-center overflow-auto py-3">
+
+<?php
+$call_q1 = "CALL state_dash_count";
+$q22 = mysqli_query($con, $call_q1);
+
+while ($row = mysqli_fetch_array($q22)) {
+
+    $facilities = [
+        'DH'    => [$row['DH'],    $row['DHcomp']],
+        'SH'    => [$row['SH'],    $row['SHcomp']],
+        'CHC'   => [$row['CHC'],   $row['CHCcomp']],
+        'PHC'   => [$row['PHC'],   $row['PHCcomp']],
+        'UPHC'  => [$row['UPHC'],  $row['UPHCcomp']],
+        'AAMSC' => [$row['AAMSC'], $row['AAMSCcomp']]
+    ];
+
+    foreach ($facilities as $label => [$total, $comp]) {
+
+        $total = (int)$total;
+        $comp  = (int)$comp;
+
+        if ($total === 0) {
+            $class   = "fac-card fac-na";
+            $value   = "N/A";
+            $percent = "—";
+            $pcolor  = "";
+        } else {
+            $pct = round(($comp / $total) * 100, 1);
+
+            if ($comp === 0) {
+                $class = "fac-card fac-danger";
+                $pcolor = "text-danger";
+            } elseif ($comp === $total) {
+                $class = "fac-card fac-success";
+                $pcolor = "text-success";
+            } else {
+                $class = "fac-card fac-warning";
+                $pcolor = "text-warning";
+            }
+
+            $value   = "$comp / $total";
+            $percent = $pct . "%";
+        }
+        ?>
+
+        <div class="<?= $class ?>">
+            <div class="fac-value"><?= $value ?></div>
+
+            <div class="fac-percent <?= $pcolor ?>">
+                <?= $percent ?>
+            </div>
+
+            <div class="fac-label"><?= $label ?></div>
+        </div>
+
+        <?php
+    }
+}
+
+mysqli_free_result($q22);
+$con->next_result();
+?>
+
+</div>
+
+
                             <?php
                             $green_zone = [];
                             $yellow_zone = [];
                             $red_zone = [];
 
 
-                            $call_count = "SELECT * FROM state_dash_view  where p <>0";
+                            $call_count = "SELECT * FROM state_dash_view  where p <>0 and fac_id not in (1)";
                             $count = mysqli_query($con, $call_count);
 
                             while ($row = mysqli_fetch_assoc($count)) {
@@ -599,12 +669,12 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                                     <tr>
                                                         <th>District</th>
                                                         <th>DH</th>
-                                                        <th>SDH</th>
+                                                        <th>SH</th>
                                                         <th>APHC</th>
                                                         <th>CHC</th>
                                                         <th>PHC</th>
                                                         <th>UPHC</th>
-                                                        <th>HWC</th>
+                                                        <th>AAMSC</th>
 
                                                     </tr>
                                                 </thead>
@@ -616,12 +686,12 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                                     while ($row = mysqli_fetch_array($q22)) {
                                                         $categories = [
                                                             'DH' => ['total' => $row['DH'], 'completed' => $row['DHcomp']],
-                                                            'SDH' => ['total' => $row['SDH'], 'completed' => $row['SDHCcomp']],
+                                                            'SH' => ['total' => $row['SH'], 'completed' => $row['SHCcomp']],
                                                             'APHC' => ['total' => $row['APHC'], 'completed' => $row['APHCcomp']],
                                                             'CHC' => ['total' => $row['CHC'], 'completed' => $row['CHCcomp']],
                                                             'PHC' => ['total' => $row['PHC'], 'completed' => $row['PHCcomp']],
                                                             'UPHC' => ['total' => $row['UPHC'], 'completed' => $row['UPHCcomp']],
-                                                            'HWC' => ['total' => $row['HWC'], 'completed' => $row['HWCcomp']],
+                                                            'AAMSC' => ['total' => $row['AAMSC'], 'completed' => $row['AAMSCcomp']],
                                                         ];
 
                                                         echo "<tr>";
@@ -673,7 +743,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                 </div>
                             </div>
                             <p>
-                                A total of <strong><?= $total_facilities_assessments ?></strong> assessments have been conducted in the state.
+                                A total of <strong><?= $total_facilities_assessments ?></strong> assessments have been conducted in the District.
                                 Out of these, <strong><?= $gt80 ?> assessments (<?= $gt80_percent ?>%)</strong> achieved a compliance score of more than <strong>80%</strong>, indicating high performance.
                                 Additionally, <strong><?= $btw50_80 ?> assessments (<?= $btw50_80_percent ?>%)</strong> scored between <strong>50%</strong> and <strong>80%</strong>.
                                 However, <strong><?= $lt50 ?> assessments (<?= $lt50_percent ?>%)</strong> scored below <strong>50%</strong> and require focused improvement.
@@ -692,101 +762,104 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                 District-wise performance charts reflect that some districts consistently perform above 80%, while others show a concentration of low-scoring facilities.
                                 These patterns should guide future quality improvement and support.
                             </p>
-                           <h5 class="mt-3" style="font-size: 16px; color: green;">Green Zone - Facilities with > 80%</h5>
-<div class="table-responsive">
-    <table id="greenZoneTable" class="table table-bordered table-striped table-hover table-sm">
-        <thead class="table-success">
-            <tr>
-                <th>Sl. No.</th>
-                <th>Dist. Name</th>
-                <th>Block Name</th>
-                <th>Facility Name</th>
-                <th>Facility Type</th>
-                <th>Score %</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php $slno = 1; foreach ($green_zone as $row): ?>
-            <tr>
-                <td><?= $slno++ ?></td>
-                <td><?= htmlspecialchars($row['district']) ?></td>
-                <td><?= htmlspecialchars($row['block']) ?></td>
-                <td><?= htmlspecialchars($row['name']) ?></td>
-                <td><?= htmlspecialchars($row['type']) ?></td>
-                <td><?= $row['score'] ?>%</td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+                            <h5 class="mt-3" style="font-size: 16px; color: green;">Green Zone - Facilities with > 80%</h5>
+                            <div class="table-responsive">
+                                <table id="greenZoneTable" class="table table-bordered table-striped table-hover table-sm">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th>Sl. No.</th>
+                                            <th>Dist. Name</th>
+                                            <th>Block Name</th>
+                                            <th>Facility Name</th>
+                                            <th>Facility Type</th>
+                                            <th>Score %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $slno = 1;
+                                        foreach ($green_zone as $row): ?>
+                                            <tr>
+                                                <td><?= $slno++ ?></td>
+                                                <td><?= htmlspecialchars($row['district']) ?></td>
+                                                <td><?= htmlspecialchars($row['block']) ?></td>
+                                                <td><?= htmlspecialchars($row['name']) ?></td>
+                                                <td><?= htmlspecialchars($row['type']) ?></td>
+                                                <td><?= $row['score'] ?>%</td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
 
 
-<h5 class="mt-3" style="font-size: 16px; color: orange;">Yellow Zone - Facilities with 50% to 79%</h5>
-<div class="table-responsive">
-    <table id="yellowZoneTable" class="table table-bordered table-striped table-hover table-sm">
-        <thead class="table-warning">
-            <tr>
-                <th>Sl. No.</th>
-                <th>Dist. Name</th>
-                <th>Block Name</th>
-                <th>Facility Name</th>
-                <th>Facility Type</th>
-                <th>Score %</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php $slno = 1; foreach ($yellow_zone as $row): ?>
-            <tr>
-                <td><?= $slno++ ?></td>
-                <td><?= htmlspecialchars($row['district']) ?></td>
-                <td><?= htmlspecialchars($row['block']) ?></td>
-                <td><?= htmlspecialchars($row['name']) ?></td>
-                <td><?= htmlspecialchars($row['type']) ?></td>
-                <td><?= $row['score'] ?>%</td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+                            <h5 class="mt-3" style="font-size: 16px; color: orange;">Yellow Zone - Facilities with 50% to 79%</h5>
+                            <div class="table-responsive">
+                                <table id="yellowZoneTable" class="table table-bordered table-striped table-hover table-sm">
+                                    <thead class="table-warning">
+                                        <tr>
+                                            <th>Sl. No.</th>
+                                            <th>Dist. Name</th>
+                                            <th>Block Name</th>
+                                            <th>Facility Name</th>
+                                            <th>Facility Type</th>
+                                            <th>Score %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $slno = 1;
+                                        foreach ($yellow_zone as $row): ?>
+                                            <tr>
+                                                <td><?= $slno++ ?></td>
+                                                <td><?= htmlspecialchars($row['district']) ?></td>
+                                                <td><?= htmlspecialchars($row['block']) ?></td>
+                                                <td><?= htmlspecialchars($row['name']) ?></td>
+                                                <td><?= htmlspecialchars($row['type']) ?></td>
+                                                <td><?= $row['score'] ?>%</td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
 
 
-<h5 class="mt-3" style="font-size: 16px; color: red;">Red Zone - Facilities with &lt; 50%</h5>
-<div class="table-responsive">
-    <table id="redZoneTable" class="table table-bordered table-striped table-hover table-sm">
-        <thead class="table-danger">
-            <tr>
-                <th>Sl. No.</th>
-                <th>Dist. Name</th>
-                <th>Block Name</th>
-                <th>Facility Name</th>
-                <th>Facility Type</th>
-                <th>Score %</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php $slno = 1; foreach ($red_zone as $row): ?>
-            <tr>
-                <td><?= $slno++ ?></td>
-                <td><?= htmlspecialchars($row['district']) ?></td>
-                <td><?= htmlspecialchars($row['block']) ?></td>
-                <td><?= htmlspecialchars($row['name']) ?></td>
-                <td><?= htmlspecialchars($row['type']) ?></td>
-                <td><?= $row['score'] ?>%</td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+                            <h5 class="mt-3" style="font-size: 16px; color: red;">Red Zone - Facilities with &lt; 50%</h5>
+                            <div class="table-responsive">
+                                <table id="redZoneTable" class="table table-bordered table-striped table-hover table-sm">
+                                    <thead class="table-danger">
+                                        <tr>
+                                            <th>Sl. No.</th>
+                                            <th>Dist. Name</th>
+                                            <th>Block Name</th>
+                                            <th>Facility Name</th>
+                                            <th>Facility Type</th>
+                                            <th>Score %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $slno = 1;
+                                        foreach ($red_zone as $row): ?>
+                                            <tr>
+                                                <td><?= $slno++ ?></td>
+                                                <td><?= htmlspecialchars($row['district']) ?></td>
+                                                <td><?= htmlspecialchars($row['block']) ?></td>
+                                                <td><?= htmlspecialchars($row['name']) ?></td>
+                                                <td><?= htmlspecialchars($row['type']) ?></td>
+                                                <td><?= $row['score'] ?>%</td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
 
 
 
-                                    <p class="text-muted" style="font-size: 12px; margin-top: 20px;">
-                                        <em>Report generated on <?= date('d M Y h:i A') ?></em>
-                                    </p>
+                            <p class="text-muted" style="font-size: 12px; margin-top: 20px;">
+                                <em>Report generated on <?= date('d M Y h:i A') ?></em>
+                            </p>
 
-                                    <p class="text-muted" style="font-size: 12px; margin-top: 5px;">
-                                        <em>This report is generated by <strong>SaQshi</strong></em>
-                                    </p>
+                            <p class="text-muted" style="font-size: 12px; margin-top: 5px;">
+                                <em>This report is generated by <strong>SaQshi</strong></em>
+                            </p>
 
                         </div> <!-- END of report-content -->
 
@@ -889,7 +962,7 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $call_count = "SELECT * FROM state_dash_view";
+                                    $call_count = "SELECT * FROM state_dash_view where fac_id not in (1)";
                                     $count = mysqli_query($con, $call_count);
                                     function renderRow($row, $percentageClass, $marksClass, $p1Class)
                                     {

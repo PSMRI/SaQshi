@@ -1,750 +1,720 @@
 <?php
-/***************************************************
-   OUTCOME PAGE (Store Images As-Is — No Conversion)
-   Mapping:
-   neu_val  = numerator
-   deno_val = denominator
-   values_in = result
-***************************************************/
 
-// DB
+/***************************************************
+ OUTCOME ENTRY – FINAL STABLE VERSION (RESUME + FILE VIEW)
+ ***************************************************/
 include("assets/conn/db.php");
 
+
 /***************************************************
- 1) Department Selection — Normal POST
-***************************************************/
+ 1) DEPARTMENT SELECTION
+ ***************************************************/
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['department_id'])) {
     session_start();
     $_SESSION['dept_id1']   = $_POST['department_id'];
     $_SESSION['dept_name1'] = $_POST['department_name'];
     header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
+    exit;
 }
 
 /***************************************************
- 2) AJAX — Save Single Indicator Card
-***************************************************/
-if ($_SERVER["REQUEST_METHOD"] === "POST" && ( $_POST['action'] ?? "" ) === "save_outcome") {
-
+ 2) AJAX SAVE OUTCOME
+ ***************************************************/
+if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST['action'] ?? '') === "save_outcome") {
     session_start();
-    header('Content-Type: application/json');
+    header("Content-Type: application/json");
 
-    // Validate required session keys
-    $need = ['u_facilityid','dept_id1','new_date1','assperiod','f_type_id'];
-    foreach ($need as $k){
-        if(empty($_SESSION[$k])){
-            echo json_encode(["status"=>"error","msg"=>"Session expired. Reload!"]);
+    $required = ['u_facilityid', 'dept_id1', 'new_date1', 'assperiod', 'f_type_id'];
+    foreach ($required as $r) {
+        if (empty($_SESSION[$r])) {
+            echo json_encode(["status" => "error", "msg" => "Session expired"]);
             exit;
         }
     }
 
-    $fac_id  = $_SESSION['u_facilityid'];
-    $dept_id = $_SESSION['dept_id1'];
-    $date1   = $_SESSION['new_date1'];
-    $period  = $_SESSION['assperiod'];
-    $ftype   = $_SESSION['f_type_id'];
+    $fac   = $_SESSION['u_facilityid'];
+    $dept  = $_SESSION['dept_id1'];
+    $month = $_SESSION['new_date1'];
+    $per   = $_SESSION['assperiod'];
 
-    // Inputs
-    $indicator = intval($_POST['indicator_id']);
-    $num       = ($_POST['numerator']   !== "") ? floatval($_POST['numerator'])   : null;
-    $den       = ($_POST['denominator'] !== "") ? floatval($_POST['denominator']) : null;
-    $res       = ($_POST['result_value'] !== "") ? $_POST['result_value'] : null;
-    $opt       = trim($_POST['selected_option']);
+    $ind = (int)$_POST['indicator_id'];
+    $num = ($_POST['numerator'] !== "") ? (float)$_POST['numerator'] : null;
+    $den = ($_POST['denominator'] !== "") ? (float)$_POST['denominator'] : null;
+    $res = ($_POST['result_value'] !== "") ? (float)str_replace('%', '', $_POST['result_value']) : null;
+    $opt = trim($_POST['selected_option']);
 
-    // Remove % if present
-    if(is_string($res)) $res = str_replace('%','',$res);
-    if(is_numeric($res)) $res = floatval($res);
-
-    // Auto-calc
     if ($res === null && $num !== null && $den !== null && $den != 0) {
         $res = round($num / $den, 2);
     }
 
-    if(!is_numeric($res)){
-        echo json_encode(["status"=>"error","msg"=>"Invalid result value"]);
+    if (!is_numeric($res)) {
+        echo json_encode(["status" => "error", "msg" => "Invalid result"]);
         exit;
     }
 
-    /***************************************************
-      Check existing entry
-    ***************************************************/
+    /* CHECK EXISTING */
     $chk = $con->prepare("
-      SELECT outcome_id_values,
-      (SELECT file_path FROM outcome_value_files 
-       WHERE outcome_value_id=outcome_id_values LIMIT 1) AS old_file
-      FROM outcome_values_in
-      WHERE month_in=? AND institute_id=? AND dept_id=? AND id_out_hwc=?
-      LIMIT 1");
-    $chk->bind_param("siii",$date1,$fac_id,$dept_id,$indicator);
+        SELECT outcome_id_values,
+        (SELECT file_path FROM outcome_value_files 
+         WHERE outcome_value_id=outcome_id_values LIMIT 1) old_file
+        FROM outcome_values_in
+        WHERE month_in=? AND institute_id=? AND dept_id=? AND id_out_hwc=?
+    ");
+    $chk->bind_param("siii", $month, $fac, $dept, $ind);
     $chk->execute();
-    $exist=$chk->get_result()->fetch_assoc();
+    $exist = $chk->get_result()->fetch_assoc();
     $chk->close();
 
-    $oid      = 0;
-    $old_file = $exist['old_file'] ?? null;
+    if ($exist) {
+        $oid = $exist['outcome_id_values'];
+        $oldFile = $exist['old_file'];
 
-    /***************************************************
-      INSERT or UPDATE outcome_values_in
-    ***************************************************/
-    if($exist){
-
-        $oid=$exist['outcome_id_values'];
-
-        $u=$con->prepare("
+        $u = $con->prepare("
             UPDATE outcome_values_in
             SET values_in=?, neu_val=?, deno_val=?
-            WHERE outcome_id_values=?");
-        $u->bind_param("dddi",$res,$num,$den,$oid);
+            WHERE outcome_id_values=?
+        ");
+        $u->bind_param("dddi", $res, $num, $den, $oid);
         $u->execute();
         $u->close();
-
     } else {
-
-        // Create New Entry using Stored Procedure
-        $i=$con->prepare("CALL insert_outcome_values(?,?,?,?,?,?,?,?)");
-        $i->bind_param(
-            "idsiiidd",
-            $indicator,
-            $res,
-            $date1,
-            $fac_id,
-            $dept_id,
-            $period,
-            $den,
-            $num
-        );
+        $i = $con->prepare("CALL insert_outcome_values(?,?,?,?,?,?,?,?)");
+        $i->bind_param("idsiiidd", $ind, $res, $month, $fac, $dept, $per, $den, $num);
         $i->execute();
         $i->close();
 
-        // New ID fetch
-        $g=$con->prepare("
-            SELECT outcome_id_values 
-            FROM outcome_values_in
+        $g = $con->prepare("
+            SELECT outcome_id_values FROM outcome_values_in
             WHERE month_in=? AND institute_id=? AND dept_id=? AND id_out_hwc=?
-            ORDER BY outcome_id_values DESC LIMIT 1");
-        $g->bind_param("siii",$date1,$fac_id,$dept_id,$indicator);
+            ORDER BY outcome_id_values DESC LIMIT 1
+        ");
+        $g->bind_param("siii", $month, $fac, $dept, $ind);
         $g->execute();
-        $gx=$g->get_result()->fetch_assoc();
+        $oid = $g->get_result()->fetch_assoc()['outcome_id_values'];
         $g->close();
 
-        if(!$gx){
-            echo json_encode(["status"=>"error","msg"=>"Insert fetch failed"]);
-            exit;
-        }
-
-        $oid=$gx['outcome_id_values'];
+        $oldFile = null;
     }
 
-    /***************************************************
-      FILE UPLOAD
-    ***************************************************/
-    $store = $old_file;
+    /* FILE UPLOAD */
+    $path = $oldFile;
+    if (!empty($_FILES['evidence_file']['name'])) {
 
-    if(isset($_FILES['evidence_file']) && $_FILES['evidence_file']['error']==0){
+        $ext = strtolower(pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
 
-        $tmp  = $_FILES['evidence_file']['tmp_name'];
-        $name = $_FILES['evidence_file']['name'];
-        $size = $_FILES['evidence_file']['size'];
-        $ext  = strtolower(pathinfo($name,PATHINFO_EXTENSION));
-
-        $allowed = ['pdf','jpg','jpeg','png','webp','heif','heic','bmp','gif','tiff'];
-
-        if(!in_array($ext,$allowed)){
-            echo json_encode(["status"=>"error","msg"=>"Invalid file type!"]);
+        if (!in_array($ext, $allowed)) {
+            echo json_encode(["status" => "error", "msg" => "Invalid file"]);
             exit;
         }
 
-        if($size > 10*1024*1024){
-            echo json_encode(["status"=>"error","msg"=>"File must be < 10MB"]);
-            exit;
-        }
+        $dir = "uploads/outcome/$fac/$month/";
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
 
-        $folder="uploads/outcome/$fac_id/$date1/";
-        if(!is_dir($folder)) mkdir($folder,0777,true);
+        if ($oldFile && file_exists($oldFile)) unlink($oldFile);
 
-        $filePath=$folder.$name;
-
-        if($old_file && file_exists($old_file)) unlink($old_file);
-
-        move_uploaded_file($tmp,$filePath);
-
-        $store=$filePath;
+        $path = $dir . time() . "_" . $ind . "." . $ext;
+        move_uploaded_file($_FILES['evidence_file']['tmp_name'], $path);
     }
 
-    /***************************************************
-      Insert/Update outcome_value_files
-    ***************************************************/
-    $q=$con->prepare("SELECT id FROM outcome_value_files WHERE outcome_value_id=? LIMIT 1");
-    $q->bind_param("i",$oid);
-    $q->execute();
-    $have=$q->get_result()->fetch_assoc();
-    $q->close();
+    /* FILE TABLE */
+    $fchk = $con->prepare("SELECT id FROM outcome_value_files WHERE outcome_value_id=?");
+    $fchk->bind_param("i", $oid);
+    $fchk->execute();
+    $have = $fchk->get_result()->fetch_assoc();
+    $fchk->close();
 
-    if($have){
-        $u=$con->prepare("UPDATE outcome_value_files 
-                          SET selected_option=?,file_path=? 
-                          WHERE outcome_value_id=?");
-        $u->bind_param("ssi",$opt,$store,$oid);
-        $u->execute();
-        $u->close();
+    if ($have) {
+        $fu = $con->prepare("
+            UPDATE outcome_value_files
+            SET selected_option=?, file_path=?
+            WHERE outcome_value_id=?
+        ");
+        $fu->bind_param("ssi", $opt, $path, $oid);
+        $fu->execute();
     } else {
-        $i=$con->prepare("INSERT INTO outcome_value_files 
-                        (outcome_value_id,selected_option,file_path) 
-                        VALUES (?,?,?)");
-        $i->bind_param("iss",$oid,$opt,$store);
-        $i->execute();
-        $i->close();
+        $fi = $con->prepare("
+            INSERT INTO outcome_value_files(outcome_value_id,selected_option,file_path)
+            VALUES (?,?,?)
+        ");
+        $fi->bind_param("iss", $oid, $opt, $path);
+        $fi->execute();
     }
 
-    echo json_encode(["status"=>"success"]);
+    echo json_encode([
+        "status" => "success",
+        "file"   => $path
+    ]);
+
     exit;
 }
+
 /***************************************************
- 3) PAGE UI
-***************************************************/
+ UI START
+ ***************************************************/
 include("assets/head/h.php");
 
 $showDept = empty($_SESSION['dept_id1']);
-$deptName = $_SESSION['dept_name1'] ?? "";
 ?>
 
 <style>
-.upload-progress{height:3px;width:0;background:green;transition:.2s;}
-.upload-container{display:none;background:#e9f7e9;margin-top:4px;}
-.saved-border{border:2px solid #28a745!important;}
-.small-file-link{font-size:12px;margin-top:4px;}
+    .progress-mini {
+        height: 6px
+    }
+
+    .loader-box {
+        display: none;
+        text-align: center;
+        padding: 30px
+    }
+
+    .saved-border {
+        border: 2px solid #28a745
+    }
 </style>
 
 <div class="pcoded-main-container">
-<div class="pcoded-content">
+    <div class="pcoded-content">
 
-<h5 class="fw-bold text-primary mb-2">
- <i class="bi bi-bar-chart-fill me-2"></i>
- Outcome Indicators <?= $deptName ? "for ".htmlspecialchars($deptName) : "" ?>
- <button class="btn btn-sm btn-link text-warning"
-  data-bs-toggle="modal" data-bs-target="#deptModal">Change Department</button>
-</h5>
+        <h5 class="fw-bold text-primary mb-2">
+            <i class="bi bi-bar-chart-fill me-2"></i>
+            Outcome Indicators – <?= $_SESSION['dept_name1'] ?? '' ?>
+            <button type="button" class="btn btn-sm btn-link text-warning ms-2" data-toggle="modal" data-target="#departmentModal">
+                <?= ($_SESSION['facilty_type'] == 8)
+                    ? "Change Checklist"
+                    : "Change Department"; ?>
+            </button>
+        </h5>
 
-<div class="card mb-3"><div class="card-body">
-<form method="post">
-<label class="fw-bold">Month</label>
-<input type="month" name="date1" class="form-control"
- value="<?= $_POST['date1'] ?? date('Y-m'); ?>"
- min="<?= date('Y-m',strtotime('-6 months')); ?>"
- max="<?= date('Y-m'); ?>" required>
+        <!-- MONTH -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="post" onsubmit="showLoader()">
+                    <label class="fw-bold">Month</label>
+                    <input type="month" name="date1" class="form-control"
+                        value="<?= $_POST['date1'] ?? date('Y-m') ?>"
+                        min="<?= date('Y-m', strtotime('-6 months')) ?>"
+                        max="<?= date('Y-m') ?>" required>
+                    <button class="btn btn-primary mt-2" name="submit1">Fill Data</button>
+                </form>
+            </div>
+        </div>
 
-<button class="btn btn-primary mt-2" name="submit1">Fill Data</button>
-</form>
-</div></div>
+        <!-- LOADER -->
+        <div class="card loader-box" id="loaderBox">
+            <div class="card-body">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2 mb-0">
+                    Checking filled indicators…<br>
+                    Preparing pending list…
+                </p>
+            </div>
+        </div>
 
-<?php
-/***************************************************
- Load Indicator Cards
-***************************************************/
-if(isset($_POST['submit1'])){
+        <?php
+        /***************************************************
+ LOAD INDICATORS + RESUME
+         ***************************************************/
+        if (isset($_POST['submit1'])) {
 
-    if(empty($_SESSION['dept_id1'])){
-        echo "<div class='alert alert-warning'>Please select department.</div>";
-    } else {
+            $_SESSION['new_date1'] = $_POST['date1'];
+            $fac = $_SESSION['u_facilityid'];
+            $did = $_SESSION['dept_id1'];
+            $ft  = $_SESSION['f_type_id'];
 
-        $newDate = date('Y-m', strtotime($_POST['date1']));
-        $_SESSION['new_date1'] = $newDate;
+            /* FETCH FILLED DATA */
+            $filled = [];
+            $fq = $con->prepare("
+    SELECT v.id_out_hwc,v.neu_val,v.deno_val,v.values_in,f.file_path
+    FROM outcome_values_in v
+    LEFT JOIN outcome_value_files f ON f.outcome_value_id=v.outcome_id_values
+    WHERE v.month_in=? AND v.institute_id=? AND v.dept_id=?
+");
+            $fq->bind_param("sii", $_POST['date1'], $fac, $did);
+            $fq->execute();
+            $fr = $fq->get_result();
+            while ($x = $fr->fetch_assoc()) $filled[$x['id_out_hwc']] = $x;
 
-        if($newDate == '1970-01'){
-            echo "<div class='alert alert-danger'>Invalid Month!</div>";
-        } else {
-
-            $fac  = $_SESSION['u_facilityid'];
-            $did  = $_SESSION['dept_id1'];
-            $ft   = $_SESSION['f_type_id'];
-
-            // Load Indicators
-            $q=$con->prepare("
-              SELECT id_out_hwc,out_come_hwcindi,num,deno,out_come_source
-              FROM out_come_dh
-              WHERE out_come_hwc_factype=? 
-              AND out_come_dept=?");
-            $q->bind_param("ii",$ft,$did);
+            /* ALL INDICATORS */
+            $q = $con->prepare("
+SELECT id_out_hwc,out_come_hwcindi,num,deno,out_come_source
+FROM out_come_dh
+WHERE out_come_hwc_factype=? AND out_come_dept=?
+");
+            $q->bind_param("ii", $ft, $did);
             $q->execute();
-            $set=$q->get_result();
+            $rs = $q->get_result();
 
-            $total = $set->num_rows;
+            $total = $rs->num_rows;
+            $inds = [];
+            while ($r = $rs->fetch_assoc()) $inds[] = $r;
+
+            /* FIND RESUME INDEX */
+            $resume = 1;
             $i = 0;
+            foreach ($inds as $r) {
+                $i++;
+                if (!isset($filled[$r['id_out_hwc']])) {
+                    $resume = $i;
+                    break;
+                }
+            }
 
             echo "<form>";
 
-            while($r=$set->fetch_assoc()){ 
+            $i = 0;
+            foreach ($inds as $r) {
                 $i++;
+                $isFilled = isset($filled[$r['id_out_hwc']]);
+                $show = ($i == $resume);
+                $readonly = ($r['deno'] === 'N/A') ? 'readonly' : '';
 
-                // Load saved values
-                $sv=$con->prepare("
-                  SELECT outcome_id_values,values_in,neu_val,deno_val
-                  FROM outcome_values_in
-                  WHERE month_in=? AND institute_id=? AND dept_id=? AND id_out_hwc=?
-                  LIMIT 1");
-                $sv->bind_param("siii",$newDate,$fac,$did,$r['id_out_hwc']);
-                $sv->execute();
-                $sd=$sv->get_result()->fetch_assoc();
-                $sv->close();
+                $numVal = $filled[$r['id_out_hwc']]['neu_val'] ?? '';
+                $denVal = $filled[$r['id_out_hwc']]['deno_val'] ?? '';
+                $resVal = $filled[$r['id_out_hwc']]['values_in'] ?? '';
+                $filePath = $filled[$r['id_out_hwc']]['file_path'] ?? '';
+        ?>
 
-                $numVal = $sd['neu_val']  ?? "";
-                $denVal = $sd['deno_val'] ?? "";
-                $resVal = $sd['values_in'] ?? "";
+                <div class="card mb-3 <?= $isFilled ? 'saved-border' : '' ?>"
+                    id="card<?= $i ?>" <?= $show ? '' : 'style="display:none"' ?>>
+                    <div class="card-body">
 
-                // Fetch option + previous file if exists
-                $opt="";
-                $filehtml="";
-                if($sd){
-                    $mid=$sd['outcome_id_values'];
-                    $ff=$con->prepare("SELECT selected_option,file_path 
-                                       FROM outcome_value_files 
-                                       WHERE outcome_value_id=?");
-                    $ff->bind_param("i",$mid);
-                    $ff->execute();
-                    $fx=$ff->get_result()->fetch_assoc();
-                    $ff->close();
+                        <div class="d-flex justify-content-between mb-1">
+                            <small><?= $i ?>/<?= $total ?></small>
+                            <small><?= round(($i / $total) * 100) ?>%</small>
+                        </div>
+                        <div class="progress progress-mini mb-2">
+                            <div class="progress-bar" style="width:<?= ($i / $total) * 100 ?>%"></div>
+                        </div>
 
-                    if($fx){
-                        $opt=$fx['selected_option'];
+                        <h6 class="text-primary"><?= htmlspecialchars($r['out_come_hwcindi']) ?></h6>
 
-                        if($fx['file_path']){
-                            $filehtml="<div class='small-file-link'>
- Evidence: ".basename($fx['file_path'])."
- <br><a href='{$fx['file_path']}' target='_blank'>View File</a>
-</div>";
-                        }
-                    }
-                }
+                        <div class="alert alert-info small">
+                            Expected: Num <b><?= $r['num'] ?></b>,
+                            Den <b><?= $r['deno'] ?></b>
+                        </div>
 
-                $readonly = ($r['deno']=="N/A") ? "readonly" : "";
-                $cls = $sd ? "saved-border" : "";
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <input type="number" class="form-control"
+                                    id="input<?= $i * 2 - 1 ?>" value="<?= $numVal ?>"
+                                    oninput="calculateResult(<?= $i ?>)">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" class="form-control"
+                                    id="input<?= $i * 2 ?>" value="<?= $denVal ?>"
+                                    <?= $readonly ?> oninput="calculateResult(<?= $i ?>)">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control"
+                                    id="result<?= $i ?>" value="<?= $resVal ?>" readonly>
+                            </div>
+                        </div>
 
-                // --- DYNAMIC SINGLE SOV ---
-                $single_sov = trim($r['out_come_source']);
-?>
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label class="fw-bold">Source of Verification</label>
+                                <select id="opt<?= $i ?>" class="form-control">
+                                    <option value="<?= htmlspecialchars($r['out_come_source']) ?>">
+                                        <?= htmlspecialchars($r['out_come_source']) ?>
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold">Upload Evidence</label>
+                                <input type="file"
+                                    id="file<?= $i ?>"
+                                    class="form-control"
+                                    accept="image/*,.pdf"
+                                    onchange="handleFileSelect(<?= $i ?>)">
 
-<div class='card mb-3 <?= $cls ?>' id='card<?= $i ?>' style='<?= ($i>1?"display:none":"") ?>'>
-<div class='card-body'>
 
-<h6 class='text-primary'>
- <i class='bi bi-check2-circle me-2'></i><?= $r['out_come_hwcindi'] ?>
-</h6>
+                                <!-- 🔥 UPLOAD PROGRESS BAR (INSERT HERE) -->
+                                <div class="progress mt-1"
+                                    style="height:8px; display:none"
+                                    id="progressBox<?= $i ?>">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                        id="progressBar<?= $i ?>"
+                                        style="width:0%">
+                                    </div>
+                                </div>
 
-<div class='alert alert-info small'>
-<b>Expected:</b> Num <b><?= $r['num'] ?></b>,
-Den <b><?= $r['deno'] ?></b>
-</div>
+                                <div id="fileStatus<?= $i ?>"
+                                    class="small text-muted mt-1"
+                                    style="display:none"></div>
+                                <div id="fileView<?= $i ?>" class="mt-1">
+                                    <?php if ($filePath): ?>
+                                        <small>
+                                            <a href="<?= $filePath ?>" target="_blank">View uploaded file</a>
+                                        </small>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
 
-<div class='row g-2 mb-2'>
- <div class='col-md-4'>
-  <input type='number' class='form-control'
-         id='input<?= ($i*2-1) ?>'
-         value='<?= $numVal ?>'
-         placeholder='Numerator'
-         oninput='calculateResult(<?= $i ?>)'
-         step='any'>
- </div>
+                        </div>
 
- <div class='col-md-4'>
-  <input type='number' class='form-control'
-         id='input<?= ($i*2) ?>'
-         value='<?= $denVal ?>'
-         placeholder='Denominator'
-         oninput='calculateResult(<?= $i ?>)'
-         step='any' <?= $readonly ?>>
- </div>
+                        <input type="hidden" id="ind<?= $i ?>" value="<?= $r['id_out_hwc'] ?>">
 
- <div class='col-md-4'>
-  <input type='text' class='form-control'
-         id='result<?= $i ?>'
-         value='<?= $resVal ?>'
-         readonly placeholder='Result'>
- </div>
-</div>
+                        <div class="d-flex justify-content-between mt-3">
+                            <?php if ($i > 1): ?>
+                                <button type="button" class="btn btn-info" onclick="back(<?= $i ?>,event)"><i class="feather mr-2 icon-info"></i>
+                                    Back</button>
+                            <?php else: ?><div></div><?php endif; ?>
 
-<!--  Dynamic Single Source of Verification -->
-<label class='fw-bold'>Source of verification</label>
-<select id='opt<?= $i ?>' class='form-control mb-2'>
-    <option value=''>-- Select --</option>
 
-    <?php if (!empty($single_sov)): ?>
-        <option value="<?= htmlspecialchars($single_sov) ?>"
-            <?= ($opt == $single_sov ? "selected" : "") ?>>
-            <?= htmlspecialchars($single_sov) ?>
-        </option>
-    <?php endif; ?>
-</select>
+                            <div>
+                                <button type="button" class="btn btn-danger" onclick="skipCard(<?= $i ?>,<?= $total ?>,event)"><i class="feather mr-2 icon-slash"></i>
+                                    Skip</button>
+                                <button type="button" class="btn btn-success" onclick="saveNext(<?= $i ?>,<?= $total ?>,event)"><i class="feather mr-2 icon-check-circle"></i>
+                                    Save & Next
+                                </button>
+                            </div>
+                        </div>
 
-<label class='fw-bold'>Upload File / Camera Photo</label>
-<input type='file' id='file<?= $i ?>' class='form-control'
- accept='image/*,.pdf' capture='environment'>
 
-<div class='upload-container' id='box<?= $i ?>'>
- <div class='upload-progress' id='bar<?= $i ?>'></div>
-</div>
+                    </div>
+                </div>
 
-<?= $filehtml ?>
-
-<input type='hidden' id='ind<?= $i ?>' value='<?= $r['id_out_hwc'] ?>'>
-
-<div class='d-flex justify-content-between mt-3'>
-<?php if($i>1): ?>
-<button class='btn btn-secondary btn-sm' onclick='back(<?= $i ?>)'>
- <i class="bi bi-arrow-left"></i> Back
-</button>
-<?php else: ?>
-<div></div>
-<?php endif; ?>
-
-<button class='btn btn-success btn-sm'
- onclick='saveNext(<?= $i ?>,<?= $total ?>)'>
- <?= ($i==$total ? "Finish" : "Next") ?>
- <i class='bi bi-arrow-right'></i>
-</button>
-</div>
-
-</div></div>
-
-<?php
-            } // end while loop
-
+        <?php
+            }
             echo "</form>";
 
-            // include calculation JS per facility type
+            /* CALCULATION JS */
             if ($ft == 3)
-                echo "<script src='assets/calculationjs/departmentphc{$did}.js?v=".time()."'></script>";
+                echo "<script src='assets/calculationjs/departmentphc{$did}.js?v=" . time() . "'></script>";
             elseif ($ft == 9)
-                echo "<script src='assets/calculationjs/departmentaphc{$did}.js?v=".time()."'></script>";
+                echo "<script src='assets/calculationjs/departmentaphc{$did}.js?v=" . time() . "'></script>";
             elseif ($ft == 8 || $ft == 4)
-                echo "<script src='assets/calculationjs/departmenthwc2{$did}.js?v=".time()."'></script>";
+                echo "<script src='assets/calculationjs/departmenthwc2{$did}.js?v=" . time() . "'></script>";
             elseif ($ft == 1)
-                echo "<script src='assets/calculationjs/chc{$did}.js?v=".time()."'></script>";
+                echo "<script src='assets/calculationjs/chc{$did}.js?v=" . time() . "'></script>";
             else
-                echo "<script src='assets/calculationjs/department{$did}.js?v=".time()."'></script>";
-
-            $q->close();
+                echo "<script src='assets/calculationjs/department{$did}.js?v=" . time() . "'></script>";
         }
-    }
-}
-?>
-</div>
+        ?>
+
+        <div id="actionMsg"
+            class="alert alert-info py-1 px-2 small"
+            style="display:none"></div>
+    </div>
 </div>
 <!-- Department Modal -->
-<div class="modal fade" id="deptModal">
-<div class="modal-dialog modal-dialog-centered">
-<form method="post">
-<div class="modal-content">
+<!-- Department Modal -->
+<div id="departmentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="departmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="departmentModalLabel">
+                        <?php echo ($_SESSION['facilty_type'] == 8)
+                            ? "Select Checklist"
+                            : "Select Department"; ?>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Hidden input to store department_name -->
+                    <input type="hidden" name="department_name" id="department_name_input" value="">
 
-<div class="modal-header">
- <h5>Select Department</h5>
-</div>
-
-<div class="modal-body">
-<select id="depSel" name="department_id" class="form-control" required>
-<option value="">-- Select --</option>
-
-<?php
-$ft   = $_SESSION['f_type_id']  ?? 0;
-$fac  = $_SESSION['u_facilityid'] ?? 0;
-$as   = $_SESSION['assperiod'] ?? 0;
-
-$s=$con->prepare("
-SELECT DISTINCT a.fac_dept_id_fk,b.dept_name
-FROM concern_subtype_chklist a
-JOIN fac_department b ON a.fac_dept_id_fk=b.fac_dept_id
-WHERE a.fac_type_id_fk=?
-AND a.fac_dept_id_fk IN (
-    SELECT fac_dept_id 
-    FROM fac_dept_map
-    WHERE fac_id=? AND acc_id=?
-)");
-$s->bind_param("iii",$ft,$fac,$as);
-$s->execute();
-$zz=$s->get_result();
-
-while($d=$zz->fetch_assoc()){
-    echo "<option value='{$d['fac_dept_id_fk']}' data-name='{$d['dept_name']}'>
-          {$d['dept_name']}
-          </option>";
-}
-$s->close();
-?>
-</select>
-
-<input type="hidden" name="department_name" id="depName">
-</div>
-
-<div class="modal-footer">
-<button type="submit" class="btn btn-primary">Continue</button>
-</div>
-
-</div>
-</form>
-</div>
-</div>
-
-
-
-<script>
-// Save dept name when selecting
-document.getElementById('depSel')?.addEventListener('change',()=>{
- let nm=document.querySelector('#depSel option:checked').dataset.name;
- document.getElementById('depName').value = nm;
-});
-
-// Auto open modal if no department selected
-<?php if($showDept): ?>
-window.onload = () => {
- let m=new bootstrap.Modal(document.getElementById('deptModal'),{
-    backdrop:'static',
-    keyboard:false
- });
- m.show();
-};
-<?php endif; ?>
-</script>
-<script>
-/*************************************************
- IMAGE COMPRESSOR (Target size in KB)
-**************************************************/
-
-// Convert file → Base64
-function readAsDataURL(file){
-    return new Promise((resolve,reject)=>{
-        const r=new FileReader();
-        r.onload=()=>resolve(r.result);
-        r.onerror=reject;
-        r.readAsDataURL(file);
-    });
-}
-
-// Convert Base64 → File
-function dataURLtoFile(dataURL, filename){
-    const arr=dataURL.split(",");
-    const mime=arr[0].match(/:(.*?);/)[1];
-    const bstr=atob(arr[1]);
-    let n=bstr.length;
-    const u8arr=new Uint8Array(n);
-    while(n--) u8arr[n]=bstr.charCodeAt(n);
-    return new File([u8arr], filename, {type:mime});
-}
-
-// Read EXIF orientation (JPEG only)
-async function getOrientation(file) {
-    return new Promise(resolve => {
-
-        if (!file.type.includes("jpeg") && !file.type.includes("jpg")) {
-            resolve(-1);
-            return;
+                    <label for="departmentSelect" class="form-label">
+                        <?php echo ($_SESSION['facilty_type'] == 8)
+                            ? "Checklist"
+                            : "Department"; ?>
+                    </label>
+                    <select class="mb-3 form-control form-control-sm" id="departmentSelect" name="department_id" required>
+                        <option value=""> <?php echo ($_SESSION['facilty_type'] == 8)
+                                                ? "--Select Checklist--"
+                                                : "--Select Department--"; ?></option>
+                        <?php
+                        $factype = $_SESSION['f_type_id'];
+                        $facid = $_SESSION['u_facilityid'];
+                        $assid = $_SESSION['assperiod'];
+                        $query = "SELECT DISTINCT a.fac_dept_id_fk, b.dept_name 
+                                  FROM concern_subtype_chklist AS a 
+                                  JOIN fac_department AS b ON a.fac_dept_id_fk = b.fac_dept_id 
+                                  WHERE a.fac_type_id_fk = ? AND a.fac_dept_id_fk IN (
+                                      SELECT fac_dept_id FROM fac_dept_map 
+                                      WHERE fac_id = ? AND acc_id = ?
+                                  )";
+                        $stmt = $con->prepare($query);
+                        $stmt->bind_param("iii", $factype, $facid, $assid);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<option value='{$row['fac_dept_id_fk']}' data-name='{$row['dept_name']}'>{$row['dept_name']}</option>";
+                        }
+                        $stmt->close();
+                        ?>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Continue</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+        $('#departmentSelect').change(function() {
+            var deptName = $('#departmentSelect option:selected').data('name');
+            $('#department_name_input').val(deptName);
+        });
+    </script>
+    <script>
+        function showLoader() {
+            document.getElementById('loaderBox').style.display = 'block';
         }
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
+        function skipCard(i, t) {
+            event.preventDefault();
+            if (i < t) {
+                card(i).style.display = 'none';
+                card(i + 1).style.display = 'block';
+            }
+        }
 
-            const arrayBuffer = event.target.result;
-            const view = new DataView(arrayBuffer);
+        function back(i) {
+            event.preventDefault();
+            card(i).style.display = 'none';
+            card(i - 1).style.display = 'block';
+        }
 
-            if (view.byteLength < 4) {
-                resolve(-1);
+        function card(i) {
+            return document.getElementById('card' + i);
+        }
+    </script>
+    <script>
+        /* ===============================
+   HELPERS
+================================ */
+        let skippedAny = false;
+
+        function card(i) {
+            return document.getElementById('card' + i);
+        }
+
+        function showCard(i) {
+            document.querySelectorAll('[id^="card"]').forEach(c => {
+                c.style.display = 'none';
+            });
+            if (card(i)) card(i).style.display = 'block';
+        }
+
+        function showMsg(text, type = "info") {
+            const m = document.getElementById("actionMsg");
+            m.className = "alert alert-" + type + " py-2 px-3 fs-6 fw-bold mb-2 text-center";
+            m.innerHTML = text;
+            m.style.display = "block";
+
+            setTimeout(() => {
+                m.style.display = "none";
+            }, 2500);
+        }
+
+
+        /* ===============================
+           NAVIGATION
+        ================================ */
+        function skipCard(i, total, e) {
+            e.preventDefault();
+            skippedAny = true;
+
+            showMsg(
+                "⏭ <b>Indicator skipped.</b>",
+                "warning"
+            );
+            if (i < total) {
+                showCard(i + 1);
+            } else {
+                // If skip happens on LAST card
+                showMsg(
+                    i,
+                    "⚠️ <b>You reached the end, but some indicators were skipped.</b><br>" +
+                    "🔁 Please go back and complete them.",
+                    "warning"
+                );
+            }
+        }
+
+
+        function back(i, e) {
+            e.preventDefault();
+            showMsg(
+                "⬅ <b>Moved to previous indicator</b>",
+                "secondary"
+            );
+            if (i > 1) showCard(i - 1);
+        }
+
+        /* ===============================
+           SAVE + NEXT
+        ================================ */
+    </script>
+    <script>
+        /* ===============================
+   IMAGE COMPRESSION (CLIENT SIDE)
+   Compress only images > 10MB
+================================ */
+        function compressImage(file, callback) {
+
+            if (!file || !file.type.startsWith("image/")) {
+                callback(file);
                 return;
             }
 
-            let offset = 2;
-            let length = view.byteLength;
+            if (file.size <= 10 * 1024 * 1024) {
+                callback(file);
+                return;
+            }
 
-            try {
-                while (offset + 1 < length) {
+            const img = new Image();
+            const reader = new FileReader();
 
-                    if (view.getUint16(offset, false) === 0xFFE1) {
+            reader.onload = e => img.src = e.target.result;
 
-                        if (offset + 10 > length) break;
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
 
-                        offset += 2;
-                        const exifHeader = view.getUint32(offset, false);
-                        if (exifHeader !== 0x45786966) break;
+                const scale = Math.sqrt((10 * 1024 * 1024) / file.size);
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
 
-                        const little = view.getUint16(offset + 6, false) === 0x4949;
-                        const firstIFD = view.getUint32(offset + 10, little);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                        if (offset + firstIFD > length) break;
+                canvas.toBlob(blob => {
+                    const compressed = new File([blob], file.name, {
+                        type: file.type || "image/jpeg",
+                        lastModified: Date.now()
+                    });
+                    callback(compressed);
+                }, "image/jpeg", 0.7);
+            };
 
-                        offset += firstIFD + 6;
-                        const tags = view.getUint16(offset, little);
-                        offset += 2;
+            reader.readAsDataURL(file);
+        }
 
-                        for (let i = 0; i < tags; i++) {
+        /* ===============================
+           SAVE + NEXT (FINAL)
+        ================================ */
+        function saveNext(i, total, e) {
+            e.preventDefault();
 
-                            const tagOffset = offset + (i * 12);
-                            if (tagOffset + 10 > length) break;
+            const progressBox = document.getElementById("progressBox" + i);
+            const progressBar = document.getElementById("progressBar" + i);
 
-                            if (view.getUint16(tagOffset, little) === 0x0112) {
-                                resolve(view.getUint16(tagOffset + 8, little));
-                                return;
-                            }
-                        }
-                    }
-                    offset++;
+            progressBox.style.display = "block";
+            progressBar.style.width = "5%";
+
+            const fd = new FormData();
+            fd.append("action", "save_outcome");
+            fd.append("indicator_id", document.getElementById("ind" + i).value);
+            fd.append("numerator", document.getElementById("input" + (i * 2 - 1)).value);
+            fd.append("denominator", document.getElementById("input" + (i * 2)).value);
+            fd.append("result_value", document.getElementById("result" + i).value);
+            fd.append("selected_option", document.getElementById("opt" + i).value);
+
+            if (selectedFiles[i]) {
+                fd.append("evidence_file", selectedFiles[i]);
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "", true);
+
+            xhr.upload.onprogress = e => {
+                if (e.lengthComputable) {
+                    progressBar.style.width =
+                        Math.round((e.loaded / e.total) * 100) + "%";
                 }
-            } catch (err) {}
+            };
 
-            resolve(-1);
-        };
+            xhr.onload = () => {
+                progressBar.style.width = "100%";
+                setTimeout(() => progressBox.style.display = "none", 400);
 
-        reader.onerror = () => resolve(-1);
-        reader.readAsArrayBuffer(file);
-    });
-}
+                try {
+                    const res = JSON.parse(xhr.responseText);
 
-// Apply EXIF rotation
-function applyOrientation(canvas, ctx, orientation){
-    const w=canvas.width;
-    const h=canvas.height;
-    switch(orientation){
-        case 2: ctx.translate(w,0); ctx.scale(-1,1); break;
-        case 3: ctx.translate(w,h); ctx.rotate(Math.PI); break;
-        case 4: ctx.translate(0,h); ctx.scale(1,-1); break;
-        case 5: ctx.rotate(0.5*Math.PI); ctx.scale(1,-1); break;
-        case 6: ctx.rotate(0.5*Math.PI); ctx.translate(0,-h); break;
-        case 7: ctx.rotate(0.5*Math.PI); ctx.translate(w,-h); ctx.scale(-1,1); break;
-        case 8: ctx.rotate(-0.5*Math.PI); ctx.translate(-w,0); break;
-    }
-}
+                    if (res.status === "success") {
+                        card(i).classList.add("saved-border");
 
-/*************************************************
- MAIN COMPRESSOR
-**************************************************/
-async function compressImage(file, targetKB){
+                        if (res.file) {
+                            document.getElementById("fileView" + i).innerHTML =
+                                `<small><a href="${res.file}" target="_blank">View uploaded file</a></small>`;
+                        }
 
-    if(file.type=="application/pdf") return file;
+                        showMsg("✅ <b>Indicator saved successfully</b>", "success");
 
-    let base64 = await readAsDataURL(file);
-    let img = new Image();
-    img.src = base64;
-    await new Promise(res=>img.onload=res);
+                        if (i < total) {
+                            showCard(i + 1);
+                        } else {
+                            showMsg(
+                                skippedAny ?
+                                "⚠️ Some indicators were skipped. Please review." :
+                                "🎉 You have reached the end!",
+                                skippedAny ? "warning" : "success"
+                            );
+                        }
+                    } else {
+                        showMsg(res.msg || "Save failed", "danger");
+                    }
 
-    const orient = await getOrientation(file);
+                } catch {
+                    showMsg("Server response error", "danger");
+                }
+            };
 
-    let w = img.width;
-    let h = img.height;
+            xhr.onerror = () => {
+                progressBox.style.display = "none";
+                showMsg("Network error", "danger");
+            };
 
-    const MAX_SIDE = 2000;
-    if(w > MAX_SIDE || h > MAX_SIDE){
-        if(w > h){
-            h = Math.round(h * (MAX_SIDE / w));
-            w = MAX_SIDE;
-        } else {
-            w = Math.round(w * (MAX_SIDE / h));
-            h = MAX_SIDE;
+            xhr.send(fd);
         }
-    }
+    </script>
+    <script>
+        const selectedFiles = {};
+        //let skippedAny = false;
+    </script>
+    <script>
+        function handleFileSelect(i) {
 
-    let canvas=document.createElement("canvas");
-    canvas.width=w;
-    canvas.height=h;
+            const input = document.getElementById("file" + i);
+            const file = input.files[0];
+            if (!file) return;
 
-    const ctx=canvas.getContext("2d");
-    applyOrientation(canvas, ctx, orient);
-    ctx.drawImage(img,0,0,w,h);
+            const progressBox = document.getElementById("progressBox" + i);
+            const progressBar = document.getElementById("progressBar" + i);
+            const statusBox = document.getElementById("fileStatus" + i);
 
-    let quality = 0.85;
-    let result;
-    let sizeKB=99999;
+            progressBox.style.display = "block";
+            progressBar.style.width = "20%";
+            statusBox.style.display = "block";
 
-    while(quality > 0.25){
-        result = canvas.toDataURL("image/jpeg", quality);
-        sizeKB = Math.round((result.length * 3 / 4) / 1024);
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            statusBox.innerHTML = `📂 <b>${file.name || "Selected file"}</b> (${sizeMB} MB)`;
 
-        if(sizeKB <= targetKB) break;
+            const isImage = file.type.startsWith("image") || file.type === "";
 
-        quality -= 0.05;
-    }
+            if (isImage && file.size > 10 * 1024 * 1024) {
 
-    return dataURLtoFile(result, file.name.replace(/\.[^.]+$/, ".jpg"));
-}
+                statusBox.innerHTML += "<br>🗜 Compressing image…";
+                progressBar.style.width = "50%";
 
-/*************************************************
- SAVE + NEXT CARD
-**************************************************/
-async function saveNext(i, total){
-  event.preventDefault();
+                compressImage(file, compressed => {
+                    selectedFiles[i] = compressed;
+                    progressBar.style.width = "100%";
+                    statusBox.innerHTML = "✅ Image ready for upload";
+                    setTimeout(() => progressBox.style.display = "none", 600);
+                });
 
-  let n   = document.getElementById('input'+(i*2-1)).value;
-  let dEl = document.getElementById('input'+(i*2));
-  let d   = dEl.hasAttribute('readonly') ? "" : dEl.value;
-
-  let r   = document.getElementById('result'+i).value;
-  let id  = document.getElementById('ind'+i).value;
-  let o   = document.getElementById('opt'+i).value;
-  let f   = document.getElementById('file'+i);
-
-  if(!n){ alert("Enter numerator"); return; }
-  if(!dEl.hasAttribute('readonly') && !d){ alert("Enter denominator"); return; }
-  if(!o){ alert("Select Source of Verification"); return; }
-
-  let box=document.getElementById('box'+i);
-  let bar=document.getElementById('bar'+i);
-
-  let finalFile = null;
-
-  if(f.files.length > 0){
-      finalFile = await compressImage(f.files[0], 300); // ~300KB
-  }
-
-  let fd = new FormData();
-  fd.append('action','save_outcome');
-  fd.append('indicator_id', id);
-  fd.append('numerator', n);
-  fd.append('denominator', d);
-  fd.append('result_value', r);
-  fd.append('selected_option', o);
-
-  if(finalFile) fd.append('evidence_file', finalFile);
-
-  let xhr = new XMLHttpRequest();
-  xhr.open("POST","");
-
-  if(finalFile){
-    box.style.display="block";
-    xhr.upload.onprogress = (e)=>{
-      if(e.lengthComputable){
-        bar.style.width = ((e.loaded / e.total) * 100) + "%";
-      }
-    };
-  }
-
-  xhr.onload = ()=>{
-    let res={};
-
-    try{ res = JSON.parse(xhr.responseText); }
-    catch(err){
-        alert("Invalid JSON Response\n\n" + xhr.responseText);
-        return;
-    }
-
-    if(res.status=="success"){
-
-        if(i < total){
-            document.getElementById('card'+i).style.display="none";
-            document.getElementById('card'+(i+1)).style.display="block";
-        } else {
-            alert("All Indicators Saved Successfully!");
+            } else {
+                selectedFiles[i] = file;
+                progressBar.style.width = "100%";
+                statusBox.innerHTML += "<br>✅ File ready";
+                setTimeout(() => progressBox.style.display = "none", 400);
+            }
         }
+    </script>
 
-    } else {
-        alert(res.msg);
-    }
-  };
-
-  xhr.send(fd);
-}
-
-/*************************************************
- BACK BUTTON
-**************************************************/
-function back(i){
- event.preventDefault();
- document.getElementById('card'+i).style.display="none";
- document.getElementById('card'+(i-1)).style.display="block";
-}
-</script>
-<?php include("assets/head/f.php"); ?>
+    <?php include("assets/head/f.php"); ?>

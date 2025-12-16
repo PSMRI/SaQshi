@@ -9,9 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['department_id']) && !
 
 include("assets/head/h.php");
 $showDeptModal = empty($_SESSION['dept_id1']) || $_SESSION['dept_id1'] == 0;
-$dept_name = $_SESSION['dept_name1'] ?? '';
-$dept_id = $_SESSION['dept_id1'] ?? 0;
-
+$dept_name = $_SESSION['dept_name1'] ?? '0';  // For showing in header
 
 /* ============ CLEANUP BUFFER ============ */
 function clean_sp_buffers($con) {
@@ -28,10 +26,12 @@ function clean_sp_buffers($con) {
 <div class="pagetitle mb-2">
     <h5 class="fw-bold text-primary mb-1">
         <i class="bi bi-person-badge-fill me-2"></i>
-        Update Action Plan for <?= htmlspecialchars($dept_name ?: "--- Select Department ---") ?>
+        Update Action Plan for <?= htmlspecialchars($dept_name); ?>
         <button type="button" class="btn btn-sm btn-link text-warning ms-2" data-toggle="modal" data-target="#departmentModal">
-            Change Department
-        </button>
+                <?= ($_SESSION['facilty_type'] == 8)
+                    ? "Change Checklist"
+                    : "Change Department"; ?>
+            </button>
     </h5>
 </div>
 
@@ -46,9 +46,9 @@ function clean_sp_buffers($con) {
     <div class="form-group row align-items-end">
 
         <div class="col-auto">
-            <label class="form-label small">Assessment Period</label>
+            <label class="form-label small">Assessment Cycle</label>
             <select class="form-control-sm form-control" id="Period" name="Period" required>
-                <option value="0">Select Assessment Period</option>
+                <option value="0">Select Assessment Cycle</option>
                 <?php
                 $stmt = $con->prepare("CALL get_assessment1(?)");
                 $stmt->bind_param('i', $facility_id);
@@ -103,7 +103,7 @@ if (isset($_POST['submit1'])) {
     $concern  = $_SESSION['concern'];
 
     if ($period == 0) {
-        echo "<div class='alert alert-warning'>Please select an assessment period.</div>";
+        echo "<div class='alert alert-warning'>Please select an Assessment Cycle.</div>";
       //  exit();
     }
 
@@ -227,5 +227,70 @@ $(document).on("click", "#skipBtn, #saveBtn", function () {
     }, 200);
 });
 </script>
+<script>
+$(document).ready(function () {
+    <?php if ($showDeptModal): ?>
+        $('#departmentModal').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        $('#departmentModal').modal('show');
+    <?php endif; ?>
+});
+</script>
+<!-- Department Modal -->
+<div id="departmentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="departmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="departmentModalLabel">
+                        <?php echo ($_SESSION['facilty_type'] == 8)
+                            ? "Select Checklist"
+                            : "Select Department"; ?>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Hidden input to store department_name -->
+                    <input type="hidden" name="department_name" id="department_name_input" value="">
 
+                    <label for="departmentSelect" class="form-label">
+                        <?php echo ($_SESSION['facilty_type'] == 8)
+                            ? "Checklist"
+                            : "Department"; ?>
+                    </label>
+                    <select class="mb-3 form-control form-control-sm" id="departmentSelect" name="department_id" required>
+                        <option value=""> <?php echo ($_SESSION['facilty_type'] == 8)
+                                                ? "--Select Checklist--"
+                                                : "--Select Department--"; ?></option>
+                        <?php
+                        $factype = $_SESSION['f_type_id'];
+                        $facid = $_SESSION['u_facilityid'];
+                        $assid = $_SESSION['assperiod'];
+                        $query = "SELECT DISTINCT a.fac_dept_id_fk, b.dept_name 
+                                  FROM concern_subtype_chklist AS a 
+                                  JOIN fac_department AS b ON a.fac_dept_id_fk = b.fac_dept_id 
+                                  WHERE a.fac_type_id_fk = ? AND a.fac_dept_id_fk IN (
+                                      SELECT fac_dept_id FROM fac_dept_map 
+                                      WHERE fac_id = ? AND acc_id = ?
+                                  )";
+                        $stmt = $con->prepare($query);
+                        $stmt->bind_param("iii", $factype, $facid, $assid);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<option value='{$row['fac_dept_id_fk']}' data-name='{$row['dept_name']}'>{$row['dept_name']}</option>";
+                        }
+                        $stmt->close();
+                        ?>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Continue</button>
+                </div>
+            </div>
+        </form>
+    </div>
 <?php include("assets/head/f.php"); ?>

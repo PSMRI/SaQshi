@@ -2,6 +2,8 @@
 // facility_profile_with_cert_beauty.php
 include("assets/head/h.php");
 
+//session_start();
+
 // ==========================
 // SESSION VALIDATION
 // ==========================
@@ -9,8 +11,8 @@ if (!isset($_SESSION['u_facilityid']) || !isset($_SESSION['factynin'])) {
   die("<div class='alert alert-danger m-3'>Access denied. Facility session missing.</div>");
 }
 
-$fac_id  = (int)$_SESSION['u_facilityid'];  // internal facility ID
-$fac_nin = (int)$_SESSION['factynin'];      // NIN number of facility
+$fac_id  = (int)$_SESSION['u_facilityid'];
+$fac_nin = (int)$_SESSION['factynin'];
 
 $success = $error = $certMsg = "";
 
@@ -44,7 +46,7 @@ if (isset($_POST['save_facility']) && (int)($_POST['fac_id'] ?? 0) === $fac_id) 
 
   if ($error === "") {
 
-    // Fetch real names
+    // Fetch names
     $division_name = "";
     $stmt = $con->prepare("SELECT division_name FROM division WHERE iddivision=?");
     $stmt->bind_param("i", $division_id);
@@ -112,10 +114,13 @@ if (isset($_POST['save_facility']) && (int)($_POST['fac_id'] ?? 0) === $fac_id) 
 // =======================================================
 if (isset($_POST['save_cert'])) {
 
-  $cert_type     = trim($_POST['cert_type']);        // National / State
-  $cert_details  = trim($_POST['cert_detailscol']);  // NQAS / LaQshya / MusQan / Kayakalp
-  $cert_status   = trim($_POST['cert_status']);      // Certified / Conditional Certified
-  $ass_mode      = trim($_POST['ass_mode']);         // Physical / Virtual
+  // Set active tab → Certification
+  $_SESSION['active_tab'] = "certification";
+
+  $cert_type     = trim($_POST['cert_type']);
+  $cert_details  = trim($_POST['cert_detailscol']);
+  $cert_status   = trim($_POST['cert_status']);
+  $ass_mode      = trim($_POST['ass_mode']);
 
   $date_of_ass   = trim($_POST['date_of_ass']);
   $cert_issue    = trim($_POST['cert_issue']);
@@ -175,27 +180,23 @@ if (isset($_POST['save_cert'])) {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
-    // 18 variables → 18 types
     $stmt->bind_param(
       "ssssssssdddiiiisss",
       $dist_name_db,
       $block_name_db,
       $fac_name_db,
-      $fac_type_name,     // Facility Type NAME
-
-      $cert_type,         // National / State
-      $cert_details,      // NQAS / LaQshya / MusQan / Kayakalp
+      $fac_type_name,
+      $cert_type,
+      $cert_details,
       $cert_issue,
       $validity,
       $score,
-
       $lat_c,
       $long_c,
       $dist_id_db,
       $block_id_db,
       $fac_id,
       $fac_nin,
-
       $cert_status,
       $ass_mode,
       $date_of_ass
@@ -213,9 +214,8 @@ if (isset($_POST['save_cert'])) {
 
 
 
-
 // =======================================================
-//       FETCH FACILITY + MASTERS + CERTIFICATION LIST
+//       FETCH FACILITY + MASTER DATA + CERTIFICATION LIST
 // =======================================================
 $stmt = $con->prepare("SELECT * FROM facilities WHERE fac_id=?");
 $stmt->bind_param("i", $fac_id);
@@ -238,61 +238,25 @@ $certHistory = $con->query("
     WHERE fac_nin = $fac_nin
     ORDER BY cert_issue DESC
 ");
+
+// Get active tab
+$activeTab = $_SESSION['active_tab'] ?? "profile";
+unset($_SESSION['active_tab']); // clear flag
+
 ?>
-<!-- Extra vendor CSS -->
+
+<!-- CSS LINKS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <style>
-  .form-group {
-    margin-bottom: .6rem;
-  }
-
-  .form-control,
-  .custom-select {
-    height: calc(1.95rem + 2px);
-    font-size: .85rem;
-  }
-
-  .form-control-sm {
-    height: calc(1.8rem + 2px);
-  }
-
-  .floating-label {
-    position: relative;
-  }
-
-  .floating-label>label {
-    position: absolute;
-    top: -0.55rem;
-    left: .6rem;
-    background: #fff;
-    padding: 0 .2rem;
-    font-size: .70rem;
-    color: #777;
-  }
-
-  .pc-card {
-    border-radius: 12px;
-    box-shadow: 0 8px 28px rgba(15, 23, 42, .06);
-  }
-
-  .leaflet-map {
-    height: 220px;
-    border-radius: 12px;
-    border: 1px solid #ccc;
-  }
-
-  .btn-geo {
-    background: #0ea5e9;
-    color: #fff;
-  }
-
-  .btn-save {
-    background: #0d6efd;
-    color: #fff;
-  }
+  .form-group { margin-bottom: .6rem; }
+  .form-control, .custom-select { height: calc(1.95rem + 2px); font-size: .85rem; }
+  .leaflet-map { height: 220px; border-radius: 12px; border: 1px solid #ccc; }
+  .pc-card { border-radius: 12px; box-shadow: 0 8px 28px rgba(15,23,42,.06); }
+  .btn-geo { background:#0ea5e9;color:#fff; }
+  .btn-save { background:#0d6efd;color:#fff; }
 </style>
 
 
@@ -304,42 +268,73 @@ $certHistory = $con->query("
       <h5><i class="fa-solid fa-hospital"></i> Facility Profile</h5>
       <div class="text-muted">Logged Facility NIN: <strong><?= $fac_nin ?></strong></div>
     </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- SUCCESS / ERROR / CERT MESSAGES -->
-    <?php if ($success): ?>
-      <div class="alert alert-success"><?= $success ?></div>
-    <?php endif; ?>
+    <?php
+if ($success) {
+    echo "<script>
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: '$success',
+                confirmButtonText: 'OK'
+            });
+        }, 300);
+    </script>";
+}
 
-    <?php if ($error): ?>
-      <div class="alert alert-danger"><?= $error ?></div>
-    <?php endif; ?>
+if ($error) {
+    echo "<script>
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: '$error',
+                confirmButtonText: 'OK'
+            });
+        }, 300);
+    </script>";
+}
 
-    <?php if ($certMsg): ?>
-      <div class="alert alert-info"><?= $certMsg ?></div>
-    <?php endif; ?>
+if ($certMsg) {
+    echo "<script>
+        setTimeout(() => {
+            Swal.fire({
+                icon: '" . (strpos($certMsg, '✔') !== false ? 'success' : 'warning') . "',
+                title: 'Certification Update',
+                text: '" . str_replace("✔", "", $certMsg) . "',
+                confirmButtonText: 'OK'
+            });
+        }, 300);
+    </script>";
+}
+?>
+
 
 
     <!-- MAIN CARD -->
     <div class="card pc-card">
       <div class="card-body">
 
-        <!-- TABS -->
+        <!-- TABS (DYNAMICALLY ACTIVE) -->
         <ul class="nav nav-tabs mb-3">
           <li class="nav-item">
-            <a class="nav-link active" data-toggle="tab" href="#profile">Profile</a>
+            <a class="nav-link <?= ($activeTab == 'profile' ? 'active' : '') ?>" data-toggle="tab" href="#profile">Profile</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" data-toggle="tab" href="#certification">Certification</a>
+            <a class="nav-link <?= ($activeTab == 'certification' ? 'active' : '') ?>" data-toggle="tab" href="#certification">Certification</a>
           </li>
         </ul>
 
 
         <div class="tab-content">
 
-          <!-- ======================================
-                        PROFILE TAB
-            ======================================= -->
-          <div class="tab-pane fade show active" id="profile">
+          <!-- =======================
+               PROFILE TAB
+          ======================== -->
+          <div class="tab-pane fade <?= ($activeTab == 'profile' ? 'show active' : '') ?>" id="profile">
 
             <div class="pc-card">
               <div class="card-body">
@@ -349,76 +344,59 @@ $certHistory = $con->query("
                   <div class="form-row">
 
                     <div class="form-group col-md-4">
-                      <div class="floating-label">
-                        <input class="form-control form-control-sm" value="<?= $facility['state_name'] ?>" readonly>
-                        <label>State</label>
-                      </div>
+                      <label>State</label>
+                      <input class="form-control form-control-sm" value="<?= $facility['state_name'] ?>" readonly>
                     </div>
 
                     <div class="form-group col-md-4">
-                      <div class="floating-label">
-                        <input class="form-control form-control-sm" value="<?= $facility['division'] ?>" readonly>
-                        <label>Division</label>
-                      </div>
+                      <label>Division</label>
+                      <input class="form-control form-control-sm" value="<?= $facility['division'] ?>" readonly>
                     </div>
 
                     <div class="form-group col-md-4">
-                      <div class="floating-label">
-                        <input class="form-control form-control-sm" value="<?= $facility['Dist_Name'] ?>" readonly>
-                        <label>District</label>
-                      </div>
+                      <label>District</label>
+                      <input class="form-control form-control-sm" value="<?= $facility['Dist_Name'] ?>" readonly>
                     </div>
 
                     <div class="form-group col-md-4">
-                      <div class="floating-label">
-                        <input class="form-control form-control-sm" value="<?= $facility['Block_Name'] ?>" readonly>
-                        <label>Block</label>
-                      </div>
+                      <label>Block</label>
+                      <input class="form-control form-control-sm" value="<?= $facility['Block_Name'] ?>" readonly>
                     </div>
 
                     <div class="form-group col-md-4">
-                      <div class="floating-label">
-                        <input class="form-control form-control-sm" value="<?= $facility['fac_name'] ?>" readonly>
-                        <label>Facility Name</label>
-                      </div>
+                      <label>Facility Name</label>
+                      <input class="form-control form-control-sm" value="<?= $facility['fac_name'] ?>" readonly>
                     </div>
 
                     <div class="form-group col-md-4">
-                      <div class="floating-label">
-                        <?php
-                        $facTypeName = "";
-                        $stmtT = $con->prepare("SELECT facilities_type FROM facilities_type WHERE fac_type_id=?");
-                        $stmtT->bind_param("i", $facility['Health_facilty_type']);
-                        $stmtT->execute();
-                        $stmtT->bind_result($facTypeName);
-                        $stmtT->fetch();
-                        $stmtT->close();
-                        ?>
-                        <input class="form-control form-control-sm" value="<?= $facTypeName ?>" readonly>
-
-                        <label>Facility Type</label>
-                      </div>
+                      <label>Facility Type</label>
+                      <input class="form-control form-control-sm"
+                        value="<?php 
+                          $ftn=''; 
+                          $st=$con->prepare('SELECT facilities_type FROM facilities_type WHERE fac_type_id=?');
+                          $st->bind_param('i',$facility['Health_facilty_type']);
+                          $st->execute();
+                          $st->bind_result($ftn);
+                          $st->fetch();
+                          $st->close();
+                          echo $ftn;
+                        ?>" 
+                        readonly>
                     </div>
 
                     <div class="form-group col-md-4">
-                      <div class="floating-label">
-                        <input class="form-control form-control-sm" value="<?= $facility['NIN_no'] ?>" readonly>
-                        <label>NIN Number</label>
-                      </div>
+                      <label>NIN Number</label>
+                      <input class="form-control form-control-sm" value="<?= $facility['NIN_no'] ?>" readonly>
                     </div>
 
                     <div class="form-group col-md-4">
-                      <div class="floating-label">
-                        <input class="form-control form-control-sm" value="<?= $facility['lat'] ?>" readonly>
-                        <label>Latitude</label>
-                      </div>
+                      <label>Latitude</label>
+                      <input class="form-control form-control-sm" value="<?= $facility['lat'] ?>" readonly>
                     </div>
 
                     <div class="form-group col-md-4">
-                      <div class="floating-label">
-                        <input class="form-control form-control-sm" value="<?= $facility['longit'] ?>" readonly>
-                        <label>Longitude</label>
-                      </div>
+                      <label>Longitude</label>
+                      <input class="form-control form-control-sm" value="<?= $facility['longit'] ?>" readonly>
                     </div>
 
                   </div>
@@ -430,7 +408,9 @@ $certHistory = $con->query("
                 <!-- END VIEW MODE -->
 
 
-                <!-- EDIT MODE -->
+                <!-- ======================
+                     EDIT MODE
+                ======================= -->
                 <div id="editMode" style="display:none;">
                   <form method="POST">
 
@@ -448,7 +428,8 @@ $certHistory = $con->query("
                         <select name="division_id" id="division_id" class="form-control form-control-sm" required>
                           <option value="">Select</option>
                           <?php foreach ($divisions as $d): ?>
-                            <option value="<?= $d['iddivision'] ?>" <?= ($d['iddivision'] == $facility['division_id']) ? 'selected' : '' ?>>
+                            <option value="<?= $d['iddivision'] ?>" 
+                              <?= ($d['iddivision'] == $facility['division_id']) ? 'selected' : '' ?>>
                               <?= $d['division_name'] ?>
                             </option>
                           <?php endforeach; ?>
@@ -474,7 +455,8 @@ $certHistory = $con->query("
                         <select name="Health_facilty_type" class="form-control form-control-sm" required>
                           <option value="">Select Type</option>
                           <?php foreach ($facilityTypes as $ft): ?>
-                            <option value="<?= $ft['fac_type_id'] ?>" <?= ($ft['fac_type_id'] == $facility['Health_facilty_type']) ? 'selected' : '' ?>>
+                            <option value="<?= $ft['fac_type_id'] ?>" 
+                              <?= ($ft['fac_type_id'] == $facility['Health_facilty_type']) ? 'selected' : '' ?>>
                               <?= $ft['facilities_type'] ?>
                             </option>
                           <?php endforeach; ?>
@@ -529,11 +511,21 @@ $certHistory = $con->query("
 
           </div>
           <!-- END PROFILE TAB -->
-          <div class="tab-pane fade" id="certification">
+
+
+
+          <!-- ===================================================
+                     CERTIFICATION TAB
+          ======================================================== -->
+          <div class="tab-pane fade <?= ($activeTab == 'certification' ? 'show active' : '') ?>" id="certification">
+
             <div class="pc-card mb-3">
               <div class="card-body">
+
                 <form method="POST">
+
                   <div class="form-row">
+
                     <div class="form-group col-md-4">
                       <label>Certification Level</label>
                       <select name="cert_type" class="form-control form-control-sm" required>
@@ -542,6 +534,7 @@ $certHistory = $con->query("
                         <option value="State">State</option>
                       </select>
                     </div>
+
                     <div class="form-group col-md-4">
                       <label>Certification Program</label>
                       <select name="cert_detailscol" class="form-control form-control-sm" required>
@@ -552,6 +545,7 @@ $certHistory = $con->query("
                         <option value="Kayakalp">Kayakalp</option>
                       </select>
                     </div>
+
                     <div class="form-group col-md-4">
                       <label>Status</label>
                       <select name="cert_status" class="form-control form-control-sm" required>
@@ -560,6 +554,7 @@ $certHistory = $con->query("
                         <option value="Conditional Certified">Conditional Certified</option>
                       </select>
                     </div>
+
                     <div class="form-group col-md-4">
                       <label>Assessment Mode</label>
                       <select name="ass_mode" class="form-control form-control-sm" required>
@@ -568,16 +563,19 @@ $certHistory = $con->query("
                         <option value="Virtual">Virtual</option>
                       </select>
                     </div>
+
                     <div class="form-group col-md-4">
                       <label>Date of Assessment</label>
                       <input type="date" name="date_of_ass" id="date_of_ass"
                         class="form-control form-control-sm" required>
                     </div>
+
                     <div class="form-group col-md-4">
                       <label>Issue Date</label>
                       <input type="date" name="cert_issue" id="cert_issue"
                         class="form-control form-control-sm" required>
                     </div>
+
                     <div class="form-group col-md-4">
                       <label>Score</label>
                       <input type="number" name="score" step="0.01"
@@ -597,28 +595,30 @@ $certHistory = $con->query("
                         value="<?= $facility['longit'] ?>"
                         class="form-control form-control-sm" readonly>
                     </div>
-                     <button type="button" id="useGeoCert" class="btn btn-geo btn-sm">
+
+                    <button type="button" id="useGeoCert" class="btn btn-geo btn-sm mt-2 ml-2">
                       <i class="fa-solid fa-location-dot"></i> Use Current Location
                     </button>
-                    <button class="btn btn-success btn-sm" name="save_cert">
+
+                    <button class="btn btn-success btn-sm ml-2 mt-2" name="save_cert">
                       <i class="fa-solid fa-plus"></i> Add Certification
-                    </button>                   
+                    </button>
+
                   </div>
-                  <div class="form-group col-md-12">
+
+                  <div class="form-group col-md-12 mt-3">
                     <div id="certMap" class="leaflet-map"></div>
-
                   </div>
-
 
                 </form>
 
               </div>
             </div>
 
-            <!-- ========================== -->
-            <!-- TABLE BELOW THE FORM       -->
-            <!-- ========================== -->
 
+            <!-- ==========================
+                  TABLE BELOW
+            =========================== -->
             <div class="pc-card">
               <div class="card-body">
 
@@ -659,25 +659,25 @@ $certHistory = $con->query("
             </div>
 
           </div>
+          <!-- END CERTIFICATION TAB -->
 
-
-        </div>
+        </div> <!-- tab-content -->
 
       </div>
     </div>
 
   </div>
 </div>
+
 <!-- DataTables -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
 <!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  // ===========================================================================
-  // LOAD DISTRICTS BASED ON SELECTED DIVISION
-  // ===========================================================================
+
   const districts = <?= json_encode($districts) ?>;
   const blocks = <?= json_encode($blocks) ?>;
 
@@ -688,8 +688,7 @@ $certHistory = $con->query("
     const distSel = document.getElementById("dist_id");
     distSel.innerHTML = '<option value="">Select District</option>';
 
-    districts
-      .filter(d => d.division_id == divId)
+    districts.filter(d => d.division_id == divId)
       .forEach(d => {
         const opt = document.createElement("option");
         opt.value = d.Dist_id;
@@ -701,16 +700,11 @@ $certHistory = $con->query("
     loadBlocks(distSel.value);
   }
 
-
-  // ===========================================================================
-  // LOAD BLOCKS BASED ON DISTRICT
-  // ===========================================================================
   function loadBlocks(distId) {
     const blkSel = document.getElementById("block_id");
     blkSel.innerHTML = '<option value="">Select Block</option>';
 
-    blocks
-      .filter(b => b.dist_id == distId)
+    blocks.filter(b => b.dist_id == distId)
       .forEach(b => {
         const opt = document.createElement("option");
         opt.value = b.block_id;
@@ -720,102 +714,84 @@ $certHistory = $con->query("
       });
   }
 
-
-  // ===========================================================================
-  // LEAFLET MAP INITIALIZATION
-  // ===========================================================================
-  function initLeafletMap(containerId, lat, lng, onChange) {
+  // LEAFLET MAP
+  function initLeafletMap(containerId, lat, lng, callback) {
     const map = L.map(containerId).setView([lat, lng], 15);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19
-    }).addTo(map);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-    const marker = L.marker([lat, lng], {
-      draggable: true
-    }).addTo(map);
+    const marker = L.marker([lat, lng], { draggable:true }).addTo(map);
 
-    function update(latlng) {
-      marker.setLatLng(latlng);
-      if (onChange) onChange(latlng);
-    }
+    marker.on("dragend", e => {
+      const ll = e.target.getLatLng();
+      callback(ll);
+    });
 
-    map.on("click", e => update(e.latlng));
-    marker.on("dragend", e => update(e.target.getLatLng()));
+    map.on("click", e => callback(e.latlng));
 
     setTimeout(() => map.invalidateSize(), 400);
 
     return {
       map,
       marker,
-      update
+      update: (ll) => marker.setLatLng(ll)
     };
   }
 
 
-  // ===========================================================================
-  // LIVE DATE VALIDATION (Assessment < Issue ? Reject)
-  // ===========================================================================
   function validateCertDates() {
     const ass = document.getElementById("date_of_ass").value;
     const issue = document.getElementById("cert_issue").value;
 
     if (!ass || !issue) return;
 
-    let aa = new Date(ass);
-    let ii = new Date(issue);
-
-    if (ii < aa) {
+    if (new Date(issue) < new Date(ass)) {
       alert("❌ Issue Date cannot be earlier than Assessment Date.");
       document.getElementById("cert_issue").value = "";
     }
   }
 
 
-  // ===========================================================================
+  // -------------------------------------------
   // DOCUMENT READY
-  // ===========================================================================
+  // -------------------------------------------
   $(function() {
 
-    // -----------------------------------------
-    // TOGGLE PROFILE VIEW / EDIT
-    // -----------------------------------------
+    // TAB FIX WORKING ✔
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      localStorage.setItem('activeTab', $(e.target).attr('href'));
+    });
+
+    var activeTab = localStorage.getItem('activeTab');
+    if (activeTab) {
+        $('a[href="' + activeTab + '"]').tab('show');
+    }
+
+
+    // TOGGLE PROFILE EDIT
     $("#editBtn").click(() => {
       $("#viewMode").hide();
-      $("#editMode").fadeIn(180);
+      $("#editMode").fadeIn(200);
       setTimeout(() => window._editMap?.map.invalidateSize(), 300);
     });
 
     $("#cancelEdit").click(() => {
       $("#editMode").hide();
-      $("#viewMode").fadeIn(180);
+      $("#viewMode").fadeIn(200);
     });
 
 
-    // -----------------------------------------
-    // CASCADING SELECTS
-    // -----------------------------------------
-    $("#division_id").change(function() {
-      loadDistricts(this.value);
-    });
-
-    // Load existing values automatically
-    if ($("#division_id").val()) {
-      loadDistricts($("#division_id").val());
-    }
-
-    $("#dist_id").change(function() {
-      loadBlocks(this.value);
-    });
+    // LOAD SELECT OPTIONS
+    if ($("#division_id").val()) loadDistricts($("#division_id").val());
+    $("#division_id").change(() => loadDistricts($("#division_id").val()));
+    $("#dist_id").change(() => loadBlocks($("#dist_id").val()));
 
 
-    // -----------------------------------------
-    // MAP FOR EDIT PROFILE (LAT/LNG)
-    // -----------------------------------------
+    // MAP - PROFILE EDIT
     const initialLat = parseFloat("<?= $facility['lat'] ?>") || 25.0;
-    const initialLong = parseFloat("<?= $facility['longit'] ?>") || 82.0;
+    const initialLon = parseFloat("<?= $facility['longit'] ?>") || 82.0;
 
-    window._editMap = initLeafletMap("editMap", initialLat, initialLong, (ll) => {
+    window._editMap = initLeafletMap("editMap", initialLat, initialLon, (ll) => {
       $("#lat").val(ll.lat.toFixed(6));
       $("#longit").val(ll.lng.toFixed(6));
     });
@@ -826,67 +802,41 @@ $certHistory = $con->query("
       navigator.geolocation.getCurrentPosition(pos => {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
-
-        window._editMap.update({
-          lat,
-          lng: lon
-        });
+        _editMap.update({lat, lng:lon});
         $("#lat").val(lat.toFixed(6));
         $("#longit").val(lon.toFixed(6));
-        window._editMap.map.setView([lat, lon], 16);
       });
     });
 
 
-    // -----------------------------------------
-    // MAP FOR CERTIFICATION TAB
-    // -----------------------------------------
-    const certLat = parseFloat($("#cert_lat").val()) || initialLat;
-    const certLong = parseFloat($("#cert_long").val()) || initialLong;
-
-    window._certMap = initLeafletMap("certMap", certLat, certLong, (ll) => {
+    // MAP - CERTIFICATION
+    window._certMap = initLeafletMap("certMap", initialLat, initialLon, (ll) => {
       $("#cert_lat").val(ll.lat.toFixed(6));
       $("#cert_long").val(ll.lng.toFixed(6));
     });
 
     $("#useGeoCert").click(() => {
-      if (!navigator.geolocation) return alert("Geolocation not supported");
-
       navigator.geolocation.getCurrentPosition(pos => {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
-
-        window._certMap.update({
-          lat,
-          lng: lon
-        });
+        _certMap.update({lat, lng:lon});
         $("#cert_lat").val(lat.toFixed(6));
         $("#cert_long").val(lon.toFixed(6));
-        window._certMap.map.setView([lat, lon], 16);
       });
     });
 
 
-    // -----------------------------------------
-    // LIVE DATE VALIDATION (Assessment vs Issue)
-    // -----------------------------------------
+    // DATE VALIDATION
     $("#date_of_ass, #cert_issue").change(validateCertDates);
 
 
-    // -----------------------------------------
-    // DATATABLE INITIALIZATION
-    // -----------------------------------------
+    // DATATABLE
     $("#certTable").DataTable({
-      pageLength: 8,
+      pageLength: 7,
       lengthChange: false,
       ordering: true,
-      order: [
-        [5, "desc"]
-      ],
-      language: {
-        search: "",
-        searchPlaceholder: "Search certifications..."
-      }
+      order: [[5, "desc"]],
+      language: { search:"", searchPlaceholder:"Search..." }
     });
 
   });

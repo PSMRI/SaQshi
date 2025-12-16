@@ -10,14 +10,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['department_id'])) {
 }
 
 include("assets/head/h.php");
-
+$showDeptModal = empty($_SESSION['dept_id1']) || $_SESSION['dept_id1'] == 0;
+$dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
 /* -----------------------------------------
    SESSION VARIABLES
 ------------------------------------------ */
 $dept_id   = $_SESSION['dept_id1'] ?? 0;
 $f_type_id = $_SESSION['f_type_id'] ?? 0;
 $fid       = $_SESSION['u_facilityid'] ?? 0;
-$dept_name = $_SESSION['dept_name1'] ?? '';
+$dept_name = $_SESSION['dept_name1'] ?? '0';
 $_SESSION['Cn'] = 0;
 
 /* -----------------------------------------
@@ -48,10 +49,11 @@ $_SESSION['Means']        = $suffix ? "Means_of_Verification_$suffix" : "Means_o
         <div class="pagetitle mb-2">
             <h5 class="fw-bold text-primary">
                 Assessment for <?= htmlspecialchars($dept_name) ?>
-                <button type="button" class="btn btn-sm btn-link text-warning ms-2"
-                        data-toggle="modal" data-target="#departmentModal">
-                    Change Department
-                </button>
+               <button type="button" class="btn btn-sm btn-link text-warning ms-2" data-toggle="modal" data-target="#departmentModal">
+                <?= ($_SESSION['facilty_type'] == 8)
+                    ? "Change Checklist"
+                    : "Change Department"; ?>
+            </button>
             </h5>
         </div>
 
@@ -130,58 +132,60 @@ $_SESSION['Means']        = $suffix ? "Means_of_Verification_$suffix" : "Means_o
 </div>
 
 <!-- Department Modal -->
-<div id="departmentModal" class="modal fade" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+<div id="departmentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="departmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <form method="post">
             <div class="modal-content">
-
-                <div class="modal-header py-2">
-                    <h5 class="modal-title">Select Department</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="departmentModalLabel">
+                        <?php echo ($_SESSION['facilty_type'] == 8)
+                            ? "Select Checklist"
+                            : "Select Department"; ?>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
-
                 <div class="modal-body">
-                    <input type="hidden" name="department_name" id="department_name_input">
+                    <!-- Hidden input to store department_name -->
+                    <input type="hidden" name="department_name" id="department_name_input" value="">
 
-                    <label class="fw-bold small">Department</label>
-                    <select class="form-control form-control-sm" id="departmentSelect" name="department_id" required>
-                        <option value="">-- Select Department --</option>
+                    <label for="departmentSelect" class="form-label">
+                        <?php echo ($_SESSION['facilty_type'] == 8)
+                            ? "Checklist"
+                            : "Department"; ?>
+                    </label>
+                    <select class="mb-3 form-control form-control-sm" id="departmentSelect" name="department_id" required>
+                        <option value=""> <?php echo ($_SESSION['facilty_type'] == 8)
+                                                ? "--Select Checklist--"
+                                                : "--Select Department--"; ?></option>
                         <?php
                         $factype = $_SESSION['f_type_id'];
-                        $facid   = $_SESSION['u_facilityid'];
-                        $assid   = $_SESSION['assperiod'];
-
-                        $query = "SELECT DISTINCT a.fac_dept_id_fk, b.dept_name
-                                  FROM concern_subtype_chklist a
-                                  JOIN fac_department b ON a.fac_dept_id_fk = b.fac_dept_id
-                                  WHERE a.fac_type_id_fk = ?
-                                  AND a.fac_dept_id_fk IN (
-                                      SELECT fac_dept_id FROM fac_dept_map
+                        $facid = $_SESSION['u_facilityid'];
+                        $assid = $_SESSION['assperiod'];
+                        $query = "SELECT DISTINCT a.fac_dept_id_fk, b.dept_name 
+                                  FROM concern_subtype_chklist AS a 
+                                  JOIN fac_department AS b ON a.fac_dept_id_fk = b.fac_dept_id 
+                                  WHERE a.fac_type_id_fk = ? AND a.fac_dept_id_fk IN (
+                                      SELECT fac_dept_id FROM fac_dept_map 
                                       WHERE fac_id = ? AND acc_id = ?
                                   )";
-
                         $stmt = $con->prepare($query);
                         $stmt->bind_param("iii", $factype, $facid, $assid);
                         $stmt->execute();
-                        $res = $stmt->get_result();
-
-                        while ($row = $res->fetch_assoc()) {
+                        $result = $stmt->get_result();
+                        while ($row = $result->fetch_assoc()) {
                             echo "<option value='{$row['fac_dept_id_fk']}' data-name='{$row['dept_name']}'>{$row['dept_name']}</option>";
                         }
-
-                        $con->next_result();
+                        $stmt->close();
                         ?>
                     </select>
                 </div>
-
-                <div class="modal-footer py-2">
-                    <button type="submit" class="btn btn-primary btn-sm">Continue</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Continue</button>
                 </div>
-
             </div>
         </form>
     </div>
-</div>
 
 <?php include("assets/head/f.php"); ?>
 
@@ -231,4 +235,15 @@ function saveAction(){
         }
     );
 }
+</script>
+<script>
+$(document).ready(function () {
+    <?php if ($showDeptModal): ?>
+        $('#departmentModal').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        $('#departmentModal').modal('show');
+    <?php endif; ?>
+});
 </script>
