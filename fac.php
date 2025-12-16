@@ -59,7 +59,7 @@
                                             <select id="Facilty" name="Facilty" required class="form-control">
 
                                                 <?php
-                                                $facilityQuery = "SELECT fac_type_id, facilities_type FROM facilities_type where fac_type_id in (1,2,3,8,4,9,10)";
+                                                $facilityQuery = "SELECT fac_type_id, facilities_type FROM facilities_type where fac_type_id in (1,2,3,8,4,9,10,5)";
                                                 $result = mysqli_query($con, $facilityQuery);
                                                 while ($row = mysqli_fetch_array($result)) {
                                                     echo "<option value='{$row['fac_type_id']}'>{$row['facilities_type']}</option>";

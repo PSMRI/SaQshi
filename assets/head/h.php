@@ -108,7 +108,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 
 
 								<li><a href="assessor.php"><span class="pcoded-micon"><i class="bi bi-person-vcard"></i></span><span class="pcoded-mtext">Assessor info</span></a></li>
-								<li><a href="nqst.php"> <span class="pcoded-micon"><i class="bi bi-card-checklist"></i></span><span class="pcoded-mtext">Assessment</span></a></li>
+								<li><a href="assessment.php"> <span class="pcoded-micon"><i class="bi bi-card-checklist"></i></span><span class="pcoded-mtext">Assessment</span></a></li>
 								<li><a href="moic.php"><span class="pcoded-micon"><i class="bi-journal-plus"></i></span><span class="pcoded-mtext">Generate Action Plan</span></a></li>
 								<li><a href="umoic.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Update Action Plan</span></a></li>
 
@@ -156,7 +156,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 						</li>
 						<li class="nav-item">
-							<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a--->
+							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 						</li>
 						<li class="nav-item">
 							<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
@@ -191,7 +191,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 				</li>
 				<li class="nav-item">
-					<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a--->
+					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 				</li>
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
@@ -261,7 +261,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 				</li>
 				<li class="nav-item">
-					<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a--->
+					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 				</li>
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>

@@ -1,0 +1,539 @@
+{
+  "meta": {
+    "title": "NQAS (National Quality Assurance Standards) — Knowledge Base (Web-sourced)",
+    "sources": [
+      "NHSRC — National Quality Assurance Standards 2024 (PDF)",
+      "NHSRC — NQAS Guidelines & Assessor Guidebooks",
+      "NHSRC — Quality Assurance Scores & Key Performance Indicators (web)",
+      "MoHFW — Update on National Quality Assurance Standards (press release)",
+      "Guidelines for Certification of Public Health Facilities based on NQAS (NHSRC PDF)"
+    ],
+    "generated_on": "2025-11-29",
+    "notes": "Answers sourced from NHSRC / NHM / MoHFW materials and related official pages. See chat below for direct source links."
+  },
+  "questions": [
+    {
+      "keywords": ["what is nqas", "nqas", "nqas kya hai", "what is NQAS"],
+      "answer_en": "NQAS (National Quality Assurance Standards) is a national framework for assessing and improving quality of care in public health facilities through measurable standards and certification.",
+      "answer_hi": "NQAS (National Quality Assurance Standards) एक राष्ट्रीय फ्रेमवर्क है जो सार्वजनिक स्वास्थ्य सुविधाओं में गुणवत्ता मूल्यांकन और सुधार के लिए मापने योग्य मानकों और प्रमाणन का उपयोग करता है।"
+    },
+    {
+      "keywords": ["who publishes nqas", "nqas owner", "which ministry nqas"],
+      "answer_en": "NQAS standards and guidance are published and supported by the Ministry of Health & Family Welfare (MoHFW) and implemented with technical support from NHSRC/NHM.",
+      "answer_hi": "NQAS मानक और मार्गदर्शन स्वास्थ्य और परिवार कल्याण मंत्रालय (MoHFW) द्वारा प्रकाशित/समर्थित होते हैं और NHSRC/NHM तकनीकी सहायता प्रदान करते हैं।"
+    },
+    {
+      "keywords": ["nqas objective", "nqas aim", "goals of nqas"],
+      "answer_en": "The main objectives are to improve service quality, patient safety, infection control and accountability in public health facilities.",
+      "answer_hi": "मुख्य उद्देश्य सार्वजनिक स्वास्थ्य सुविधाओं में सेवा गुणवत्ता, रोगी सुरक्षा, संक्रमण नियंत्रण और जवाबदेही में सुधार करना है।"
+    },
+    {
+      "keywords": ["areas of concern nqas", "8 areas", "8 areas of concern nqas"],
+      "answer_en": "NQAS organizes standards into eight Areas of Concern: Service Provision, Patient Rights, Inputs, Support Services, Clinical Services, Infection Control, Quality Management and Outcome.",
+      "answer_hi": "NQAS मानकों को आठ Areas of Concern में विभाजित किया गया है: Service Provision, Patient Rights, Inputs, Support Services, Clinical Services, Infection Control, Quality Management और Outcome."
+    },
+    {
+      "keywords": ["service provision nqas", "what is service provision in nqas"],
+      "answer_en": "Service Provision assesses availability and correct delivery of essential services (OPD, IPD, emergency, diagnostics, referral, outreach).",
+      "answer_hi": "Service Provision आवश्यक सेवाओं (OPD, IPD, आपातकालीन, डायग्नोस्टिक, रेफरल, आउटरीच) की उपलब्धता और सही प्रदायगी की जांच करता है।"
+    },
+    {
+      "keywords": ["patient rights nqas", "patient rights in nqas"],
+      "answer_en": "Patient Rights standards cover privacy, confidentiality, informed consent, dignity, equitable access and grievance redressal mechanisms.",
+      "answer_hi": "Patient Rights मानक गोपनीयता, सूचित सहमति, सम्मान, समान पहुंच और शिकायत निवारण तंत्र को कवर करते हैं।"
+    },
+    {
+      "keywords": ["inputs nqas", "nqas inputs definition"],
+      "answer_en": "Inputs include infrastructure, equipment, essential drugs, human resources, supplies and utilities required for safe service delivery.",
+      "answer_hi": "Inputs में इन्फ्रास्ट्रक्चर, उपकरण, आवश्यक दवाइयाँ, मानव संसाधन, आपूर्ति और उपयोगिताएँ शामिल हैं जो सुरक्षित सेवा वितरण के लिए आवश्यक हैं।"
+    },
+    {
+      "keywords": ["support services nqas", "what are support services nqas"],
+      "answer_en": "Support Services include housekeeping, laundry, kitchen, security, ambulance, medical records, maintenance and waste management.",
+      "answer_hi": "Support Services में हाउसकीपिंग, लांड्री, रसोई, सुरक्षा, एम्बुलेंस, मेडिकल रिकॉर्ड, रखरखाव और कचरा प्रबंधन शामिल हैं।"
+    },
+    {
+      "keywords": ["clinical services nqas", "clinical nqas"],
+      "answer_en": "Clinical Services standards check adherence to clinical protocols, case management, emergency and specialty services and documentation.",
+      "answer_hi": "Clinical Services मानक क्लीनिकल प्रोटोकॉल का पालन, केस मैनेजमेंट, आपातकालीन व विशेषज्ञ सेवाएँ और दस्तावेज़ीकरण की जाँच करते हैं।"
+    },
+    {
+      "keywords": ["infection control nqas", "ipc nqas", "nqas infection control"],
+      "answer_en": "Infection Control covers hand hygiene, PPE, sterilization, environmental cleaning, isolation practices and biomedical waste management.",
+      "answer_hi": "Infection Control में हैंड हाइजीन, PPE, स्टेरिलाइज़ेशन, पर्यावरणीय सफाई, आइसोलेशन और बायोमेडिकल वेस्ट मैनेजमेंट शामिल है।"
+    },
+    {
+      "keywords": ["quality management nqas", "qm nqas"],
+      "answer_en": "Quality Management includes internal quality teams, SOPs, internal audits, corrective action plans, training and KPI monitoring.",
+      "answer_hi": "Quality Management में आंतरिक गुणवत्ता टीम, SOPs, आंतरिक ऑडिट, सुधारात्मक योजनाएँ, प्रशिक्षण और KPI निगरानी शामिल हैं।"
+    },
+    {
+      "keywords": ["outcome indicators nqas", "nqas outcomes"],
+      "answer_en": "Outcome indicators measure results like patient satisfaction, infection reduction, maternal/child outcomes and service utilization improvements.",
+      "answer_hi": "Outcome indicators रोगी संतुष्टि, संक्रमण में कमी, मातृ/शिशु परिणाम और सेवा उपयोग में सुधार जैसे परिणाम मापते हैं।"
+    },
+    {
+      "keywords": ["nqas checklist", "where to find nqas checklist", "nqas checklist pdf"],
+      "answer_en": "NQAS checklists and assessor guidebooks are published by NHSRC/NQPS — official PDFs list measurable elements and means of verification for each standard.",
+      "answer_hi": "NQAS चेकलिस्ट और असेसर गाइडबुक NHSRC/NQPS द्वारा प्रकाशित होते हैं — आधिकारिक PDF में प्रत्येक मानक के मापनीय तत्व और सत्यापन के साधन सूचीबद्ध होते हैं।"
+    },
+    {
+      "keywords": ["nqas assessor guidebook", "assessor guide nqas"],
+      "answer_en": "Assessor guidebooks (Vol I–III) give instructions for assessors on measurable elements, verification and scoring — available on NHSRC QPS site.",
+      "answer_hi": "Assessor guidebooks (Vol I–III) में असेसरों के लिए मापनयोग्य तत्व, सत्यापन और स्कोरिंग निर्देश दिए गए हैं — ये NHSRC QPS साइट पर उपलब्ध हैं।"
+    },
+    {
+      "keywords": ["nqas scoring", "how scoring works nqas", "scoring rules nqas"],
+      "answer_en": "NQAS scoring uses marks per measurable element: typically 2 marks for full compliance, 1 for partial compliance and 0 for non-compliance; department/facility scores are aggregated to determine certification eligibility.",
+      "answer_hi": "NQAS स्कोरिंग मापनीय तत्वों के लिए अंक देती है: सामान्यतः पूर्ण अनुपालन के लिए 2 अंक, आंशिक अनुपालन के लिए 1 अंक और गैर-अनुपालन के लिए 0 अंक; विभाग/सुविधा के कुल अंक प्रमाणन निर्धारण के लिए जोड़े जाते हैं।"
+    },
+    {
+      "keywords": ["nqas certification", "nqas certificate", "how to get nqas certified"],
+      "answer_en": "Facilities receive NQAS certification after successful external assessment by empanelled assessors; certification processes and guidelines are available in NHSRC 'Guidelines for Certification'.",
+      "answer_hi": "सुविधाएँ पैनल-युक्त असेसरों द्वारा सफल बाहरी मूल्यांकन के बाद NQAS प्रमाणन प्राप्त करती हैं; प्रमाणन प्रक्रियाएँ NHSRC की 'Guidelines for Certification' में उपलब्ध हैं।"
+    },
+    {
+      "keywords": ["nqas validity", "nqas certificate validity", "how long nqas valid"],
+      "answer_en": "Certification commonly includes a validity period with periodic re-assessments and inspections (states sometimes report a 3-year validity with annual inspections — check local/state policy).",
+      "answer_hi": "प्रमाणन में आमतौर पर एक वैधता अवधि होती है जिसके तहत आवधिक पुनर्मूल्यांकन और निरीक्षण होते हैं (कई रिपोर्टों में 3 साल की वैधता और वार्षिक निरीक्षण का जिक्र मिलता है — स्थानीय नीति देखें)।"
+    },
+    {
+      "keywords": ["who conducts external assessment nqas", "nqas assessors"],
+      "answer_en": "External assessments are performed by empanelled/ trained assessors from NHSRC/NQPS or state/national assessor panels as per guidelines.",
+      "answer_hi": "बाहरी मूल्यांकन प्रशिक्षित और पैनल-युक्त असेसरों द्वारा किए जाते हैं, जो NHSRC/NQPS या राज्य/राष्ट्रीय पैनलों के होते हैं।"
+    },
+    {
+      "keywords": ["internal assessment nqas", "self assessment nqas"],
+      "answer_en": "Internal/self-assessments are recommended so facilities can identify gaps and implement corrective actions ahead of external assessment.",
+      "answer_hi": "आंतरिक/स्व-मूल्यांकन की सिफारिश की जाती है ताकि सुविधाएँ कमियाँ पहचान कर सुधारात्मक कार्य कर सकें।"
+    },
+    {
+      "keywords": ["peer assessment nqas", "peer review nqas"],
+      "answer_en": "Peer assessments (cross-facility reviews) are used to encourage shared learning, capacity building and improvement before certification.",
+      "answer_hi": "Peer assessment (सुविधाओं के बीच क्रॉस-रिव्यू) साझा सीख, क्षमता निर्माण और प्रमाणन से पहले सुधार को प्रोत्साहित करने के लिए उपयोग होती है।"
+    },
+    {
+      "keywords": ["nqas applicability", "which facilities nqas", "nqas for phc chc dh"],
+      "answer_en": "NQAS standards are adapted for different facility-types (PHC, CHC, District Hospitals, Urban PHCs and Medical Colleges) with facility-specific checklists.",
+      "answer_hi": "NQAS मानक विभिन्न प्रकार की सुविधाओं (PHC, CHC, जिला अस्पताल, शहरी PHC और मेडिकल कॉलेज) के लिए अनुकूलित हैं और हर सुविधा के लिए विशिष्ट चेकलिस्ट होती है।"
+    },
+    {
+      "keywords": ["nqas benefits", "advantages of nqas"],
+      "answer_en": "Benefits include improved patient safety, infection control, better documentation, enhanced public trust and often state-level incentives for certified facilities.",
+      "answer_hi": "लाभों में रोगी सुरक्षा में सुधार, बेहतर संक्रमण नियंत्रण, बेहतर दस्तावेज़ीकरण, सार्वजनिक विश्वास में वृद्धि और कई राज्यों में प्रमाणित सुविधाओं के लिये प्रोत्साहन शामिल हैं।"
+    },
+    {
+      "keywords": ["nqas documents required", "documentation for nqas"],
+      "answer_en": "Facilities must maintain SOPs, registers, training records, clinical records, biomedical waste records and audit reports as means of verification during assessment.",
+      "answer_hi": "सुविधाओं को मूल्यांकन के दौरान सत्यापन के साधन के रूप में SOPs, रजिस्टर, प्रशिक्षण रिकॉर्ड, क्लीनिकल रिकॉर्ड, बायोमेडिकल वेस्ट रिकॉर्ड और ऑडिट रिपोर्ट बनाए रखना चाहिए।"
+    },
+    {
+      "keywords": ["nqas measurable elements", "measurable elements nqas"],
+      "answer_en": "Each standard is broken into measurable elements and checkpoints; assessors verify 'means of verification' for each measurable element as listed in the official checklists.",
+      "answer_hi": "प्रत्येक मानक को मापनीय तत्वों और चेकपॉइंट्स में विभाजित किया गया है; असेसर आधिकारिक चेकलिस्ट में सूचीबद्ध 'means of verification' की जाँच करते हैं।"
+    },
+    {
+      "keywords": ["where to download nqas pdf", "nqas pdf download"],
+      "answer_en": "Official NQAS PDFs (standards, assessor guidebooks and certification guidelines) are downloadable from NHSRC / QPS and NHM/NHSC websites.",
+      "answer_hi": "NQAS के आधिकारिक PDF (मानक, असेसर गाइडबुक और प्रमाणन दिशानिर्देश) NHSRC / QPS तथा NHM/NHSC वेबसाइटों से डाउनलोड किये जा सकते हैं।"
+    },
+    {
+      "keywords": ["nqas kpis", "nqas key performance indicators"],
+      "answer_en": "NQAS links quality standards to KPIs—examples include infection rates, patient satisfaction, turnaround times and stock-outs; these are used for monitoring.",
+      "answer_hi": "NQAS गुणवत्ता मानकों को KPI से जोड़ता है — उदाहरण: संक्रमण दर, रोगी संतुष्टि, टर्नअराउंड टाइम और स्टॉक-आउट; इनका उपयोग निगरानी के लिए किया जाता है।"
+    },
+    {
+      "keywords": ["nqas training", "training for nqas assessors", "nqas capacity building"],
+      "answer_en": "NQAS implementation requires training of facility staff and assessors; NHSRC provides assessor training guidebooks and capacity building resources.",
+      "answer_hi": "NQAS कार्यांवयन के लिए स्टाफ और असेसरों का प्रशिक्षण आवश्यक है; NHSRC असेसर प्रशिक्षण गाइडबुक और क्षमता निर्माण संसाधन प्रदान करता है।"
+    },
+    {
+      "keywords": ["nqas and isqua", "is nqas accredited"],
+      "answer_en": "NQAS has been developed to meet global best-practice standards; several state sources note alignment with international benchmarks (ISQua principles referenced in materials).",
+      "answer_hi": "NQAS को वैश्विक सर्वोत्तम प्रथाओं के अनुरूप विकसित किया गया है; आधिकारिक सामग्रियों में अंतरराष्ट्रीय मानकों (ISQua) के साथ संरेखण का उल्लेख मिलता है।"
+    },
+    {
+      "keywords": ["nqas operational guidance", "operational guidelines nqas"],
+      "answer_en": "Operational guidance documents explain stepwise improvement, implementation steps and roles of state/district/nodal officers — available from NHSRC QPS portal.",
+      "answer_hi": "Operational guidance दस्तावेज़ कार्यान्वयन चरणों, सुधार कदमों और राज्य/जिला/नोडल अधिकारियों की भूमिका समझाते हैं — ये NHSRC QPS पोर्टल पर उपलब्ध हैं।"
+    },
+    {
+      "keywords": ["how to prepare for nqas", "prepare for nqas certification", "nqas readiness"],
+      "answer_en": "Preparation includes internal audits, gap analysis, implementing SOPs, staff training, maintaining records, and mock/peer assessments to improve readiness.",
+      "answer_hi": "तैयारी में आंतरिक ऑडिट, गैप विश्लेषण, SOP लागू करना, स्टाफ प्रशिक्षण, रिकॉर्ड बनाए रखना और मॉक/पीयर असेसमेंट शामिल हैं।"
+    },
+    {
+      "keywords": ["nqas examples", "nqas certified hospitals"],
+      "answer_en": "Many states publish lists of certified facilities; official press releases and state NHM portals provide examples and scores of NQAS-certified institutions.",
+      "answer_hi": "कई राज्यों द्वारा प्रमाणित सुविधाओं की सूचियाँ प्रकाशित की जाती हैं; आधिकारिक प्रेस विज्ञप्तियाँ और राज्य NHM पोर्टल प्रमाणित संस्थानों के उदाहरण और स्कोर देते हैं।"
+    },
+    {
+      "keywords": ["nqas incentives", "financial incentives nqas"],
+      "answer_en": "Some states provide financial incentives for certified facilities (examples reported in state press notes) — incentive details vary by state policy.",
+      "answer_hi": "कुछ राज्यों द्वारा प्रमाणित सुविधाओं के लिए आर्थिक प्रोत्साहन दिए जाते हैं (राज्य प्रेस नोट्स में उदाहरण मिलते हैं) — प्रोत्साहन राज्य नीति के अनुसार अलग होते हैं।"
+    },
+    {
+      "keywords": ["nqas review frequency", "nqas re assessment"],
+      "answer_en": "Certified facilities typically undergo periodic inspections and re-assessments as per certification guidelines and state rules (details in NHSRC certification guidelines).",
+      "answer_hi": "प्रमाणित सुविधाओं को आमतौर पर प्रमाणन दिशानिर्देशों और राज्य नियमों के अनुसार आवधिक निरीक्षण और पुनर्मूल्यांकन से गुज़ारना पड़ता है।"
+    },
+    {
+      "keywords": ["nqas examples checklist items", "example measurable element nqas"],
+      "answer_en": "Example measurable elements include availability of essential drugs, existence of SOPs, infection control records, functional equipment and trained staff.",
+      "answer_hi": "उदाहरण मापनीय तत्वों में आवश्यक दवाइयों की उपलब्धता, SOP का होना, संक्रमण नियंत्रण रिकॉर्ड, कार्यशील उपकरण और प्रशिक्षित स्टाफ शामिल हैं।"
+    },
+    {
+      "keywords": ["nqas help", "where to get help for nqas", "nqps contact"],
+      "answer_en": "State NHM quality cell, NHSRC/NQPS portal and district quality teams are key contact points for implementation guidance and queries.",
+      "answer_hi": "राज्य NHM गुणवत्ता सेल, NHSRC/NQPS पोर्टल और जिला गुणवत्ता टीमें कार्यान्वयन मार्गदर्शन और प्रश्नों के लिए मुख्य संपर्क बिंदु हैं।"
+    },
+    {
+      "keywords": ["nqas improvements", "what improves nqas score"],
+      "answer_en": "Improving scores requires addressing low-scoring measurable elements via SOPs, evidence (registers/records), staff competency and infrastructure fixes.",
+      "answer_hi": "स्कोर सुधारने के लिए SOPs, प्रलेखित साक्ष्य (रजिस्टर/रिकॉर्ड), स्टाफ की दक्षता और अवसंरचना सुधार के माध्यम से कम स्कोर वाले तत्वों को ठीक करना आवश्यक है।"
+    },
+    {
+      "keywords": ["nqas integration", "nqas with other programs", "nqas kayakalp laqshya musqan"],
+      "answer_en": "NQAS complements other quality initiatives (Kayakalp, LaQshya, MusQan) and often uses cross-references in checklists for overlapping areas (cleanliness, labour room quality, child friendly services).",
+      "answer_hi": "NQAS अन्य गुणवत्ता पहलों (Kayakalp, LaQshya, MusQan) के साथ पूरक है और अक्सर चेकलिस्ट में ओवरलैप वाले क्षेत्रों (स्वच्छता, labour room गुणवत्ता, बाल मित्र सेवाएँ) को क्रॉस-रेफरेंस करता है।"
+    },
+    {
+      "keywords": ["nqas sample report", "nqas assessment report sample"],
+      "answer_en": "Certification guidelines include templates for external assessment reports and annexures showing assessor details, scores and recommended corrective actions.",
+      "answer_hi": "प्रमाणन दिशानिर्देशों में बाहरी मूल्यांकन रिपोर्टों के टेम्पलेट और अधिशेष दस्तावेज़ होते हैं जो असेसर विवरण, स्कोर और सुधारात्मक अनुशंसाएँ दिखाते हैं।"
+    },
+    {
+      "keywords": ["nqas online resources", "nhsrc nqas resources"],
+      "answer_en": "Official online resources (NHSRC QPS portal, NHM site, MoHFW press notes) provide downloadable PDFs, assessor tools and operational guidance.",
+      "answer_hi": "आधिकारिक ऑनलाइन संसाधन (NHSRC QPS पोर्टल, NHM साइट, MoHFW प्रेस नोट्स) डाउनलोड करने योग्य PDF, असेसर टूल और संचालन मार्गदर्शन प्रदान करते हैं।"
+    },
+    {
+      "keywords": ["nqas checklist example uphc", "nqas uphc standards"],
+      "answer_en": "NQAS/Quality Standards for Urban PHC and PHC checklists contain facility-specific measurable elements; refer to NHM PDFs for UPHC/PHC templates.",
+      "answer_hi": "UPHC/PHC के लिए NQAS/Quality Standards में सुविधा-विशिष्ट मापनीय तत्व होते हैं; UPHC/PHC टेम्पलेट के लिए NHM PDF देखें।"
+    },
+    {
+      "keywords": ["nqas assessment tool", "nqas digital tool", "nqps tool"],
+      "answer_en": "Some states use digital assessment tools and apps to capture checklist responses; NHSRC promotes standard templates and QPS portal tools for consistency.",
+      "answer_hi": "कुछ राज्यों में चेकलिस्ट प्रतिक्रियाएँ कैप्चर करने के लिए डिजिटल टूल और ऐप्स का उपयोग होता है; NHSRC मानक टेम्पलेट और QPS पोर्टल टूल्स को बढ़ावा देता है।"
+    },
+    {
+      "keywords": ["nqas monitoring", "monitoring nqas"],
+      "answer_en": "NQAS monitoring occurs at facility, district and state levels using KPIs, periodic audits and review meetings as per operational guidance.",
+      "answer_hi": "NQAS की निगरानी सुविधा, जिला और राज्य स्तर पर KPI, आवधिक ऑडिट और समीक्षा बैठकों के माध्यम से की जाती है।"
+    },
+    {
+      "keywords": ["nqas sample measurable element 'means of verification'", "means of verification nqas"],
+      "answer_en": "Each measurable element lists 'means of verification' (e.g. registers, SOPs, photos, staff records) that assessors must check during assessment.",
+      "answer_hi": "प्रत्येक मापनीय तत्व में 'means of verification' सूचीबद्ध होते हैं (जैसे रजिस्टर, SOPs, फोटो, स्टाफ रिकॉर्ड) जिन्हें असेसर मूल्यांकन के दौरान जाँचना होता है।"
+    },
+    {
+      "keywords": ["nqas faq", "nqas frequently asked questions"],
+      "answer_en": "Frequently asked questions on NQAS are answered by state NHM quality cells and NHSRC documents covering processes, scoring and certification steps.",
+      "answer_hi": "NQAS पर अक्सर पूछे जाने वाले प्रश्नों के उत्तर राज्य NHM गुणवत्ता सेल और NHSRC दस्तावेज़ों में प्रक्रिया, स्कोरिंग और प्रमाणन चरणों को लेकर मिलते हैं।"
+    },
+    {
+      "keywords": ["nqas implementation steps", "how to implement nqas"],
+      "answer_en": "Implementation steps: form quality team, perform baseline assessment, prioritize gaps, implement SOPs/training, conduct internal/peer assessments, request external assessment.",
+      "answer_hi": "कार्यान्वयन चरण: गुणवत्ता टीम बनाएं, बेसलाइन मूल्यांकन करें, कमियों को प्राथमिकता दें, SOPs/प्रशिक्षण लागू करें, आंतरिक/पीयर असेसमेंट करें और बाहरी मूल्यांकन का अनुरोध करें।"
+    },
+    {
+      "keywords": ["nqas checklist link", "nqas pdf link", "download nqas"],
+      "answer_en": "Official PDFs and guidebooks can be downloaded from NHSRC QPS portal and NHM websites (search 'National Quality Assurance Standards PDF' on NHSRC).",
+      "answer_hi": "आधिकारिक PDF और गाइडबुक NHSRC QPS पोर्टल और NHM वेबसाइटों से डाउनलोड की जा सकती हैं (NHSRC पर 'National Quality Assurance Standards PDF' खोजें)।"
+    },
+    {
+      "keywords": ["kayakalp", "what is kayakalp", "kayakalp kya hai", "kaya kalp"],
+      "answer_en": "Kayakalp is a national initiative under Swachh Bharat Abhiyan to promote cleanliness, hygiene, infection control and sanitation practices in public health facilities.",
+      "answer_hi": "Kayakalp स्वच्छ भारत अभियान के अंतर्गत एक राष्ट्रीय पहल है जो सार्वजनिक स्वास्थ्य संस्थानों में स्वच्छता, हाइजीन, संक्रमण नियंत्रण और सफाई को बढ़ावा देती है।"
+    },
+    {
+      "keywords": ["kayakalp standards", "kayakalp themes", "kayakalp categories"],
+      "answer_en": "Kayakalp is based on thematic areas including Hospital Upkeep, Sanitation & Hygiene, Waste Management, Infection Control, Support Services, and Hygiene Promotion.",
+      "answer_hi": "Kayakalp छह थीमेटिक क्षेत्रों पर आधारित है: अस्पताल रखरखाव, स्वच्छता एवं हाइजीन, कचरा प्रबंधन, संक्रमण नियंत्रण, सहायक सेवाएँ, और हाइजीन प्रमोशन।"
+    },
+    {
+      "keywords": ["kayakalp scoring", "kayakalp assessment"],
+      "answer_en": "Kayakalp scoring includes internal assessment, peer assessment and external assessment. Facilities are awarded based on compliance with Kayakalp standards.",
+      "answer_hi": "Kayakalp मूल्यांकन में आंतरिक मूल्यांकन, सहकर्मी मूल्यांकन और बाहरी मूल्यांकन शामिल होते हैं। संस्थानों को Kayakalp मानकों के अनुपालन के आधार पर पुरस्कृत किया जाता है।"
+    },
+    {
+      "keywords": ["kayakalp awards", "kayakalp reward"],
+      "answer_en": "Under Kayakalp, high-performing public health facilities receive monetary awards and recognition certificates for achieving excellence in cleanliness and hygiene.",
+      "answer_hi": "Kayakalp के अंतर्गत उत्कृष्ट स्वच्छता और हाइजीन बनाए रखने वाली स्वास्थ्य सुविधाओं को पुरस्कार राशि और मान्यता प्रमाणपत्र दिए जाते हैं।"
+    },
+
+    {
+      "keywords": ["laqshya", "what is laqshya", "laqshya kya hai"],
+      "answer_en": "LaQshya is the Labour Room Quality Improvement Initiative aimed at improving intrapartum care, labour room practices, newborn care and ensuring respectful maternity care.",
+      "answer_hi": "LaQshya एक Labour Room Quality Improvement Initiative है जिसका उद्देश्य प्रसवकालीन देखभाल, लेबर रूम प्रथाओं, नवजात सेवा और सम्मानजनक प्रसूति देखभाल में सुधार करना है।"
+    },
+    {
+      "keywords": ["laqshya standards", "laqshya facilities"],
+      "answer_en": "LaQshya covers Labour Rooms and Maternity Operation Theatres in public health facilities, including District Hospitals, CHCs, Medical Colleges and high-load delivery centres.",
+      "answer_hi": "LaQshya जिला अस्पताल, CHC, मेडिकल कॉलेज और उच्च प्रसव-भार केंद्रों के लेबर रूम और मैटरनिटी ऑपरेशन थिएटर को कवर करता है।"
+    },
+    {
+      "keywords": ["laqshya certification", "laqshya assessment"],
+      "answer_en": "LaQshya certification requires facilities to meet quality benchmarks through internal assessments, state assessments and national-level external evaluations.",
+      "answer_hi": "LaQshya प्रमाणन के लिए संस्थाओं को आंतरिक मूल्यांकन, राज्य मूल्यांकन और राष्ट्रीय स्तर पर बाहरी मूल्यांकन से निर्धारित गुणवत्ता मानकों को पूरा करना होता है।"
+    },
+    {
+      "keywords": ["laqshya benefits", "laqshya impact"],
+      "answer_en": "LaQshya improves maternal and newborn outcomes, reduces complications, ensures clean and safe labour rooms and promotes respectful maternity care.",
+      "answer_hi": "LaQshya मातृ और नवजात परिणामों में सुधार करता है, जटिलताओं को कम करता है, स्वच्छ और सुरक्षित लेबर रूम सुनिश्चित करता है और सम्मानजनक प्रसूति देखभाल को बढ़ावा देता है।"
+    },
+
+    {
+      "keywords": ["musqan", "muskan", "musqaan", "what is musqan"],
+      "answer_en": "MusQan is a national program under NHM focused on improving paediatric care quality in public health facilities, including OPD, IPD, emergency and SNCU services.",
+      "answer_hi": "MusQan NHM के अंतर्गत एक राष्ट्रीय कार्यक्रम है जो सार्वजनिक स्वास्थ्य सुविधाओं में OPD, IPD, आपातकालीन सेवाओं और SNCU में बाल चिकित्सा देखभाल की गुणवत्ता सुधार पर केंद्रित है।"
+    },
+    {
+      "keywords": ["musqan components", "musqan themes"],
+      "answer_en": "MusQan includes components like paediatric-friendly infrastructure, clinical protocols, triage system, emergency stabilisation, infection control and caregiver counselling.",
+      "answer_hi": "MusQan में बाल-अनुकूल संरचना, क्लीनिकल प्रोटोकॉल, ट्रायेज सिस्टम, आपातकालीन स्थिरीकरण, संक्रमण नियंत्रण और देखभालकर्ता परामर्श जैसे प्रमुख घटक शामिल हैं।"
+    },
+    {
+      "keywords": ["musqan certification", "musqan assessment"],
+      "answer_en": "MusQan assessment is based on quality checklists for paediatric OPD, IPD, emergency care and newborn units. Facilities achieving high scores receive MusQan certification.",
+      "answer_hi": "MusQan मूल्यांकन बाल चिकित्सा OPD, IPD, आपातकालीन देखभाल और नवजात इकाइयों के गुणवत्ता चेकलिस्ट पर आधारित होता है। उच्च अंक प्राप्त करने वाली सुविधाओं को MusQan प्रमाणन दिया जाता है।"
+    },
+    {
+      "keywords": ["musqan benefits", "musqan improvement"],
+      "answer_en": "MusQan ensures child-friendly services, reduces paediatric mortality and improves clinical outcomes through standardised care pathways.",
+      "answer_hi": "MusQan बच्चों के अनुकूल सेवाएँ सुनिश्चित करता है, बाल मृत्यु दर को कम करता है और मानकीकृत देखभाल प्रक्रियाओं के माध्यम से नैदानिक परिणामों में सुधार करता है।"
+    },
+    {
+      "keywords": ["guidelines", "hwc guidelines", "guideline download"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Guidelines.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Guidelines.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "This contains all Health & Wellness Centre (HWC) operational and quality guidelines.",
+      "description_hi": "इसमें हेल्थ एंड वेलनेस सेंटर (HWC) के सभी संचालन और गुणवत्ता दिशानिर्देश शामिल हैं।"
+    },
+    {
+      "keywords": ["hwc protocol", "protocol", "protocall"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/hwc_protocall.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/hwc_protocall.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "Contains clinical and operational protocols for standardized services at HWCs.",
+      "description_hi": "इसमें HWC पर मानकीकृत सेवाओं के लिए क्लीनिकल और संचालन प्रोटोकॉल शामिल हैं।"
+    },
+    {
+      "keywords": ["iec", "iec material", "iec download"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/IEC.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/IEC.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "IEC materials for awareness and health education.",
+      "description_hi": "जागरूकता और स्वास्थ्य शिक्षा के लिए IEC सामग्री।"
+    },
+    {
+      "keywords": ["jd", "job description"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/JD.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/JD.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "Job descriptions for CHO, ANM, ASHA and other HWC staff.",
+      "description_hi": "CHO, ANM, ASHA और अन्य HWC स्टाफ के लिए जॉब डिस्क्रिप्शन।"
+    },
+    {
+      "keywords": ["outcome", "hwc outcome document"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Outcome.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Outcome.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "Outcome tracking formats and performance indicators.",
+      "description_hi": "आउटकम ट्रैकिंग प्रारूप और प्रदर्शन संकेतक।"
+    },
+    {
+      "keywords": ["policy", "hwc policy"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Policy.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Policy.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "Policies governing HWC operations.",
+      "description_hi": "HWC संचालन से संबंधित नीतियां।"
+    },
+    {
+      "keywords": ["pss capa", "capa"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/PSS-CAPA.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/PSS-CAPA.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "Patient Satisfaction Survey and CAPA formats.",
+      "description_hi": "रोगी संतुष्टि सर्वेक्षण और CAPA प्रारूप।"
+    },
+    {
+      "keywords": ["register", "registers", "hwc register"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Register.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Register.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "All essential registers required for HWC.",
+      "description_hi": "HWC के लिए आवश्यक सभी रजिस्टर।"
+    },
+    {
+      "keywords": ["skill based", "skill training"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/SKILLBASED.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/SKILLBASED.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "Skill-based training modules for healthcare workers.",
+      "description_hi": "स्वास्थ्य कर्मियों के लिए कौशल आधारित प्रशिक्षण मॉड्यूल।"
+    },
+    {
+      "keywords": ["social audit", "audit hwc"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/SOCIALAUDIT.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/SOCIALAUDIT.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "Social audit documentation for community accountability.",
+      "description_hi": "सामुदायिक जवाबदेही के लिए सोशल ऑडिट दस्तावेज़।"
+    },
+    {
+      "keywords": ["supporting letter", "support letter"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/SUPPORTING_LETTER.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/SUPPORTING_LETTER.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "Supporting letters used during assessment and documentation.",
+      "description_hi": "मूल्यांकन और दस्तावेजीकरण के दौरान उपयोग किए जाने वाले समर्थन पत्र।"
+    },
+    {
+      "keywords": ["work instruction", "instruction"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/work_instruction.zip\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/work_instruction.zip\" target=\"_blank\">Download file</a>",
+      "description_en": "Step-by-step work instructions for HWC functioning.",
+      "description_hi": "HWC संचालन के लिए चरण-दर-चरण कार्य निर्देश।"
+    },
+    {
+      "keywords": ["required documents", "aam hwc", "nqas required list"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/AAM_HWC_SC_NQAS.xlsx\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/AAM_HWC_SC_NQAS.xlsx\" target=\"_blank\">Download file</a>",
+      "description_en": "List of required documents, registers, and formats for NQAS-HWC certification.",
+      "description_hi": "NQAS-HWC प्रमाणन के लिए आवश्यक दस्तावेज़ों, रजिस्टरों और प्रारूपों की सूची।"
+    },
+    {
+      "keywords": ["asha formats", "asha"],
+      "answer_en": "Download file: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Asha%20formats.pdf\" target=\"_blank\">Download file</a>",
+      "answer_hi": "फ़ाइल डाउनलोड करें: <a href=\"https://biharsaqshi.piramalswasthya.org/assets/doc/HWC/Asha%20formats.pdf\" target=\"_blank\">Download file</a>",
+      "description_en": "ASHA worker documentation formats for community programs.",
+      "description_hi": "समुदाय-आधारित कार्यक्रमों के लिए ASHA कर्मियों द्वारा उपयोग किए जाने वाले दस्तावेज़ प्रारूप।"
+    },
+    {
+  "keywords": ["assessor", "nqas assessor", "asesar", "asseser", "assessment person"],
+  "answer_en": "An NQAS Assessor is a trained professional who evaluates health facilities against National Quality Assurance Standards.",
+  "answer_hi": "NQAS असेसर वह प्रशिक्षित विशेषज्ञ होता है जो स्वास्थ्य सुविधाओं का मूल्यांकन राष्ट्रीय गुणवत्ता आश्वासन मानकों के आधार पर करता है।",
+  "description_en": "Assessors check clinical care, infection control, patient rights, service delivery and documentation.",
+  "description_hi": "असेसर क्लीनिकल केयर, संक्रमण नियंत्रण, रोगी अधिकार, सेवा वितरण और दस्तावेज़ीकरण की जाँच करते हैं।"
+},
+{
+  "keywords": ["national assessor", "national assesor", "national external assessor", "national level assessor"],
+  "answer_en": "A National Assessor is an expert certified at the national level to conduct external NQAS assessments in health facilities across India.",
+  "answer_hi": "राष्ट्रीय असेसर एक विशेषज्ञ होता है जिसे भारत स्तर पर NQAS बाहरी मूल्यांकन करने के लिए प्रमाणित किया जाता है।",
+  "description_en": "National Assessors evaluate district hospitals, CHCs, PHCs and other facilities for NQAS certification.",
+  "description_hi": "राष्ट्रीय असेसर जिला अस्पताल, CHC, PHC और अन्य सुविधाओं का मूल्यांकन NQAS प्रमाणन के लिए करते हैं।"
+},
+{
+  "keywords": ["external assessor", "external assesor", "external nqas assessor"],
+  "answer_en": "External Assessors evaluate facilities from outside the state or district to maintain impartiality in NQAS assessments.",
+  "answer_hi": "बाहरी असेसर किसी अन्य जिले या राज्य से होते हैं ताकि NQAS मूल्यांकन में निष्पक्षता बनी रहे।",
+  "description_en": "They are responsible for unbiased assessment and certification scoring.",
+  "description_hi": "वे निष्पक्ष मूल्यांकन और प्रमाणन स्कोरिंग के लिए ज़िम्मेदार होते हैं।"
+},
+{
+  "keywords": ["internal assessor", "internal assesor", "internal assessment team"],
+  "answer_en": "Internal Assessors are trained staff within the facility who perform internal NQAS assessments before external audits.",
+  "answer_hi": "इंटर्नल असेसर वे प्रशिक्षित स्टाफ होते हैं जो बाहरी मूल्यांकन से पहले संस्थान के अंदर NQAS मूल्यांकन करते हैं।",
+  "description_en": "They identify gaps, prepare action plans, and support quality improvement.",
+  "description_hi": "वे गैप पहचानते हैं, एक्शन प्लान तैयार करते हैं और गुणवत्ता सुधार में मदद करते हैं।"
+},
+{
+  "keywords": ["state assessor", "state level assessor"],
+  "answer_en": "State Assessors are trained at the state level to conduct peer assessments and monitor NQAS implementation.",
+  "answer_hi": "राज्य असेसर राज्य स्तर पर प्रशिक्षित होते हैं और NQAS कार्यान्वयन की निगरानी तथा पीयर असेसमेंट करते हैं।",
+  "description_en": "State assessors help prepare facilities for national level certification.",
+  "description_hi": "राज्य असेसर सुविधाओं को राष्ट्रीय स्तर के प्रमाणन के लिए तैयार करने में मदद करते हैं।"
+},
+{
+  "keywords": ["assessor training", "how to become assessor", "assessor certification", "nqas assessor training"],
+  "answer_en": "To become an NQAS Assessor, one must undergo training by NHSRC or state QA cells and pass the assessor certification exam.",
+  "answer_hi": "NQAS असेसर बनने के लिए NHSRC या राज्य QA सेल द्वारा प्रशिक्षण लेना होता है और असेसर प्रमाणन परीक्षा पास करनी होती है।",
+  "description_en": "Training includes quality standards, checklists, scoring, patient safety and assessment methodology.",
+  "description_hi": "प्रशिक्षण में गुणवत्ता मानक, चेकलिस्ट, स्कोरिंग, रोगी सुरक्षा और मूल्यांकन विधि शामिल होती है।"
+},
+{
+  "keywords": ["assessor role", "job of assessor", "duties of assessor"],
+  "answer_en": "Assessors verify compliance with NQAS standards, interview staff, observe services, inspect documents and assign scores.",
+  "answer_hi": "असेसर NQAS मानकों के अनुपालन की पुष्टि करते हैं, स्टाफ से साक्षात्कार करते हैं, सेवाओं का निरीक्षण करते हैं, दस्तावेज़ जाँचते हैं और स्कोर देते हैं।",
+  "description_en": "Their role ensures quality, transparency and continuous improvement in health facilities.",
+  "description_hi": "उनकी भूमिका स्वास्थ्य संस्थानों में गुणवत्ता, पारदर्शिता और निरंतर सुधार सुनिश्चित करती है।"
+},
+ {
+    "keywords": ["how many areas in nqas", "nqas areas count", "nqas me kitne area", "nqas departments", "nqas components"],
+    "answer_en": "NQAS has 8 Areas of Concern that apply across different facility types.",
+    "answer_hi": "NQAS में कुल 8 Areas of Concern होते हैं, जो अलग-अलग सुविधा प्रकारों पर लागू होते हैं।",
+    "description_en": "These areas include: Service Provision, Patient Rights, Inputs, Support Services, Clinical Services, Infection Control, Quality Management and Outcomes.",
+    "description_hi": "इनमें शामिल हैं: सर्विस प्राविजन, पेशेंट राइट्स, इनपुट्स, सपोर्ट सर्विसेज, क्लीनिकल सर्विसेज, इंफेक्शन कंट्रोल, क्वालिटी मैनेजमेंट और आउटकम्स।"
+  },
+  {
+    "keywords": ["nqas for phc", "phc nqas departments", "phc nqas kitne department", "phc me nqas area"],
+    "answer_en": "For PHCs, all 8 NQAS Areas of Concern are applicable, but the number of standards and measurable elements varies.",
+    "answer_hi": "PHC के लिए NQAS के सभी 8 Areas of Concern लागू होते हैं, लेकिन स्टैंडर्ड और ME की संख्या सुविधा के अनुसार अलग होती है।",
+    "description_en": "PHCs are evaluated on OPD, IPD (if available), laboratory, pharmacy, infection control and support services.",
+    "description_hi": "PHC में OPD, IPD (यदि उपलब्ध), लैब, फार्मेसी, संक्रमण नियंत्रण और सपोर्ट सर्विसेज का मूल्यांकन किया जाता है।"
+  },
+  {
+    "keywords": ["nqas for chc", "chc nqas departments", "chc me kitne department", "chc nqas area"],
+    "answer_en": "CHCs follow all 8 NQAS Areas of Concern with additional focus on emergency services, labour room, OT and inpatient services.",
+    "answer_hi": "CHC में NQAS के सभी 8 Areas लागू होते हैं, साथ ही इमरजेंसी सेवाओं, लेबर रूम, OT और इनपेशेंट सेवाओं पर अतिरिक्त ध्यान होता है।",
+    "description_en": "CHCs have more departments than PHCs, so assessment covers IPD, OT, maternity, laboratory, and emergency services.",
+    "description_hi": "CHC में विभागों की संख्या अधिक होती है, इसलिए मूल्यांकन IPD, OT, मैटरनिटी, लैब और इमरजेंसी सेवाओं को भी कवर करता है।"
+  },
+  {
+    "keywords": ["nqas for dh", "district hospital nqas", "dh nqas departments", "district hospital kitne department"],
+    "answer_en": "District Hospitals have the maximum number of departments under NQAS with all 8 Areas of Concern fully applicable.",
+    "answer_hi": "जिला अस्पतालों (DH) में NQAS के अंतर्गत सबसे अधिक विभाग शामिल होते हैं और सभी 8 Areas पूरी तरह लागू होते हैं।",
+    "description_en": "DH assessment includes emergency, IPD, OPD, labour room, OT, ICU, SNCU/NICU, diagnostics, pharmacy and support services.",
+    "description_hi": "DH मूल्यांकन में इमरजेंसी, IPD, OPD, लेबर रूम, OT, ICU, SNCU/NICU, डायग्नोस्टिक्स, फार्मेसी और सपोर्ट सर्विसेज शामिल हैं।"
+  },
+  {
+    "keywords": ["laqshya how many departments", "laqshya departments", "laqshya kitne department", "laqshya areas"],
+    "answer_en": "LaQshya focuses mainly on two major areas: Labour Room and Maternity Operation Theatre.",
+    "answer_hi": "LaQshya मुख्य रूप से दो क्षेत्रों पर केंद्रित है: लेबर रूम और मैटरनिटी ऑपरेशन थिएटर।",
+    "description_en": "LaQshya aims to improve intrapartum care, delivery services and emergency obstetric management.",
+    "description_hi": "LaQshya प्रसवकालीन देखभाल, डिलीवरी सेवाओं और आपातकालीन प्रसूति प्रबंधन में सुधार पर केंद्रित है।"
+  },
+  {
+    "keywords": ["laqshya phc", "phc laqshya", "laqshya in phc"],
+    "answer_en": "LaQshya is usually not applicable in PHCs unless the PHC is designated as a delivery point facility.",
+    "answer_hi": "PHC में LaQshya आमतौर पर लागू नहीं होता, जब तक कि PHC एक डिलीवरी प्वाइंट सुविधा न हो।",
+    "description_en": "If a PHC conducts deliveries, only Labour Room standards apply.",
+    "description_hi": "यदि PHC में डिलीवरी होती है, तो केवल लेबर रूम के मानक लागू होते हैं।"
+  },
+  {
+    "keywords": ["laqshya chc", "chc laqshya", "laqshya in chc"],
+    "answer_en": "In CHCs with delivery services, LaQshya applies to the Labour Room and Maternity OT.",
+    "answer_hi": "डिलीवरी सेवाओं वाले CHC में LaQshya लेबर रूम और मैटरनिटी OT पर लागू होता है।",
+    "description_en": "High-load CHCs are priority for LaQshya implementation.",
+    "description_hi": "उच्च प्रसव भार वाले CHC LaQshya के लिए प्राथमिकता में आते हैं।"
+  },
+  {
+    "keywords": ["laqshya dh", "district hospital laqshya"],
+    "answer_en": "For District Hospitals, LaQshya applies to both Labour Room and Maternity OT with full assessment.",
+    "answer_hi": "जिला अस्पतालों में LaQshya लेबर रूम और मैटरनिटी OT दोनों पर पूर्ण मूल्यांकन के साथ लागू होता है।",
+    "description_en": "DHs must meet LaQshya quality benchmarks for certification.",
+    "description_hi": "DH को प्रमाणन के लिए LaQshya गुणवत्ता बेंचमार्क पूरा करना होता है।"
+  },
+  {
+    "keywords": ["musqan departments", "muskan departments", "musqan units", "muskan kitne department"],
+    "answer_en": "MusQan can include up to four major paediatric units depending on the facility: Paediatric OPD, Paediatric Ward, SNCU/NBSU and Nutrition Rehabilitation Centre.",
+    "answer_hi": "MusQan में सुविधा के अनुसार 4 प्रमुख बाल-स्वास्थ्य विभाग शामिल हो सकते हैं: बाल OPD, बाल वार्ड, SNCU/NBSU और पोषण पुनर्वास केंद्र (NRC)।",
+    "description_en": "Lower-level facilities may have 2–3 departments only.",
+    "description_hi": "छोटी सुविधाओं में केवल 2–3 विभाग हो सकते हैं।"
+  },
+  {
+    "keywords": ["musqan phc", "phc musqan", "muskan phc"],
+    "answer_en": "PHCs under MusQan typically have 1–2 units: Paediatric OPD and basic paediatric care.",
+    "answer_hi": "PHC में MusQan के अंतर्गत आमतौर पर 1–2 यूनिट होते हैं: बाल OPD और बुनियादी बाल चिकित्सा सेवाएँ।",
+    "description_en": "PHCs usually lack SNCU/NRC, so fewer units apply.",
+    "description_hi": "PHC में SNCU/NRC नहीं होते, इसलिए यूनिट कम लागू होते हैं।"
+  },
+  {
+    "keywords": ["musqan chc", "chc musqan"],
+    "answer_en": "CHCs may have 2–3 MusQan units depending on services: OPD, Paediatric Ward and NBSU.",
+    "answer_hi": "CHC में सेवाओं के अनुसार 2–3 MusQan यूनिट हो सकते हैं: OPD, बाल वार्ड और NBSU।",
+    "description_en": "Some CHCs also run NRC.",
+    "description_hi": "कुछ CHC में NRC भी संचालित होता है।"
+  },
+  {
+    "keywords": ["musqan dh", "district hospital musqan"],
+    "answer_en": "District Hospitals generally have all 4 MusQan units: OPD, Ward, SNCU and NRC.",
+    "answer_hi": "जिला अस्पतालों में आमतौर पर MusQan के सभी 4 यूनिट होते हैं: OPD, वार्ड, SNCU और NRC।",
+    "description_en": "DHs are major paediatric care centres in MusQan.",
+    "description_hi": "DH MusQan के प्रमुख बाल-स्वास्थ्य केंद्र माने जाते हैं।"
+  }
+  ]
+}

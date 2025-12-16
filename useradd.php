@@ -212,10 +212,10 @@
     SELECT f.fac_id, f.block_id, f.nin_no, f.Health_facilty_type, f.fac_name
     FROM facilities f
     WHERE f.dist_id = $dist_id 
-    AND f.fac_id NOT IN (
-        SELECT distinct fac_id_fk 
-        FROM s_user 
-        WHERE dist_id = $dist_id);";
+   AND f.fac_id NOT IN (
+    SELECT distinct fac_id_fk 
+    FROM s_user
+);";
 
                             $result = mysqli_query($con, $facilityQuery);
 
