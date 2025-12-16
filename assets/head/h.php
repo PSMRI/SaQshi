@@ -2,6 +2,59 @@
 <html lang="en">
 <?php include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
+/*
+$__PAGE_START = microtime(true);
+$__DB_TIME = 0;
+$__QUERY_COUNT = 0;
+
+function runQuery($con, $sql, $page = null)
+{
+    global $__DB_TIME, $__QUERY_COUNT;
+
+    // Auto page name if not passed
+    if ($page === null) {
+        $page = basename($_SERVER['PHP_SELF']);
+    }
+
+    // Count query
+    $__QUERY_COUNT++;
+
+    // Execute & time query
+    $start = microtime(true);
+    $result = mysqli_query($con, $sql);
+    $end = microtime(true);
+
+    $execMs = (int)(($end - $start) * 1000);
+    $__DB_TIME += $execMs;
+
+    // Escape values safely
+    $escapedSql  = mysqli_real_escape_string($con, $sql);
+    $escapedPage = mysqli_real_escape_string($con, $page);
+
+    // ✅ LOG QUERY (DEBUG MODE – logs all queries)
+    $logSql = "
+        INSERT INTO db_query_log
+        (query_text, exec_time_ms, executed_at, page_name)
+        VALUES (
+            '$escapedSql',
+            $execMs,
+            NOW(),
+            '$escapedPage'
+        )
+    ";
+
+    mysqli_query($con, $logSql) or error_log(
+        'DB LOG ERROR: ' . mysqli_error($con)
+    );
+
+    // Optional: log failed queries
+    if ($result === false) {
+        error_log("QUERY FAILED [$page]: " . mysqli_error($con));
+    }
+
+    return $result;
+}
+*/
 ?>
 
 <head>
@@ -212,23 +265,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 					</ul>
 
 				</li>
-
-				<li class="nav-item pcoded-hasmenu">
-					<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Setup</span></a>
-					<ul class="pcoded-submenu">
-
-
-						<li><a href="healthblock.php"><span class="pcoded-micon"><i class="bi bi-person-vcard"></i></span><span class="pcoded-mtext">Add health block</span></a></li>
-						<li><a href="fac.php"> <span class="pcoded-micon"><i class="bi bi-card-checklist"></i></span><span class="pcoded-mtext">Facility Setup</span></a></li>
-						<li><a href="useradd.php"><span class="pcoded-micon"><i class="bi-journal-plus"></i></span><span class="pcoded-mtext">User</span></a></li>
-						<li><a href="cert.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Certification</span></a></li>
-						<li><a href="outsource.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Outcome Source</span></a></li>
-						<!--li><a href="data.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Data Maintenance</span></a></li-->
-
-
-					</ul>
-
-				</li>
+				
 				<li class="nav-item pcoded-hasmenu">
 					<a href="#!" class="nav-link">
 						<span class="pcoded-micon"><i class="feather icon-layout"></i></span>
@@ -247,7 +284,25 @@ include(__DIR__ . "/../../assets/conn/session.php");
 						</li>
 					</ul>
 				</li>
+<li class="nav-item pcoded-menu-caption">
+					<label>Administration</label>
+				</li>
+				<li class="nav-item pcoded-hasmenu">
+					<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Setup</span></a>
+					<ul class="pcoded-submenu">
 
+
+						<li><a href="healthblock.php"><span class="pcoded-micon"><i class="bi bi-person-vcard"></i></span><span class="pcoded-mtext">Add health block</span></a></li>
+						<li><a href="fac.php"> <span class="pcoded-micon"><i class="bi bi-card-checklist"></i></span><span class="pcoded-mtext">Facility Setup</span></a></li>
+						<li><a href="useradd.php"><span class="pcoded-micon"><i class="bi-journal-plus"></i></span><span class="pcoded-mtext">User</span></a></li>
+						<li><a href="cert.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Certification</span></a></li>
+						<li><a href="outsource.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Outcome Source</span></a></li>
+						<!--li><a href="data.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Data Maintenance</span></a></li-->
+<li><a href="login_analytics.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Login Analytics</span></a></li>
+<!--li><a href="system_monitoring.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">System monitoring</span></a></li-->
+					</ul>
+
+				</li>
 				<li class="nav-item pcoded-hasmenu">
 					<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Message</span></a>
 					<ul class="pcoded-submenu">
@@ -330,7 +385,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 				echo 'Block: ';
 				echo $bdiv;
 			} else {
-				echo 'State Admin';
+				echo 'Admin';
 			} ?></span>
 			<ul class="navbar-nav ml-auto">
 				<li>
