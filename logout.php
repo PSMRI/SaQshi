@@ -10,6 +10,6 @@ session_destroy();
 // Clean (erase) the output buffer if any exists (useful if output buffering was enabled)
 ob_end_clean();
 // Redirect the user to login1.php after session is destroyed
-header("Location: login.php");
+header("Location: start.php");
 exit(); // Ensure no further code is executed after the redirect
 ?>

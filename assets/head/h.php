@@ -212,8 +212,22 @@ function runQuery($con, $sql, $page = null)
 							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 						</li>
 						<li class="nav-item">
-							<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
+							<a href="feedback.php" class="nav-link position-relative">
+								<span class="pcoded-micon">
+									<i class="bi bi-star-half"></i>
+
+								</span>
+								<span class="pcoded-mtext">Feedback</span>
+
+								<!-- 🔴 Notification badge -->
+								<span id="feedbackBadge"
+									class="badge bg-danger position-absolute top-0 start-100 translate-middle"
+									style="display:none;">
+									0
+								</span>
+							</a>
 						</li>
+
 
 
 					<?php } elseif ($user_role == 4) { ?>
@@ -265,7 +279,7 @@ function runQuery($con, $sql, $page = null)
 					</ul>
 
 				</li>
-				
+
 				<li class="nav-item pcoded-hasmenu">
 					<a href="#!" class="nav-link">
 						<span class="pcoded-micon"><i class="feather icon-layout"></i></span>
@@ -284,7 +298,7 @@ function runQuery($con, $sql, $page = null)
 						</li>
 					</ul>
 				</li>
-<li class="nav-item pcoded-menu-caption">
+				<li class="nav-item pcoded-menu-caption">
 					<label>Administration</label>
 				</li>
 				<li class="nav-item pcoded-hasmenu">
@@ -298,8 +312,8 @@ function runQuery($con, $sql, $page = null)
 						<li><a href="cert.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Certification</span></a></li>
 						<li><a href="outsource.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Outcome Source</span></a></li>
 						<!--li><a href="data.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Data Maintenance</span></a></li-->
-<li><a href="login_analytics.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Login Analytics</span></a></li>
-<!--li><a href="system_monitoring.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">System monitoring</span></a></li-->
+						<li><a href="login_analytics.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Login Analytics</span></a></li>
+						<!--li><a href="system_monitoring.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">System monitoring</span></a></li-->
 					</ul>
 
 				</li>
@@ -490,4 +504,36 @@ function runQuery($con, $sql, $page = null)
 			</ul>
 		</div>
 	</header>
+
+	<script>
+		(function() {
+
+			const badge = document.getElementById('feedbackBadge');
+			if (!badge) return; // no badge on this page
+
+			function checkFeedbackNotification() {
+				fetch('assets/get/unread_feedback_count.php') // ✅ FIXED PATH
+					.then(res => res.json())
+					.then(data => {
+						if (data.count > 0) {
+							badge.innerText = data.count;
+							badge.style.display = 'inline-block';
+						} else {
+							badge.style.display = 'none';
+						}
+					})
+					.catch(err => console.error('Feedback notification error', err));
+			}
+
+			// check immediately
+			checkFeedbackNotification();
+
+			// check every 10 seconds
+			setInterval(checkFeedbackNotification, 10000);
+
+		})();
+	</script>
+
+
+
 	<!-- [ Header ] end -->
