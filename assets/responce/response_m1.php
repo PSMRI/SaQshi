@@ -1,6 +1,6 @@
 <?php
 include ("../conn/db.php");
-
+include('session.php');
 if (!empty($_POST["cid"])) {
     $cid = $_POST['cid'];
   include(__DIR__ . "/../../umoic.php");

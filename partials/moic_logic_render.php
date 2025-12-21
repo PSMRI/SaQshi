@@ -529,3 +529,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+<?php include("assets/head/f.php"); ?>

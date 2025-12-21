@@ -16,7 +16,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['department_id'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-
+include("assets/head/h.php");
+$showDeptModal = empty($_SESSION['dept_id1']) || $_SESSION['dept_id1'] == 0;
+$dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
+/* -----------------------------------------
+   SESSION VARIABLES
+------------------------------------------ */
+$dept_id   = $_SESSION['dept_id1'] ?? 0;
+$f_type_id = $_SESSION['f_type_id'] ?? 0;
+$fid       = $_SESSION['u_facilityid'] ?? 0;
+$dept_name = $_SESSION['dept_name1'] ?? '0';
 /***************************************************
  2) AJAX SAVE OUTCOME
  ***************************************************/
@@ -33,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST['action'] ?? '') === "save_
     }
 
     $fac   = $_SESSION['u_facilityid'];
-    $dept  = $_SESSION['dept_id1'];
+    $dept  = $_SESSION['dept_id1'] ?? 0;
     $month = $_SESSION['new_date1'];
     $per   = $_SESSION['assperiod'];
 
@@ -152,9 +161,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST['action'] ?? '') === "save_
 /***************************************************
  UI START
  ***************************************************/
-include("assets/head/h.php");
-
-$showDept = empty($_SESSION['dept_id1']);
+//include("assets/head/h.php");
+//$showDept = empty($_SESSION['dept_id1']);
 ?>
 
 <style>
@@ -219,7 +227,7 @@ $showDept = empty($_SESSION['dept_id1']);
 
             $_SESSION['new_date1'] = $_POST['date1'];
             $fac = $_SESSION['u_facilityid'];
-            $did = $_SESSION['dept_id1'];
+            $did = $_SESSION['dept_id1'] ?? 0;
             $ft  = $_SESSION['f_type_id'];
 
             /* FETCH FILLED DATA */
@@ -716,5 +724,15 @@ WHERE out_come_hwc_factype=? AND out_come_dept=?
             }
         }
     </script>
-
+<script>
+$(document).ready(function () {
+    <?php if ($showDeptModal): ?>
+        $('#departmentModal').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        $('#departmentModal').modal('show');
+    <?php endif; ?>
+});
+</script>
     <?php include("assets/head/f.php"); ?>
