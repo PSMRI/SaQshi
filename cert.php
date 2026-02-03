@@ -1,218 +1,387 @@
 <?php
+// cert.php - Manage Certification Entry
 include("assets/head/h.php");
 
-$successMsg = '';
+$successMsg = "";
+$errorMsg = "";
 
-if (isset($_POST['postsubmit'])) {
-  $fac_name   = $_POST['fac_name'] ?? '';
-  $cert_type  = $_POST['cert_type'] ?? '';
-  $cert_issue = $_POST['cert_issue'] ?? '';
-  $validity   = '';
-  $score      = $_POST['score'] ?? null;
-  $lat        = isset($_POST['lat']) ? floatval($_POST['lat']) : null;
-  $longi      = isset($_POST['longi']) ? floatval($_POST['longi']) : null;
-  $dist       = $_POST['dist'] ?? null;
-  $block      = $_POST['block'] ?? null;
-  $fac_type   = $_POST['fac_type'] ?? '';
-  $update_id  = $_POST['update_id'] ?? '';
+/* ---------------------------------------------
+   PROCESS FORM SUBMISSION (POST)
+----------------------------------------------*/
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['postsubmit'])) {
+$fac_nin_raw = $_POST['fac_nin'] ?? '';
 
-  // Get District name
-  $dist_name = '';
-  if ($dist !== null) {
-    $stmt = $con->prepare("SELECT Dist_name FROM dist_master WHERE Dist_id = ?");
-    $stmt->bind_param("i", $dist);
-    $stmt->execute();
-    $stmt->bind_result($dist_name);
-    $stmt->fetch();
-    $stmt->close();
+$fac_nin = (is_numeric($fac_nin_raw) && $fac_nin_raw !== '')
+    ? (int)$fac_nin_raw
+    : 0;
+  // Collect POST safely
+  $dist            = intval($_POST['dist'] ?? 0);
+  $block_id        = intval($_POST['block'] ?? 0);
+  $fac_id          = intval($_POST['fac_id'] ?? 0);
+  //$fac_nin         = trim($_POST['fac_nin'] ?? 0);
+  $fac_name        = trim($_POST['fac_name'] ?? '');
+  $fac_type        = trim($_POST['fac_type'] ?? '');
+  $cert_type       = trim($_POST['cert_type'] ?? '');
+  $cert_detailscol = trim($_POST['cert_detailscol'] ?? '');
+  $cert_status     = trim($_POST['cert_status'] ?? '');
+  $ass_mod         = trim($_POST['ass_mod'] ?? '');
+  $date_of_ass     = trim($_POST['date_of_ass'] ?? '');
+  $cert_issue      = trim($_POST['cert_issue'] ?? '');
+  $score           = trim($_POST['score'] ?? '');
+  $lat             = trim($_POST['lat'] ?? '');
+  $longi           = trim($_POST['longi'] ?? '');
+
+  // REQUIRED FIELDS FIXED
+  $required = [
+    'dist',
+    'block_id',
+    'fac_id',
+    'fac_name',
+    'fac_type',
+    'cert_type',
+    'cert_detailscol',
+    'cert_status',
+    'ass_mod',
+    'date_of_ass',
+    'cert_issue',
+    'score',
+    'lat',
+    'longi'
+  ];
+
+  foreach ($required as $r) {
+    if (empty($$r) && $r !== 'score') {
+      $errorMsg = "All fields are required. Missing: $r";
+      break;
+    }
   }
 
-  // Calculate validity (1 year from issue date)
-  if ($cert_issue !== '') {
-    $validity = date('Y-m-d', strtotime($cert_issue . ' +1 year'));
+  if ($errorMsg === "" && $score === "") {
+    $errorMsg = "All fields are required. Missing: score";
   }
 
-  // ✅ UPDATE if record already exists (has update_id)
-  if (!empty($update_id)) {
-    $stmt = $con->prepare("UPDATE cert_details 
-          SET dist_id=?, dist=?, block=?, fac_name=?, fac_type=?, cert_type=?, cert_issue=?, validity=?, score=?, lat=?, longi=?
-          WHERE id=?");
+  // NUMERIC VALIDATION
+  if ($errorMsg === "") {
+    if (!is_numeric($score)) {
+      $errorMsg = "Score must be numeric.";
+    }
+    if (!is_numeric($lat) || !is_numeric($longi)) {
+      $errorMsg = "Latitude and Longitude must be numeric.";
+    }
+  }
+
+  // DATE VALIDATION (backend)
+  if ($errorMsg === "") {
+    $dt_ass   = strtotime($date_of_ass);
+    $dt_issue = strtotime($cert_issue);
+
+    if ($dt_ass === false || $dt_issue === false) {
+      $errorMsg = "Invalid dates provided.";
+    } elseif ($dt_issue < $dt_ass) {
+      $errorMsg = "Issue Date cannot be earlier than Assessment Date.";
+    }
+  }
+
+  if ($errorMsg === "") {
+
+    // Get District Name
+    $dist_name = "";
+    $stmtD = $con->prepare("SELECT Dist_name FROM dist_master WHERE Dist_id=?");
+    $stmtD->bind_param("i", $dist);
+    $stmtD->execute();
+    $stmtD->bind_result($dist_name);
+    $stmtD->fetch();
+    $stmtD->close();
+
+    // Get Block Name
+    $block_name = "";
+    $stmtB = $con->prepare("SELECT block_name FROM block_master WHERE block_id=?");
+    $stmtB->bind_param("i", $block_id);
+    $stmtB->execute();
+    $stmtB->bind_result($block_name);
+    $stmtB->fetch();
+    $stmtB->close();
+
+    // Validity = issue date + 1 year
+    // VALIDITY BASED ON CERTIFICATION STATUS
+    $validity = null;
+
+    if ($cert_status === "Certified") {
+      $validity = date("Y-m-d", strtotime($cert_issue . " +3 years"));
+    } elseif ($cert_status === "Conditional Certified") {
+      $validity = date("Y-m-d", strtotime($cert_issue . " +1 year"));
+    } else {
+      // Not Certified → no validity
+      $validity = null;
+    }
+
+    // Insert
+    $sql = "INSERT INTO cert_details 
+        (dist_id, dist, block_id, block, fac_id, fac_nin, fac_name, fac_type, 
+         cert_type, cert_detailscol, cert_issue, validity, score, lat, longi, 
+         Cert_status, ass_mod, date_of_ass)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = $con->prepare($sql);
+
+    $types = str_repeat("s", 18);
+
     $stmt->bind_param(
-      "isisssssddsi",
+      $types,
       $dist,
       $dist_name,
-      $block,
+      $block_id,
+      $block_name,
+      $fac_id,
+      $fac_nin,
       $fac_name,
       $fac_type,
       $cert_type,
+      $cert_detailscol,
       $cert_issue,
       $validity,
       $score,
       $lat,
       $longi,
-      $update_id
+      $cert_status,
+      $ass_mod,
+      $date_of_ass
     );
-    $successMsg = $stmt->execute()
-      ? "✅ Certification details updated successfully."
-      : "❌ Failed to update details.";
-    $stmt->close();
 
-  // ✅ Otherwise, INSERT new record
-  } else {
-    $stmt = $con->prepare("INSERT INTO cert_details 
-          (dist_id, dist, block, fac_name, fac_type, cert_type, cert_issue, validity, score, lat, longi)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param(
-      "isisssssdds",
-      $dist,
-      $dist_name,
-      $block,
-      $fac_name,
-      $fac_type,
-      $cert_type,
-      $cert_issue,
-      $validity,
-      $score,
-      $lat,
-      $longi
-    );
-    $successMsg = $stmt->execute()
-      ? "✅ Certification details saved successfully."
-      : "❌ Failed to save details.";
+    if ($stmt->execute()) {
+      $successMsg = "✅ Certification details saved successfully.";
+    } else {
+      $errorMsg = "❌ Database Error: " . $stmt->error;
+    }
+
     $stmt->close();
   }
 }
 
-// ===== Load Dropdown Data =====
-$districts = $blocksByDistrict = $facilitiesByBlock = $facilityTypes = $certMap = [];
+/* ---------------------------------------------
+   LOAD MASTER DATA
+---------------------------------------------*/
+$districts = [];
+$blocksByDistrict = [];
+$facilityTypes = [];
+$facilitiesByBlock = [];
 
-$distRes = $con->query("SELECT * FROM dist_master");
-while ($d = $distRes->fetch_assoc()) {
+$resD = $con->query("SELECT Dist_id, Dist_name FROM dist_master");
+while ($d = $resD->fetch_assoc()) {
   $districts[$d['Dist_id']] = $d['Dist_name'];
 }
 
-$blockRes = $con->query("SELECT block_id, block_name, dist_id FROM block_master");
-while ($b = $blockRes->fetch_assoc()) {
+$resB = $con->query("SELECT block_id, block_name, dist_id FROM block_master");
+while ($b = $resB->fetch_assoc()) {
   $blocksByDistrict[$b['dist_id']][] = $b;
 }
 
-$typeRes = $con->query("SELECT * FROM facilities_type");
-while ($t = $typeRes->fetch_assoc()) {
+$resT = $con->query("SELECT fac_type_id, facilities_type FROM facilities_type");
+while ($t = $resT->fetch_assoc()) {
   $facilityTypes[$t['fac_type_id']] = $t['facilities_type'];
 }
 
-$facilityRes = $con->query("SELECT * FROM facilities");
-while ($f = $facilityRes->fetch_assoc()) {
+$resF = $con->query("SELECT fac_id, fac_name, block_id, Health_facilty_type, NIN_no FROM facilities");
+while ($f = $resF->fetch_assoc()) {
   $facilitiesByBlock[$f['block_id']][] = [
-    'id' => $f['fac_id'],
-    'fac_name' => $f['fac_name'],
-    'fac_type_id' => $f['Health_facilty_type'],
-    'fac_type_name' => $facilityTypes[$f['Health_facilty_type']] ?? ''
+    "fac_id" => $f["fac_id"],
+    "fac_name" => $f["fac_name"],
+    "fac_type_name" => $facilityTypes[$f["Health_facilty_type"]] ?? "",
+    "fac_nin" => $f["NIN_no"]
   ];
 }
 
-$certRes = $con->query("SELECT * FROM cert_details");
-while ($r = $certRes->fetch_assoc()) {
-  $certMap[$r['fac_name']] = $r;
-}
 ?>
-
-
-<!-- Glow Style -->
 <style>
-.glow-card {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 0 12px rgba(0, 123, 255, 0.5);
-  transition: box-shadow 0.3s ease-in-out;
-}
-.glow-card:hover {
-  box-shadow: 0 0 20px rgba(235, 81, 39, 0.8);
-}
+  .glow-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.15);
+  }
 </style>
 
+<!-- Load SweetAlert BEFORE any JS uses Swal -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-const blockData = <?= json_encode($blocksByDistrict) ?>;
-const facilityData = <?= json_encode($facilitiesByBlock) ?>;
-const certData = <?= json_encode($certMap) ?>;
+  /* ------------------------------------------------------------------
+   DATA FROM PHP -> JS
+------------------------------------------------------------------ */
+  const blockData = <?= json_encode($blocksByDistrict) ?>;
+  const facilityData = <?= json_encode($facilitiesByBlock) ?>;
 
-function loadBlocks(distId) {
-  const blockSelect = document.getElementById('block');
-  blockSelect.innerHTML = '<option value="">Select Block</option>';
-  (blockData[distId] || []).forEach(b => {
-    blockSelect.innerHTML += `<option value="${b.block_id}">${b.block_name}</option>`;
-  });
-  document.getElementById('facility').innerHTML = '<option value="">Select Facility</option>';
-  document.getElementById('fac_type').value = '';
-  resetCertInputs();
-}
+  /* ------------------ LOAD BLOCKS ------------------ */
+  function loadBlocks(distId) {
+    const block = document.getElementById("block");
+    block.innerHTML = `<option value="">Select Block</option>`;
 
-function loadFacilities(blockId) {
-  const facSelect = document.getElementById('facility');
-  facSelect.innerHTML = '<option value="">Select Facility</option>';
-  (facilityData[blockId] || []).forEach(f => {
-    facSelect.innerHTML += `<option value="${f.fac_name}" data-type="${f.fac_type_name}">${f.fac_name}</option>`;
-  });
-  document.getElementById('fac_type').value = '';
-  resetCertInputs();
-}
+    (blockData[distId] || []).forEach(b => {
+      block.innerHTML += `<option value="${b.block_id}">${b.block_name}</option>`;
+    });
 
-function setFacilityTypeAndCertData() {
-  const fac = document.getElementById('facility');
-  const selected = fac.options[fac.selectedIndex];
-  document.getElementById('fac_type').value = selected.getAttribute('data-type');
-  const fname = fac.value;
-  if (certData[fname]) {
-    const cert = certData[fname];
-    document.getElementById('cert_type').value = cert.cert_type;
-    document.getElementById('cert_issue').value = cert.cert_issue;
-    document.getElementById('validity').value = cert.validity;
-    document.getElementById('score').value = cert.score;
-    document.getElementById('lat').value = cert.lat;
-    document.getElementById('longi').value = cert.longi;
-    document.getElementById('update_id').value = cert.id; // ✅ auto-set update ID
-  } else {
-    resetCertInputs();
+    document.getElementById("facility").innerHTML = `<option value="">Select Facility</option>`;
+    document.getElementById("fac_type").value = "";
+    document.getElementById("fac_id").value = "";
+    document.getElementById("fac_nin").value = "";
   }
-}
 
-function updateValidityDate() {
-  const issue = document.getElementById('cert_issue').value;
-  if (issue) {
-    const issueDate = new Date(issue);
-    issueDate.setFullYear(issueDate.getFullYear() + 1);
-    const yyyy = issueDate.getFullYear();
-    const mm = String(issueDate.getMonth() + 1).padStart(2, '0');
-    const dd = String(issueDate.getDate()).padStart(2, '0');
-    document.getElementById('validity').value = `${yyyy}-${mm}-${dd}`;
-  } else {
-    document.getElementById('validity').value = '';
+  /* ------------------ LOAD FACILITIES ------------------ */
+  function loadFacilities(blockId) {
+    const fac = document.getElementById("facility");
+    fac.innerHTML = `<option value="">Select Facility</option>`;
+
+    (facilityData[blockId] || []).forEach(f => {
+      fac.innerHTML += `<option value="${f.fac_name}" 
+            data-id="${f.fac_id}" 
+            data-nin="${f.fac_nin}" 
+            data-type="${f.fac_type_name}">
+            ${f.fac_name}
+        </option>`;
+    });
   }
-}
 
-function resetCertInputs() {
-  ['cert_type', 'cert_issue', 'validity', 'score', 'lat', 'longi'].forEach(id => {
-    document.getElementById(id).value = '';
+  /* ------------------ SET FACILITY DATA ------------------ */
+  function setFacilityData() {
+    const sel = document.getElementById("facility").selectedOptions[0];
+    if (!sel) return;
+
+    document.getElementById("fac_type").value = sel.getAttribute("data-type");
+    document.getElementById("fac_id").value = sel.getAttribute("data-id");
+    const nin = sel.getAttribute("data-nin");
+    document.getElementById("fac_nin").value = (nin && nin !== "null") ? nin : 0;
+  }
+
+  /* ------------------ AUTO VALIDITY ------------------ */
+  function updateValidityDate() {
+    const issue = document.getElementById("cert_issue").value;
+    const status = document.querySelector('[name="cert_status"]').value;
+
+    if (!issue || !status) {
+      document.getElementById("validity").value = "";
+      return;
+    }
+
+    let d = new Date(issue);
+
+    if (status === "Certified") {
+      d.setFullYear(d.getFullYear() + 3);
+    } else if (status === "Conditional Certified") {
+      d.setFullYear(d.getFullYear() + 1);
+    } else {
+      document.getElementById("validity").value = "";
+      return;
+    }
+
+    document.getElementById("validity").value = d.toISOString().split("T")[0];
+  }
+
+
+  /* ------------------ LIVE DATE VALIDATION ------------------ */
+  function validateDatesLive() {
+    const ass = document.getElementById("date_of_ass").value;
+    const issue = document.getElementById("cert_issue").value;
+
+    if (!ass || !issue) return;
+
+    if (new Date(issue) < new Date(ass)) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Date Selection",
+        html: "<b>Issue Date</b> cannot be earlier than <b>Assessment Date</b>",
+      });
+
+      document.getElementById("cert_issue").value = "";
+      document.getElementById("validity").value = "";
+    }
+  }
+
+  /* ------------------ ON SUBMIT VALIDATION ------------------ */
+  function validateBeforeSubmit(e) {
+    const ass = document.getElementById("date_of_ass").value;
+    const issue = document.getElementById("cert_issue").value;
+
+    if (issue && ass && new Date(issue) < new Date(ass)) {
+      e.preventDefault();
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Dates",
+        html: "Issue Date cannot be earlier than Assessment Date.",
+      });
+      return false;
+    }
+
+    // LAT/LONG check
+    if (!document.getElementById("lat").value.trim() ||
+      !document.getElementById("longi").value.trim()) {
+
+      e.preventDefault();
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Location",
+        html: "Latitude & Longitude are <b>mandatory</b>.",
+      });
+      return false;
+    }
+
+    return true;
+  }
+
+  /* ------------------ ATTACH LISTENERS ------------------ */
+  document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById("certForm");
+
+    document.getElementById("date_of_ass").addEventListener("change", validateDatesLive);
+    document.getElementById("cert_issue").addEventListener("change", function() {
+      validateDatesLive();
+      updateValidityDate();
+    });
+
+    if (form) form.addEventListener("submit", validateBeforeSubmit);
   });
-  document.getElementById('update_id').value = '';
-}
 </script>
 
 <div class="pcoded-main-container">
   <div class="pcoded-content">
+
     <div class="pagetitle mb-2">
-      <h5 class="fw-bold text-primary mb-1">Manage Certification Entry</h5>
+      <h5 class="fw-bold text-primary">Manage Certification Entry</h5>
     </div>
 
-    <div class="card glow-card shadow border-1">
+    <div class="card glow-card shadow-sm">
       <div class="card-body p-4">
-        <form method="post" action="#" class="row g-3">
-          <input type="hidden" name="update_id" id="update_id">
 
-          <!-- District, Block, Facility -->
+        <?php if ($errorMsg): ?>
+          <script>
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              html: "<?= $errorMsg ?>",
+            });
+          </script>
+        <?php endif; ?>
+
+        <?php if ($successMsg): ?>
+          <script>
+            Swal.fire({
+              icon: "success",
+              title: "Success",
+              html: "<?= $successMsg ?>",
+              timer: 1800,
+              showConfirmButton: false
+            });
+          </script>
+        <?php endif; ?>
+
+
+        <form id="certForm" method="post" class="row g-3">
+
+          <input type="hidden" id="fac_id" name="fac_id">
+          <input type="hidden" id="fac_nin" name="fac_nin">
+
+          <!-- DISTRICT -->
           <div class="col-md-3">
-            <label class="floating-label">District</label>
-            <select class="form-control form-control-sm" name="dist" onchange="loadBlocks(this.value)" required>
+            <label>District</label>
+            <select name="dist" class="form-control form-control-sm" onchange="loadBlocks(this.value)" required>
               <option value="">Select District</option>
               <?php foreach ($districts as $id => $name): ?>
                 <option value="<?= $id ?>"><?= $name ?></option>
@@ -220,79 +389,119 @@ function resetCertInputs() {
             </select>
           </div>
 
+          <!-- BLOCK -->
           <div class="col-md-3">
-            <label class="floating-label">Block</label>
-            <select class="form-control form-control-sm" name="block" id="block" onchange="loadFacilities(this.value)" required>
+            <label>Block</label>
+            <select id="block" name="block" class="form-control form-control-sm" onchange="loadFacilities(this.value)" required>
               <option value="">Select Block</option>
             </select>
           </div>
 
+          <!-- FACILITY -->
           <div class="col-md-3">
-            <label class="floating-label">Facility</label>
-            <select class="form-control form-control-sm" name="fac_name" id="facility" onchange="setFacilityTypeAndCertData()" required>
+            <label>Facility</label>
+            <select id="facility" name="fac_name" class="form-control form-control-sm" onchange="setFacilityData()" required>
               <option value="">Select Facility</option>
             </select>
           </div>
 
-          <!-- Facility Type -->
-          <div class="col-md-2">
-            <label class="floating-label">Facility Type</label>
-            <input type="text" name="fac_type" id="fac_type" class="form-control form-control-sm" readonly>
+          <!-- FACILITY TYPE -->
+          <div class="col-md-3">
+            <label>Facility Type</label>
+            <input id="fac_type" name="fac_type" class="form-control form-control-sm" readonly required>
           </div>
 
-          <!-- Certification Type -->
+          <!-- PROGRAM -->
           <div class="col-md-3">
-            <label class="floating-label">Certification Type</label>
-            <select class="form-control form-control-sm" name="cert_type" id="cert_type" required>
-              <option value="">-- Select Type --</option>
-              <option value="National">National</option>
-              <option value="State">State</option>
+            <label>Certification Program</label>
+            <select name="cert_detailscol" class="form-control form-control-sm" required>
+              <option value="">Select</option>
+              <option value="NQAS">NQAS</option>
+              <option value="LaQshya">LaQshya</option>
+              <option value="MusQan">MusQan</option>
             </select>
           </div>
 
-          <!-- Issue & Validity -->
+          <!-- CERT TYPE -->
           <div class="col-md-3">
-            <label class="floating-label">Issue Date</label>
-            <input type="date" name="cert_issue" id="cert_issue" class="form-control form-control-sm" onchange="updateValidityDate()" required>
+            <label>Certification Type</label>
+            <select name="cert_type" class="form-control form-control-sm" required>
+              <option value="">Select</option>
+              <option value="State">State</option>
+              <option value="National">National</option>
+            </select>
           </div>
 
+          <!-- STATUS -->
           <div class="col-md-3">
-            <label class="floating-label">Validity (1 Year)</label>
-            <input type="date" name="validity" id="validity" class="form-control form-control-sm" readonly>
+            <label>Certification Status</label>
+            <select name="cert_status" class="form-control form-control-sm" required>
+              <option value="">Select Status</option>
+              <option value="Certified">Certified</option>
+              <option value="Conditional Certified">Conditional Certified</option>
+              <option value="Not Certified">Not Certified</option>
+            </select>
           </div>
 
-          <!-- Score, Lat, Long -->
+          <!-- MODE -->
+          <div class="col-md-3">
+            <label>Assessment Mode</label>
+            <select name="ass_mod" class="form-control form-control-sm" required>
+              <option value="">Select Mode</option>
+              <option value="Physical">Physical</option>
+              <option value="Virtual">Virtual</option>
+            </select>
+          </div>
+
+          <!-- ASSESSMENT DATE -->
+          <div class="col-md-3">
+            <label>Assessment Date</label>
+            <input type="date" id="date_of_ass" name="date_of_ass" class="form-control form-control-sm" required>
+          </div>
+
+          <!-- ISSUE DATE -->
+          <div class="col-md-3">
+            <label>Issue Date</label>
+            <input type="date" id="cert_issue" name="cert_issue" class="form-control form-control-sm" required>
+          </div>
+
+          <!-- VALIDITY -->
+          <div class="col-md-3">
+            <label>Validity</label>
+            <input type="date" id="validity" name="validity" class="form-control form-control-sm" readonly>
+          </div>
+
+          <!-- SCORE -->
           <div class="col-md-2">
-            <label class="floating-label">Score</label>
-            <input type="text" name="score" id="score" class="form-control form-control-sm" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <label>Score</label>
+            <input type="number" name="score" class="form-control form-control-sm" required step="0.01" min="0">
           </div>
 
+          <!-- LAT -->
           <div class="col-md-3">
-            <label class="floating-label">Latitude</label>
-            <input type="text" name="lat" id="lat" class="form-control form-control-sm" required oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')">
+            <label>Latitude</label>
+            <input type="text" id="lat" name="lat" class="form-control form-control-sm" required>
           </div>
 
+          <!-- LNG -->
           <div class="col-md-3">
-            <label class="floating-label">Longitude</label>
-            <input type="text" name="longi" id="longi" class="form-control form-control-sm" required oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')">
+            <label>Longitude</label>
+            <input type="text" id="longi" name="longi" class="form-control form-control-sm" required>
           </div>
 
-          <!-- Save Button -->
-          <div class="col-md-2 mt-4">
-            <button type="submit" name="postsubmit" class="btn btn-success w-100">Save</button>
+          <div class="col-md-2 mt-3">
+            <button class="btn btn-success w-100" name="postsubmit">SAVE</button>
           </div>
+
         </form>
 
-        <!-- Info Notice -->
-        <div class="alert alert-info fw-bold mt-3">
-          ⚠️ Latitude and Longitude must be provided — records without them will not be shown on the map.
-        </div>
 
-        <!-- Success / Error Message -->
-        <?php if (!empty($successMsg)): ?>
-          <div class="alert alert-info mt-3"><?= $successMsg ?></div>
-        <?php endif; ?>
       </div>
+      <b>
+      <div class="alert alert-warning d-flex align-items-center mb-3">
+  <strong class="me-2">⚠️ Important:</strong>
+  Facility registration is mandatory before certification details can be entered.
+</div>
     </div>
   </div>
 </div>

@@ -232,7 +232,7 @@ if(isset($_POST['bulk_create'])){
         FROM facilities
         WHERE dist_id = $dist_id
           AND fac_id NOT IN (
-              SELECT fac_id_fk FROM s_user
+              SELECT fac_id_fk FROM s_user where fac_id_fk is not null
           )
     ");
 

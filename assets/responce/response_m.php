@@ -1,10 +1,10 @@
 <?php
 
-include ("../conn/db.php");
-
+include(__DIR__ . "/../../assets/conn/db.php");
+include(__DIR__ . "/../../assets/conn/session.php");
 if (!empty($_POST["cid"])) {
     $cid = $_POST['cid'];
-     include(__DIR__ . "/../../moic.php");
+    // include(__DIR__ . "/../../moic.php");
    //include_once("test.php");
    $fsid = $_SESSION['u_facilityid'];
    $dept_id=$_SESSION['dept_id1'];
@@ -22,7 +22,5 @@ if (!empty($_POST["cid"])) {
         echo  '<option value="0">-Select-</option>';
         
     }
-} else {
-    print_r($mysqli -> error_list);
-}
+} 
 ?>

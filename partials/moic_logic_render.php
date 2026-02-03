@@ -1,162 +1,165 @@
 <?php
 if (isset($_POST['submit1'])) {
-  $_SESSION['FDepartment'] = $_SESSION['dept_id1'];
-  $_SESSION['concern'] = $_POST['Concern'];
-  $_SESSION['period'] = $_POST['Period'];
+    $_SESSION['FDepartment'] = $_SESSION['dept_id1'];
+    $_SESSION['concern'] = $_POST['Concern'];
+    $_SESSION['period'] = $_POST['Period'];
 
-  $C = $_SESSION['concern'];
-  $F = $_SESSION['FDepartment'];
-  $Fa = $_SESSION['u_facilityid'];
-  $p = $_SESSION['period'];
+    $C  = $_SESSION['concern'];
+    $F  = $_SESSION['FDepartment'];
+    $Fa = $_SESSION['u_facilityid'];
+    $p  = $_SESSION['period'];
 
-  if ($p == 0) {
-    echo '<div class="alert alert-danger mt-3">Kindly select assessment period.</div>';
-    return;
-  }
-
-  $_SESSION['q1'] = "CALL moic_action_plan($Fa,$p,$F,$C)";
-  $query = $con->query($_SESSION['q1']);
-
-  if ($query && $query->num_rows > 0) {
-    while ($row = mysqli_fetch_array($query)) {
-?>
-      <!-- Action Plan Form Card -->
-      <div class="card shadow-sm border rounded p-3 bg-light bg-gradient small mb-4">
-        <h5 class="text-center mb-3 fw-bold text-primary">
-          <i class="bi bi-pencil-square me-2 text-success"></i>Formulate Your Action Plan
-        </h5>
-
-        <!-- Info Row -->
-        <div class="row g-3 mb-3">
-          <!-- Standard -->
-          <div class="col-md-3">
-            <div class="card border-top border-2 border-info h-100">
-              <div class="card-body p-2">
-                <div class="fw-semibold text-info"><i class="bi bi-list-task me-2"></i>Standard</div>
-                <div class="text-dark"><?php echo $row['c_subtype_Reference_No_fk']; ?></div>
-              </div>
-            </div>
-          </div>
-          <!-- Reference Number -->
-          <div class="col-md-3">
-            <div class="card border-top border-2 border-info h-100">
-              <div class="card-body p-2">
-                <div class="fw-semibold text-info"><i class="bi bi-hash me-2"></i>Reference Number</div>
-                <div class="text-dark"><?php echo $row['csqa_reference_id']; ?></div>
-              </div>
-            </div>
-          </div>
-          <!-- Checkpoint -->
-          <div class="col-md-3">
-            <div class="card border-top border-2 border-info h-100">
-              <div class="card-body p-2">
-                <div class="fw-semibold text-info"><i class="bi bi-check2-circle me-2"></i>Checkpoint</div>
-                <div class="text-dark"><?php echo $row['Checkpoint']; ?></div>
-              </div>
-            </div>
-          </div>
-          <!-- Assessment Method -->
-          <div class="col-md-3">
-            <div class="card border-top border-2 border-info h-100">
-              <div class="card-body p-2">
-                <div class="fw-semibold text-info"><i class="bi bi-journals me-2"></i>Assessment Method</div>
-                <div class="text-dark"><?php echo $row['Assessment_Method']; ?></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Measurable Element -->
-        <div class="card border-top border-2 border-info mb-3">
-          <div class="card-body p-2">
-            <div class="fw-semibold text-secondary mb-1">
-              <i class="bi bi-clipboard-check me-2 text-info"></i>Measurable Element
-            </div>
-            <div class="text-dark"><?php echo $row['Measurable_Element']; ?></div>
-          </div>
-        </div>
-
-        <!-- Means of Verification -->
-        <div class="card border-top border-2 border-info mb-3">
-          <div class="card-body p-2">
-            <div class="fw-semibold text-secondary mb-1">
-              <i class="bi bi-search me-2 text-info"></i>Means of Verification
-            </div>
-            <div class="text-dark"><?php echo $row['Means_of_Verification']; ?></div>
-          </div>
-        </div>
-
-        <!-- Action Plan Form -->
-        <form method="post" action="#">
-          <input type="hidden" name="csqa_id1" value="<?php echo $_SESSION['q1']; ?>">
-          <input type="hidden" name="csqa_id" value="<?php echo $row['ass_id']; ?>">
-
-          <div class="card border-top border-2 border-warning mb-3">
-            <div class="card-body p-2">
-              <div class="row g-3 align-items-start">
-                <div class="col-md-3">
-                  <label class="form-label fw-semibold text-warning">Priority</label>
-                  <select class="form-control form-control-sm" name="Priority">
-                    <option value="0">Low</option>
-                    <option value="1">Medium</option>
-                    <option value="2">High</option>
-                  </select>
-                </div>
-
-                <div class="col-md-3">
-                  <label class="form-label fw-semibold text-warning">Dept. Review</label>
-                  <select class="form-control form-control-sm dept-review" name="f">
-                    <option value="0">--Select--</option>
-                    <option value="1">Achievable</option>
-                    <option value="2">Non-achievable</option>
-                  </select>
-                </div>
-
-                <div class="conditional-section col-md-3">
-                  <label class="form-label fw-semibold text-warning">Responsible Nodal</label>
-                  <input type="text" name="res" class="form-control form-control-sm">
-                </div>
-                <div class="conditional-section col-md-3">
-                  <label class="form-label fw-semibold text-warning">Time Period</label>
-                  <input type="date" name="todate" class="form-control form-control-sm">
-                </div>
-
-                <div class="col-md-12 conditional-section">
-                  <div class="card border-top border-2 border-danger my-2">
-                    <div class="card-body p-2">
-                      <div class="fw-semibold text-danger mb-1">
-                        <i class="bi bi-lightbulb me-2 text-danger"></i>Suggested Action Plan
-                      </div>
-                      <div class="text-dark"><?php echo $row['action_plan']; ?></div>
-                    </div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold text-primary">Your Action Plan</label>
-                    <textarea name="comment" class="form-control form-control-sm" rows="3"><?php echo $row['action_plan']; ?></textarea>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- Submit Button -->
-          <div class="text-end">
-            <button type="submit" name="submit2" class="btn btn-primary btn-sm px-4">
-              <i class="bi bi-save me-1"></i>Save & Next
-            </button>
-          </div>
-        </form>
-      </div>
-
-  <?php
+    if ($p == 0) {
+        echo '<div class="alert alert-danger mt-3">Kindly select assessment period.</div>';
+        return;
     }
-   mysqli_free_result($query);
-    $con->next_result();
-  } else {
-    echo '<div class="alert alert-warning mt-3"><i class="bi bi-exclamation-circle me-1"></i>No compliance found for action plan.</div>';
-  }
+
+    $_SESSION['q1'] = "CALL moic_action_plan($Fa,$p,$F,$C)";
+    $query = $con->query($_SESSION['q1']);
+
+    if ($query && $query->num_rows > 0) {
+        while ($row = mysqli_fetch_array($query)) {
+?>
+<!-- ===== Action Plan Card Start ===== -->
+<div class="card shadow-sm border rounded p-3 bg-light bg-gradient small mb-4">
+    <h5 class="text-center mb-3 fw-bold text-primary">
+        <i class="bi bi-pencil-square me-2 text-success"></i>Formulate Your Action Plan
+    </h5>
+
+    <!-- Info Row -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="card border-top border-2 border-info h-100">
+                <div class="card-body p-2">
+                    <div class="fw-semibold text-info"><i class="bi bi-list-task me-2"></i>Standard</div>
+                    <div class="text-dark"><?= $row['c_subtype_Reference_No_fk']; ?></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-top border-2 border-info h-100">
+                <div class="card-body p-2">
+                    <div class="fw-semibold text-info"><i class="bi bi-hash me-2"></i>Reference Number</div>
+                    <div class="text-dark"><?= $row['csqa_reference_id']; ?></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-top border-2 border-info h-100">
+                <div class="card-body p-2">
+                    <div class="fw-semibold text-info"><i class="bi bi-check2-circle me-2"></i>Checkpoint</div>
+                    <div class="text-dark"><?= $row['Checkpoint']; ?></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-top border-2 border-info h-100">
+                <div class="card-body p-2">
+                    <div class="fw-semibold text-info"><i class="bi bi-journals me-2"></i>Assessment Method</div>
+                    <div class="text-dark"><?= $row['Assessment_Method']; ?></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Measurable Element -->
+    <div class="card border-top border-2 border-info mb-3">
+        <div class="card-body p-2">
+            <div class="fw-semibold text-secondary mb-1">
+                <i class="bi bi-clipboard-check me-2 text-info"></i>Measurable Element
+            </div>
+            <div class="text-dark"><?= $row['Measurable_Element']; ?></div>
+        </div>
+    </div>
+
+    <!-- Means of Verification -->
+    <div class="card border-top border-2 border-info mb-3">
+        <div class="card-body p-2">
+            <div class="fw-semibold text-secondary mb-1">
+                <i class="bi bi-search me-2 text-info"></i>Means of Verification
+            </div>
+            <div class="text-dark"><?= $row['Means_of_Verification']; ?></div>
+        </div>
+    </div>
+
+    <!-- Action Form -->
+    <form method="post" action="#" class="actionForm">
+        <input type="hidden" name="csqa_id1" value="<?= $_SESSION['q1']; ?>">
+        <input type="hidden" name="csqa_id"  value="<?= $row['ass_id']; ?>">
+
+        <div class="card border-top border-2 border-warning mb-3">
+            <div class="card-body p-2">
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-warning">Priority</label>
+                        <select name="Priority" class="form-control form-control-sm">
+                            <option value="0">Low</option>
+                            <option value="1">Medium</option>
+                            <option value="2">High</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-warning">Dept. Review</label>
+                        <select name="f" class="form-control form-control-sm dept-review">
+                            <option value="3">--Select--</option>
+                            <option value="1">Achievable</option>
+                            <option value="2">Non-achievable</option>
+                        </select>
+                    </div>
+
+                    <div class="conditional-section col-md-3">
+                        <label class="form-label fw-semibold text-warning">Responsible Nodal</label>
+                        <input type="text" name="res" class="form-control form-control-sm">
+                    </div>
+
+                    <div class="conditional-section col-md-3">
+                        <label class="form-label fw-semibold text-warning">Time Period</label>
+                        <input type="date" name="todate" class="form-control form-control-sm">
+                    </div>
+
+                    <div class="col-md-12 conditional-section">
+                        <div class="card border-top border-2 border-danger my-2">
+                            <div class="card-body p-2">
+                                <div class="fw-semibold text-danger mb-1">
+                                    <i class="bi bi-lightbulb me-2 text-danger"></i>Suggested Action Plan
+                                </div>
+                                <div class="text-dark"><?= $row['action_plan']; ?></div>
+                            </div>
+                        </div>
+
+                        <label class="form-label fw-semibold text-primary">Your Action Plan</label>
+                        <textarea name="comment" class="form-control form-control-sm" rows="3"><?= $row['action_plan']; ?></textarea>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="text-end">
+            <button type="submit" name="submit2" class="btn btn-primary btn-sm px-4 saveBtn">
+                <i class="bi bi-save me-1"></i>Save & Next
+            </button>
+        </div>
+
+    </form>
+</div>
+<!-- ===== Action Plan Card End ===== -->
+
+<?php
+        }
+        mysqli_free_result($query);
+        $con->next_result();
+    } else {
+        echo '<div class="alert alert-warning mt-3">No compliance found.</div>';
+    }
 } elseif (isset($_POST['submit2'])) {
-  echo '<div class="alert alert-success mt-3"><i class="bi bi-check-circle-fill me-2"></i>Action plan saved successfully!</div>';
+  //echo '<div class="alert alert-success mt-3"><i class="bi bi-check-circle-fill me-2"></i>Action plan saved successfully!</div>';
   ?>
   <!-- post submit2 -->
   <?php
@@ -203,14 +206,12 @@ if (isset($_POST['submit1'])) {
     $insertfeedback1 = "call moic_achiv(1,$ass_id, $facid,$p,'$dres','$date','$com',$pri)";
     $queryinsert1 = $con->query($insertfeedback1);
     // $queryinsert1 = mysqli_query($con, $insertfeedback1);
-    if ($queryinsert1) {
+   // if ($queryinsert1) {
       // echo '<button type="button" class="btn btn-success">Compliance status updated!</button>';
 
-    ?>
-      <p>
-        <button addEventListener="function()" type="button" class="btn btn-success"><?php echo "Compliance action plane status updated..!"; ?><i class="bi bi-check-circle"></i></button>
-      </p>
-    <?php }
+   // ?>
+     
+    <?php //}
     // mysqli_free_result($queryinsert1);
     // $con->next_result();
   }
@@ -286,7 +287,7 @@ if (isset($_POST['submit1'])) {
         </div>
 
         <!-- Action Plan Form -->
-        <form method="post" action="#">
+      <form method="post" action="#" class="actionForm">
           <input type="hidden" name="csqa_id1" value="<?php echo $_SESSION['q1']; ?>">
           <input type="hidden" name="csqa_id" value="<?php echo $row['ass_id']; ?>">
 
@@ -296,7 +297,7 @@ if (isset($_POST['submit1'])) {
                 <div class="col-md-3">
                   <label class="form-label fw-semibold text-warning">Priority</label>
                   <select class="form-control form-control-sm" name="Priority">
-                    <option value="0">Low</option>
+                    <option value="3">Low</option>
                     <option value="1">Medium</option>
                     <option value="2">High</option>
                   </select>
@@ -305,7 +306,7 @@ if (isset($_POST['submit1'])) {
                 <div class="col-md-3">
                   <label class="form-label fw-semibold text-warning">Dept. Review</label>
                   <select class="form-control form-control-sm dept-review" name="f">
-                    <option value="0">--Select--</option>
+                    <option value="3">--Select--</option>
                     <option value="1">Achievable</option>
                     <option value="2">Non-achievable</option>
                   </select>
@@ -341,7 +342,7 @@ if (isset($_POST['submit1'])) {
 
           <!-- Submit Button -->
           <div class="text-end">
-            <button type="submit" name="submit2" class="btn btn-primary btn-sm px-4">
+           <button type="submit" name="submit2" class="btn btn-primary btn-sm px-4 saveBtn">
               <i class="bi bi-save me-1"></i>Save & Next
             </button>
           </div>
@@ -477,3 +478,55 @@ function exportToExcel() {
     });
   });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Hide/Show conditional inputs on dropdown change
+    document.addEventListener("change", function(e) {
+        if (e.target.classList.contains("dept-review")) {
+
+            let form = e.target.closest("form");
+            let sections = form.querySelectorAll(".conditional-section");
+
+            (e.target.value === "2")
+                ? sections.forEach(s => s.style.display = "none")
+                : sections.forEach(s => s.style.display = "block");
+        }
+    });
+
+    // Form submit validation
+    document.addEventListener("submit", function(e) {
+
+        const form = e.target;
+        if (!form.classList.contains("actionForm")) return;
+
+        const btn = document.activeElement;
+        if (!btn.classList.contains("saveBtn")) return;
+
+        const review = form.querySelector("select[name='f']").value;
+        const responsible = form.querySelector("input[name='res']").value.trim();
+        const date = form.querySelector("input[name='todate']").value.trim();
+        const comment = form.querySelector("textarea[name='comment']").value.trim();
+
+        // Review not selected
+        if (review === "3" || review === "0") {
+            e.preventDefault();
+            Swal.fire("Dept. Review Required", "Select Achievable or Non-Achievable.", "warning");
+            return;
+        }
+
+        // Achievable requires mandatory fields
+        if (review === "1") {
+            if (responsible === "" || date === "" || comment === "") {
+                e.preventDefault();
+                Swal.fire("Incomplete Details", "Please fill Responsible Person, Date and Action Plan.", "warning");
+                return;
+            }
+        }
+    });
+
+});
+</script>
+<?php include("assets/head/f.php"); ?>

@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
 
-$dist = $_SESSION['block_id'];
+$div =  $_SESSION['div_id'];
 $query = "SELECT c.*
 FROM cert_details c
 INNER JOIN (
@@ -14,7 +14,7 @@ INNER JOIN (
 ON c.fac_name = t.fac_name 
 AND c.validity = t.latest_validity
 WHERE c.lat IS NOT NULL 
-  AND c.longi IS NOT NULL and c.block_id=$dist;";
+  AND c.longi IS NOT NULL and c.dist_id in (select Dist_id from dist_master where division_id=$div);";
 
 $result = mysqli_query($con, $query);
 

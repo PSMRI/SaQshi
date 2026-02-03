@@ -3,10 +3,10 @@ include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
 // Include XLSX generator library 
 require_once(__DIR__ . '/../../PhpXlsxGenerator.php');
-//$dist_id = $_SESSION['dist'];
+$dist_id = intval($_SESSION['block_id']);;
 $userid = $_SESSION['userid'];
 // Excel file name for download 
-$fileName = "State_Facility_indicators_Summary_" . date('Y-m-d') . ".xlsx";
+$fileName = "Block_Facility_indicators_Summary_" . date('Y-m-d') . ".xlsx";
 // Define column names 
 $excelData[] = array('District', 'Block', 'Fac. Type', 'Facility','Assessment','Non Comp.','Partially Comp.','Fully Comp.','Compliance Completed','Indicators','Comp.%','Obtained Score','Tot Score','Score %','Pending for action Dist.','status','StartDate','ExpectedDate','Completion Date');
 
@@ -15,7 +15,7 @@ $tablequery1 = "SELECT *, CASE
         WHEN obt < tot THEN 'In Progress'
         WHEN obt = tot THEN 'Completed'
         ELSE 'Not started'
-    END AS status FROM state_dash_view WHERE fac_id NOT IN (1)";
+    END AS status FROM state_dash_view WHERE fac_id NOT IN (1) and block_id=$dist_id";
 $q2 = mysqli_query($con, $tablequery1);
 while ($row = mysqli_fetch_array($q2)) {
     $obtained = $row['p'];

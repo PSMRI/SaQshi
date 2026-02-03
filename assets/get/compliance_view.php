@@ -171,30 +171,31 @@ $pbar = ($progress < 34) ? "bg-danger" : (($progress < 67) ? "bg-warning" : "bg-
 
             <input type="hidden" name="csqa_id" value="<?= $csqa_id ?>">
 
-            <div class="d-flex gap-3 justify-content-center my-3">
+           <div class="d-flex gap-3 justify-content-center my-3">
 
-                <!-- 0 -->
-                <label class="card text-center bg-danger text-white p-2 shadow-sm"
-                       onclick="dropEmoji(0)" style="width:90px; cursor:pointer;">
-                    <input type="radio" name="f" value="0" <?= ($exists === 0) ? "checked" : "" ?>>
-                    <div class="fw-bold">0</div>
-                </label>
+    <!-- 0 -->
+    <label class="card text-center bg-danger text-white p-2 shadow-sm"
+           onclick="dropEmoji(0)" style="width:90px; cursor:pointer;">
+        <input type="radio" name="f" value="0" <?= ($exists === 0) ? "checked" : "" ?>>
+        <div class="fw-bold">0</div>
+    </label>
 
-                <!-- 1 -->
-                <label class="card text-center bg-warning text-white p-2 shadow-sm"
-                       onclick="dropEmoji(1)" style="width:90px; cursor:pointer;">
-                    <input type="radio" name="f" value="1" <?= ($exists === 1) ? "checked" : "" ?>>
-                    <div class="fw-bold">1</div>
-                </label>
+    <!-- 1 -->
+    <label class="card text-center bg-warning text-white p-2 shadow-sm"
+           onclick="dropEmoji(1)" style="width:90px; cursor:pointer;">
+        <input type="radio" name="f" value="1" <?= ($exists === 1) ? "checked" : "" ?>>
+        <div class="fw-bold">1</div>
+    </label>
 
-                <!-- 2 -->
-                <label class="card text-center bg-success text-white p-2 shadow-sm"
-                       onclick="dropEmoji(2)" style="width:90px; cursor:pointer;">
-                    <input type="radio" name="f" value="2" <?= ($exists === 2 || $exists === null) ? "checked" : "" ?>>
-                    <div class="fw-bold">2</div>
-                </label>
+    <!-- 2 -->
+    <label class="card text-center bg-success text-white p-2 shadow-sm"
+           onclick="dropEmoji(2)" style="width:90px; cursor:pointer;">
+        <input type="radio" name="f" value="2" <?= ($exists === 2) ? "checked" : "" ?>>
+        <div class="fw-bold">2</div>
+    </label>
 
-            </div>
+</div>
+
 
             <!-- MESSAGE -->
             <?php if (!empty($_SESSION['MSG'])): ?>

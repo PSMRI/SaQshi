@@ -2,31 +2,53 @@
 include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
 
-$myId = intval($_SESSION['u_facilityid'] ?? 0); // 0 = admin
+$myId    = (int)($_SESSION['u_facilityid'] ?? 0); // 0 = admin
+$isAdmin = ($myId === 0);
 
 /* ============================================================
-   1) LOAD FACILITY LIST WITH UNREAD COUNTS
+   1) LOAD FACILITY LIST (WITH UNREAD COUNTS)
 ============================================================ */
 if (isset($_GET['load_facilities'])) {
 
-    /* unread map */
     $unreadMap = [];
-    $uq = mysqli_query($con, "
-        SELECT sender_facility_id, COUNT(*) AS unread
-        FROM facility_chat_messages
-        WHERE receiver_facility_id = {$myId}
-          AND is_read = 0
-        GROUP BY sender_facility_id
-    ");
 
-    while ($u = mysqli_fetch_assoc($uq)) {
-        $unreadMap[intval($u['sender_facility_id'])] = intval($u['unread']);
+    /* ---------- NORMAL MESSAGE UNREAD ---------- */
+    if ($isAdmin) {
+        $uq = mysqli_query($con, "
+            SELECT sender_facility_id, COUNT(*) AS unread
+            FROM facility_chat_messages
+            WHERE receiver_facility_id = 0
+              AND sender_facility_id != 0
+              AND is_read = 0
+            GROUP BY sender_facility_id
+        ");
+    } else {
+        $uq = mysqli_query($con, "
+            SELECT sender_facility_id, COUNT(*) AS unread
+            FROM facility_chat_messages
+            WHERE receiver_facility_id = {$myId}
+              AND sender_facility_id != 0
+              AND is_read = 0
+            GROUP BY sender_facility_id
+        ");
     }
 
-    /* ---------------------------
-       ADMIN MODE
-    --------------------------- */
-    if ($myId == 0) {
+    while ($u = mysqli_fetch_assoc($uq)) {
+        $unreadMap[(int)$u['sender_facility_id']] = (int)$u['unread'];
+    }
+
+    /* ================= ADMIN MODE ================= */
+    if ($isAdmin) {
+
+        echo "
+        <div class='chat-list-item all-fac' id='fac_0'
+             onclick=\"openChat(0,'All Facilities')\">
+            <div class='fac-avatar'>📢</div>
+            <div class='fac-info'>
+                <strong>All Facilities</strong><br>
+                <small class='text-muted'>Broadcast</small>
+            </div>
+        </div>";
 
         $q = mysqli_query($con, "
             SELECT fac_id, fac_name
@@ -36,17 +58,17 @@ if (isset($_GET['load_facilities'])) {
 
         while ($r = mysqli_fetch_assoc($q)) {
 
-            $fid  = intval($r['fac_id']);
-            $name = htmlspecialchars($r['fac_name']);
+            $fid  = (int)$r['fac_id'];
+            $name = htmlspecialchars($r['fac_name'], ENT_QUOTES);
+            $first = strtoupper($name[0] ?? "?");
 
-            $first = strtoupper(substr(trim($name), 0, 1));
-            if ($first == "") $first = "?";
-
-            $unread = $unreadMap[$fid] ?? 0;
-            $badge  = ($unread > 0) ? "<span class='unread-badge'>{$unread}</span>" : "";
+            $badge = isset($unreadMap[$fid])
+                ? "<span class='unread-badge'>{$unreadMap[$fid]}</span>"
+                : "";
 
             echo "
-            <div class='chat-list-item' id='fac_{$fid}' onclick=\"openChat({$fid}, '{$name}')\">
+            <div class='chat-list-item' id='fac_{$fid}'
+                 onclick=\"openChat({$fid}, '{$name}')\">
                 <div class='fac-avatar'>{$first}</div>
                 <div class='fac-info'><strong>{$name}</strong></div>
                 {$badge}
@@ -55,63 +77,55 @@ if (isset($_GET['load_facilities'])) {
         exit;
     }
 
-    /* ---------------------------
-       FACILITY MODE
-    --------------------------- */
+    /* ================= FACILITY MODE ================= */
 
-    /* Admin row */
-    $adminUnread = $unreadMap[0] ?? 0;
-    $adminBadge  = $adminUnread ? "<span class='unread-badge'>{$adminUnread}</span>" : "";
-
+    /* ----- ADMIN ROW ----- */
     echo "
-    <div class='chat-list-item' id='fac_0' onclick=\"openChat(0,'Admin')\">
+    <div class='chat-list-item' id='fac_0'
+         onclick=\"openChat(0,'Admin')\">
         <div class='fac-avatar'>A</div>
         <div class='fac-info'><strong>Admin</strong></div>
-        {$adminBadge}
     </div>";
 
-    /* Other facilities */
+    /* ----- OTHER FACILITIES ----- */
     $q = mysqli_query($con, "
-        SELECT fac_id, fac_name 
-        FROM facilities 
+        SELECT fac_id, fac_name
+        FROM facilities
         WHERE fac_id != {$myId}
         ORDER BY fac_name
     ");
 
     while ($r = mysqli_fetch_assoc($q)) {
 
-        $fid  = intval($r['fac_id']);
-        $name = htmlspecialchars($r['fac_name']);
+        $fid  = (int)$r['fac_id'];
+        $name = htmlspecialchars($r['fac_name'], ENT_QUOTES);
+        $first = strtoupper($name[0] ?? "?");
 
-        $first = strtoupper(substr(trim($name), 0, 1));
-        if ($first == "") $first = "?";
-
-        $unread = $unreadMap[$fid] ?? 0;
-        $badge  = ($unread > 0) ? "<span class='unread-badge'>{$unread}</span>" : "";
+        $badge = isset($unreadMap[$fid])
+            ? "<span class='unread-badge'>{$unreadMap[$fid]}</span>"
+            : "";
 
         echo "
-        <div class='chat-list-item' id='fac_{$fid}' onclick=\"openChat({$fid}, '{$name}')\">
+        <div class='chat-list-item' id='fac_{$fid}'
+             onclick=\"openChat({$fid}, '{$name}')\">
             <div class='fac-avatar'>{$first}</div>
             <div class='fac-info'><strong>{$name}</strong></div>
             {$badge}
         </div>";
     }
-
     exit;
 }
 
-
-
 /* ============================================================
-   2) LOAD NEW MESSAGES (INCREMENTAL)
+   2) LOAD MESSAGES (NORMAL + BROADCAST)
 ============================================================ */
 if (isset($_GET['load_messages'])) {
 
-    $sender   = intval($_GET['sender']);
-    $receiver = intval($_GET['receiver']);
-    $lastID   = intval($_GET['last_id'] ?? 0);
+    $sender   = (int)$_GET['sender'];
+    $receiver = (int)$_GET['receiver'];
+    $lastID   = (int)($_GET['last_id'] ?? 0);
 
-    /* Mark incoming messages as read */
+    /* ---- MARK NORMAL MESSAGES AS READ ---- */
     mysqli_query($con, "
         UPDATE facility_chat_messages
         SET is_read = 1
@@ -120,79 +134,64 @@ if (isset($_GET['load_messages'])) {
           AND is_read = 0
     ");
 
-    /* Fetch NEW messages */
+    /* ---- MARK BROADCAST AS READ (PER FACILITY) ---- */
+    if ($sender !== 0) {
+        mysqli_query($con, "
+            INSERT IGNORE INTO facility_broadcast_read (message_id, facility_id)
+            SELECT message_id, {$sender}
+            FROM facility_chat_messages
+            WHERE sender_facility_id = 0
+              AND receiver_facility_id = 0
+        ");
+    }
+
     $q = mysqli_query($con, "
         SELECT *
         FROM facility_chat_messages
-        WHERE (
+        WHERE message_id > {$lastID}
+          AND is_active = 1
+          AND (
                 (sender_facility_id = {$sender} AND receiver_facility_id = {$receiver})
-                OR
-                (sender_facility_id = {$receiver} AND receiver_facility_id = {$sender})
-              )
-          AND message_id > {$lastID}
+             OR (sender_facility_id = {$receiver} AND receiver_facility_id = {$sender})
+             OR (sender_facility_id = 0 AND receiver_facility_id = 0)
+          )
         ORDER BY message_id ASC
     ");
 
-    if (!$q) exit;
-
-    $lastDate = "";
-
     while ($m = mysqli_fetch_assoc($q)) {
 
-        $mid      = $m['message_id'];
-        $rawText  = $m['message_text'];
-        $isMine   = ($m['sender_facility_id'] == $sender);
-        $datetime = $m['message_date'];
-        $time     = date("h:i A", strtotime($datetime));
+        $mid  = $m['message_id'];
+        $text = $m['message_text'];
 
-        /* ----- Date group separator ----- */
-        $dateLabel = formatChatDate($datetime);
-        if ($dateLabel != $lastDate) {
-            echo "<div class='date-separator'><span>{$dateLabel}</span></div>";
-            $lastDate = $dateLabel;
-        }
+        $isMine = ($m['sender_facility_id'] == $sender);
+        $isBc   = ($m['sender_facility_id'] == 0 && $m['receiver_facility_id'] == 0);
 
-        /* ----- Ticks ----- */
-        if ($isMine) {
-            $ticks = ($m['is_read'])
-                ? "<span class='msg-ticks' style='color:#FFFFFF'>✓✓</span>"
-                : "<span class='msg-ticks'>✓</span>";
+        $class = $isBc ? "broadcast" : ($isMine ? "sent" : "received");
+
+        if (is_file_message($text)) {
+            $content = render_file_message($text, $isMine);
         } else {
-            $ticks = "";
+            $content = nl2br(htmlspecialchars($text));
         }
-
-        /* ----- Render text or file ----- */
-        if (is_file_message($rawText)) {
-            $content = render_file_message($rawText);
-        } else {
-            $content = nl2br(htmlspecialchars($rawText));
-        }
-
-        $class = $isMine ? "sent" : "received";
 
         echo "
-            <div class='message {$class} message-item' data-id='{$mid}'>
-                {$content}
-                <div class='message-time'>{$time} {$ticks}</div>
-            </div>
-        ";
+        <div class='message {$class} message-item' data-id='{$mid}'>
+            {$content}
+        </div>";
     }
-
     exit;
 }
 
-
-
 /* ============================================================
-   3) SEND TEXT MESSAGE
+   3) SEND MESSAGE (NORMAL + BROADCAST)
 ============================================================ */
 if (isset($_POST['send_message'])) {
 
-    $sender   = intval($_POST['sender']);
-    $receiver = intval($_POST['receiver']);
-    $msg      = trim($_POST['message']);
+    $sender   = (int)$_POST['sender'];
+    $receiver = (int)$_POST['receiver'];
+    $msg      = trim($_POST['message'] ?? '');
 
-    if ($msg === "") exit("EMPTY");
+    if ($msg === '') exit("EMPTY");
 
     $msg = mysqli_real_escape_string($con, $msg);
 
@@ -202,32 +201,32 @@ if (isset($_POST['send_message'])) {
         VALUES ({$sender}, {$receiver}, '{$msg}', 1, 0)
     ");
 
-    echo "OK";
-    exit;
+    exit("OK");
 }
 
-
-
 /* ============================================================
-   4) TYPING INDICATOR
+   4) TYPING INDICATOR (NO BROADCAST)
 ============================================================ */
 if (isset($_POST['typing'])) {
 
-    $sender   = intval($_POST['sender']);
-    $receiver = intval($_POST['receiver']);
+    $sender   = (int)$_POST['sender'];
+    $receiver = (int)$_POST['receiver'];
+
+    if ($sender === 0 || $receiver === 0) exit;
 
     mysqli_query($con, "
         REPLACE INTO chat_typing_status (sender_id, receiver_id, typing_time)
         VALUES ({$sender}, {$receiver}, NOW())
     ");
-
-    exit("OK");
+    exit;
 }
 
 if (isset($_GET['get_typing'])) {
 
-    $sender   = intval($_GET['sender']);
-    $receiver = intval($_GET['receiver']);
+    $sender   = (int)$_GET['sender'];
+    $receiver = (int)$_GET['receiver'];
+
+    if ($sender === 0 || $receiver === 0) exit;
 
     $q = mysqli_query($con, "
         SELECT TIMESTAMPDIFF(SECOND, typing_time, NOW()) AS sec
@@ -237,78 +236,44 @@ if (isset($_GET['get_typing'])) {
         LIMIT 1
     ");
 
-    if ($row = mysqli_fetch_assoc($q)) {
-        if ($row['sec'] <= 2) {
-            echo "<span style='font-size:12px;color:#007bff;'>typing...</span>";
-        }
+    if ($q && ($r = mysqli_fetch_assoc($q)) && (int)$r['sec'] <= 2) {
+        echo "typing...";
     }
-
     exit;
 }
-
-
 
 /* ============================================================
    HELPER FUNCTIONS
 ============================================================ */
-function formatChatDate($date) {
-    $msg  = date("Y-m-d", strtotime($date));
-    $today = date("Y-m-d");
-    $yest  = date("Y-m-d", strtotime("-1 day"));
-
-    if ($msg == $today) return "Today";
-    if ($msg == $yest)  return "Yesterday";
-
-    return date("d M Y", strtotime($date));
-}
-
-function startsWithStr($str, $prefix) {
-    return substr($str, 0, strlen($prefix)) === $prefix;
-}
-
 function is_file_message($msg) {
-    $msg = html_entity_decode($msg);
-    return startsWithStr($msg, "/assets/chat_files/");
+    $msg = trim(html_entity_decode($msg));
+    return preg_match('#^(/assets/chat_files/|https?://.*/assets/chat_files/)#i', $msg);
 }
 
+function render_file_message($path, $isMine=false) {
 
-/* ============================================================
-   FILE PREVIEW WITH ICONS (PDF, EXCEL, WORD, ZIP, VIDEO)
-============================================================ */
-function render_file_message($path, $isMine = false) {
+    $ext  = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $file = basename($path);
 
-    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-    $filename = basename($path);
-
-    // Choose icon based on file type
-    $icon = "<span style='font-size:20px;'>📄</span>";
-
-    if (in_array($ext, ["jpg","jpeg","png","gif"])) {
-        return "<img src='{$path}' style='max-width:200px;border-radius:8px;'>";
-    }
-    if (in_array($ext, ["pdf"])) {
-        $icon = "<span style='color:#d9534f;font-size:20px;'>📕</span>";
-    }
-    if (in_array($ext, ["xls","xlsx","csv"])) {
-        $icon = "<span style='color:#28a745;font-size:20px;'>📗</span>";
-    }
-    if (in_array($ext, ["doc","docx"])) {
-        $icon = "<span style='color:#0275d8;font-size:20px;'>📘</span>";
+    if (in_array($ext, ['jpg','jpeg','png','gif'])) {
+        return "<img src='{$path}' style='max-width:220px;border-radius:8px'>";
     }
 
-    // Color for text based on bubble type
-    $textColor = $isMine ? "#fff" : "#333";
+    $icons = [
+        'pdf'=>'📕','xls'=>'📗','xlsx'=>'📗','csv'=>'📗',
+        'doc'=>'📘','docx'=>'📘'
+    ];
+
+    $icon  = $icons[$ext] ?? '📄';
+    $color = $isMine ? '#fff' : '#333';
 
     return "
-        <div style='display:flex;align-items:center;gap:8px;'>
-            {$icon}
-            <a href='{$path}' target='_blank' style='color:{$textColor}; text-decoration:underline; font-size:15px;'>
-                {$filename}
+        <div style='display:flex;align-items:center;gap:8px'>
+            <span style='font-size:20px'>{$icon}</span>
+            <a href='{$path}' target='_blank'
+               style='color:{$color};text-decoration:underline'>
+                {$file}
             </a>
-        </div>
-    ";
+        </div>";
 }
-
-
-
 ?>
