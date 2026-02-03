@@ -12,7 +12,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 $output = fopen('php://output', 'w');
 
 // Table header
-$header = ['District', 'Block', 'Facility', 'Facility Type', 'Assessment Name', 'Total Action Plan', 'Action Plan Left', 'Worked on Action Plan'];
+$header = ['District', 'Block', 'Facility', 'Facility Type', 'Assessment Name', 'Total Action Plan', 'Worked on Action Plan','Action Plan Left'];
 fputcsv($output, $header);
 
 // SQL query
@@ -24,8 +24,9 @@ $sql = "
         facilities_type,
         ass_name, 
         total_action_plan, 
-        action_plan_left, 
-        worked_on_action_plan
+         worked_on_action_plan,
+        action_plan_left
+       
     FROM action_plan_chk
 ";
 
@@ -42,8 +43,9 @@ if ($result) {
             $row['facilities_type'],
             $row['ass_name'],
             $row['total_action_plan'],
-            $row['action_plan_left'],
-            $row['worked_on_action_plan']
+            $row['worked_on_action_plan'],
+            $row['action_plan_left']
+            
         ]);
     }
 } else {

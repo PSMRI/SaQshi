@@ -30,11 +30,12 @@ include("assets/head/h.php");
                 $fat =   $_SESSION['f_type_id'];
                 if (in_array($fat, [2, 3, 10])) {
                 ?>
-                
+
                   <option value="6">MusQan KPI</option>
-                  <option value="7">Facility Score Card</option>
+                  <option value="7">All Dept filled checklist</option>
+                  <option value="10">Facility Score Card</option>
                   <option value="8">Facility Outcome Indicators</option>
-                   <option value="9">Anexure C for LaQshya</option>
+                  <option value="9">Anexure C for LaQshya</option>
                 <?php } ?>
               </select>
             </div>
@@ -78,7 +79,13 @@ include("assets/head/h.php");
 
             <!-- Submit -->
             <div class="col-auto">
-              <button type="submit" name="submit1" class="btn btn-primary">View</button>
+              <button type="submit"
+                name="submit1"
+                class="btn btn-primary"
+                onclick="showLoader()">
+                View
+              </button>
+
             </div>
           </div>
         </form>
@@ -88,18 +95,26 @@ include("assets/head/h.php");
       $fat =   $_SESSION['f_type_id'];
       if (in_array($fat, [8, 4])) {
       ?>
-       <div class="alert alert-warning d-flex align-items-start shadow-sm" role="alert">
-  <i class="bi bi-info-circle-fill me-2 fs-5 text-dark mt-1"></i>
-  <div class="small">
-    <strong>Note:</strong> For HWC, if you have entered data for any month before <strong>01-June-2025</strong>, kindly 
-    <a href="freports3.php" class="alert-link">click here</a> to view the Outcome and KPI reports.
-    <br />
-    <strong>Also:</strong> Graphs will not be available for such data.
-  </div>
-</div>
+        <div class="alert alert-warning d-flex align-items-start shadow-sm" role="alert">
+          <i class="bi bi-info-circle-fill me-2 fs-5 text-dark mt-1"></i>
+          <div class="small">
+            <strong>Note:</strong> For HWC, if you have entered data for any month before <strong>01-June-2025</strong>, kindly
+            <a href="freports3.php" class="alert-link">click here</a> to view the Outcome and KPI reports.
+            <br />
+            <strong>Also:</strong> Graphs will not be available for such data.
+          </div>
+        </div>
 
 
       <?php } ?>
+      <div id="pageLoader">
+        <div class="spinner-border spinner-border-sm text-success" role="status">
+        </div>
+        <div class="loader-text">
+          Please wait… preparing report
+        </div>
+      </div>
+
     </div>
 
     <!-- Report Renderer -->
@@ -163,10 +178,16 @@ include("assets/head/h.php");
       $t = $_SESSION['userid'];
 
       include("assets/reports/render_alloutcome .php");
-    }elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST["rt"] == 9) {
-    
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST["rt"] == 9) {
 
-    include("assets/reports/render_anexc.php");
+
+      include("assets/reports/render_anexc.php");
+    }elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST["rt"] == 10) {
+      $_SESSION['period'] = $_POST['Period'];
+      $_SESSION['fat'] = $_POST['fat'];
+      $t = $_SESSION['userid'];
+
+      include("assets/reports/render_alldept .php");
     }
     ?>
 
@@ -182,7 +203,7 @@ include("assets/head/h.php");
       // KPI or MusQan KPI → hide both
       document.getElementById('dept_div').style.display = 'none';
       document.getElementById('assessment_div').style.display = 'none';
-    } else if (rt == '7' || rt == '8') {
+    } else if (rt == '7' || rt == '8' || rt == '10') {
       // Facility Score Card → show only Assessment
       document.getElementById('dept_div').style.display = 'none';
       document.getElementById('assessment_div').style.display = 'block';
@@ -193,5 +214,18 @@ include("assets/head/h.php");
     }
   }
 </script>
+<!-- ===== LOADING OVERLAY ===== -->
+
 
 <?php include("assets/head/f.php"); ?>
+<script>
+  function showLoader() {
+    document.getElementById('pageLoader').style.display = 'block';
+  }
+</script>
+<script>
+  window.onload = function() {
+    const loader = document.getElementById('pageLoader');
+    if (loader) loader.style.display = 'none';
+  };
+</script>

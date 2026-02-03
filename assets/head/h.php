@@ -2,59 +2,6 @@
 <html lang="en">
 <?php include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
-/*
-$__PAGE_START = microtime(true);
-$__DB_TIME = 0;
-$__QUERY_COUNT = 0;
-
-function runQuery($con, $sql, $page = null)
-{
-    global $__DB_TIME, $__QUERY_COUNT;
-
-    // Auto page name if not passed
-    if ($page === null) {
-        $page = basename($_SERVER['PHP_SELF']);
-    }
-
-    // Count query
-    $__QUERY_COUNT++;
-
-    // Execute & time query
-    $start = microtime(true);
-    $result = mysqli_query($con, $sql);
-    $end = microtime(true);
-
-    $execMs = (int)(($end - $start) * 1000);
-    $__DB_TIME += $execMs;
-
-    // Escape values safely
-    $escapedSql  = mysqli_real_escape_string($con, $sql);
-    $escapedPage = mysqli_real_escape_string($con, $page);
-
-    // ✅ LOG QUERY (DEBUG MODE – logs all queries)
-    $logSql = "
-        INSERT INTO db_query_log
-        (query_text, exec_time_ms, executed_at, page_name)
-        VALUES (
-            '$escapedSql',
-            $execMs,
-            NOW(),
-            '$escapedPage'
-        )
-    ";
-
-    mysqli_query($con, $logSql) or error_log(
-        'DB LOG ERROR: ' . mysqli_error($con)
-    );
-
-    // Optional: log failed queries
-    if ($result === false) {
-        error_log("QUERY FAILED [$page]: " . mysqli_error($con));
-    }
-
-    return $result;
-}
-*/
 ?>
 
 <head>
@@ -404,25 +351,76 @@ function runQuery($con, $sql, $page = null)
 			<ul class="navbar-nav ml-auto">
 				<li>
 					<?php
-					$facility_id = $_SESSION['u_facilityid'] ?? 0;  // currently logged-in facility ID
+$facility_id = (int)($_SESSION['u_facilityid'] ?? 0);
 
-					// Fetch latest 5 messages from Admin to this facility or All
-					$notif_query = "SELECT message_text, message_date 
-                FROM facility_chat_messages 
-                WHERE
-                 receiver_facility_id = $facility_id and is_read=0
-                ORDER BY message_date DESC ";
+/* ============================================================
+   FETCH LATEST 5 UNREAD ADMIN NOTIFICATIONS
+   (DIRECT + BROADCAST)
+============================================================ */
 
-					$notif_result = mysqli_query($con, $notif_query);
-					// For badge count → count total messages from Admin to this facility or All
-					$count_query = "SELECT COUNT(*) as cnt 
-                FROM facility_chat_messages  
-                WHERE 
-                 receiver_facility_id = $facility_id  and is_read=0";
-					$count_result = mysqli_query($con, $count_query);
-					$count_row = mysqli_fetch_assoc($count_result);
-					$notif_count = (int)$count_row['cnt'];
-					?>
+$notif_query = "
+    (
+        -- Direct admin → facility
+        SELECT message_text, message_date
+        FROM facility_chat_messages
+        WHERE sender_facility_id = 0
+          AND receiver_facility_id = {$facility_id}
+          AND is_read = 0
+    )
+    UNION ALL
+    (
+        -- Broadcast admin → all (not yet read by this facility)
+        SELECT m.message_text, m.message_date
+        FROM facility_chat_messages m
+        WHERE m.sender_facility_id = 0
+          AND m.receiver_facility_id = 0
+          AND NOT EXISTS (
+              SELECT 1
+              FROM facility_broadcast_read r
+              WHERE r.message_id = m.message_id
+                AND r.facility_id = {$facility_id}
+          )
+    )
+    ORDER BY message_date DESC
+    LIMIT 5
+";
+
+$notif_result = mysqli_query($con, $notif_query);
+
+/* ============================================================
+   BADGE COUNT (TOTAL UNREAD)
+============================================================ */
+
+$count_query = "
+    SELECT
+    (
+        -- Direct admin messages
+        SELECT COUNT(*)
+        FROM facility_chat_messages
+        WHERE sender_facility_id = 0
+          AND receiver_facility_id = {$facility_id}
+          AND is_read = 0
+    ) +
+    (
+        -- Broadcast messages not read by this facility
+        SELECT COUNT(*)
+        FROM facility_chat_messages m
+        WHERE m.sender_facility_id = 0
+          AND m.receiver_facility_id = 0
+          AND NOT EXISTS (
+              SELECT 1
+              FROM facility_broadcast_read r
+              WHERE r.message_id = m.message_id
+                AND r.facility_id = {$facility_id}
+          )
+    ) AS cnt
+";
+
+$count_result = mysqli_query($con, $count_query);
+$count_row    = mysqli_fetch_assoc($count_result);
+$notif_count  = (int)$count_row['cnt'];
+?>
+
 
 					<div class="dropdown">
 						<a class="dropdown-toggle" href="#" data-toggle="dropdown">

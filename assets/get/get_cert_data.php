@@ -3,23 +3,18 @@ header('Content-Type: application/json');
 include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
 
-$dist = $_SESSION['dist'];
-
-$query = "
-SELECT c.*
+$dist = $_SESSION['block_id'];
+$query = "SELECT c.*
 FROM cert_details c
 INNER JOIN (
     SELECT fac_name, MAX(validity) AS latest_validity
     FROM cert_details
-    WHERE dist_id = $dist
     GROUP BY fac_name
 ) t
 ON c.fac_name = t.fac_name 
 AND c.validity = t.latest_validity
 WHERE c.lat IS NOT NULL 
-  AND c.longi IS NOT NULL
-  AND c.dist_id = $dist;
-";
+  AND c.longi IS NOT NULL and c.block_id=$dist;";
 
 $result = mysqli_query($con, $query);
 

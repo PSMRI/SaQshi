@@ -19,7 +19,7 @@ $monthColumns = [];
             </div>
             <div class="card-body p-2" style="max-height: 400px; overflow: auto; font-size: 0.75rem;">
                 <?php
-                if (in_array($dept_id, [1, 2, 3, 4, 5,6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 23, 24, 25, 26, 27, 32, 33, 40,38,39])) {
+                if (in_array($dept_id, [1, 2, 3, 4, 5,6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 23, 24, 25, 26, 27, 32, 33, 40,38,39,41])) {
                     $out_comerpt = "CALL dh_outcomerpt_test($Fa, $dept_id)";
                     $result = $con->query($out_comerpt);
 

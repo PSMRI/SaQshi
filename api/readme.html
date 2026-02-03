@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SaQshi APIs – README</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 24px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #0d6efd;
+        }
+        h1 {
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 6px;
+        }
+        section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        code, pre {
+            background: #111;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 6px;
+            display: block;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        .tag {
+            display: inline-block;
+            background: #0d6efd;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>SaQshi APIs <span class="tag">v1</span></h1>
+
+<section>
+    <h2>1. Overview</h2>
+    <p>
+        <strong>SaQshi</strong> provides <strong>open, stateless, JSON-based APIs</strong>
+        for healthcare quality assessment, facility master data,
+        and certification lifecycle management.
+    </p>
+
+    <ul>
+        <li>Assessment checklist retrieval & compliance submission</li>
+        <li>Assessment resume & progress tracking</li>
+        <li>Facility master hierarchy (State → Division → District → Block → Facility)</li>
+        <li>Certification create, update, verification & analytics</li>
+        <li>Dashboard-ready aggregated analytics</li>
+    </ul>
+
+    <p>
+        Designed for <strong>Government Systems</strong>,
+        <strong>Mobile Apps</strong>,
+        <strong>Dashboards</strong> and
+        <strong>Digital Public Goods (DPG)</strong>.
+    </p>
+</section>
+
+<section>
+    <h2>2. Base URLs</h2>
+
+    <h3>Local Development</h3>
+    <code>http://localhost:94/api</code>
+
+    <h3>Production (Example)</h3>
+    <code>https://api.saqshi.in/api</code>
+</section>
+
+<section>
+    <h2>3. API Folder Structure</h2>
+<pre>
+/api
+├── assessment/v1/
+│   ├── concerns.php
+│   ├── standards.php
+│   ├── checklist.php
+│   └── response/
+│       ├── save.php
+│       ├── resume.php
+│       └── progress.php
+│
+├── facility/v1/masters/
+│   ├── states.php
+│   ├── divisions.php
+│   ├── districts.php
+│   ├── blocks.php
+│   └── facilities/
+│       ├── get.php
+│       ├── create.php
+│       └── update.php
+│
+├── certification/v1/
+│   ├── data/
+│   │   ├── create.php
+│   │   ├── update.php
+│   │   ├── get.php
+│   │   └── analytics.php
+│   └── verification/
+│       └── public.php
+│
+├── openapi.yaml
+└── swagger/
+</pre>
+</section>
+
+<section>
+    <h2>4. Authentication</h2>
+    <p>
+        APIs are currently <strong>open</strong> for integration.
+    </p>
+    <p>
+        API Key / Token / OAuth2 authentication can be added later
+        without breaking existing contracts.
+    </p>
+</section>
+
+<section>
+    <h2>5. Recommended Assessment API Flow</h2>
+    <ol>
+        <li>Get Areas of Concern</li>
+        <li>Get Sub-Standards</li>
+        <li>Get Checklist Items</li>
+        <li>Save Compliance Response</li>
+        <li>Track Progress</li>
+        <li>Resume Assessment</li>
+    </ol>
+</section>
+
+<section>
+    <h2>6. Assessment APIs</h2>
+
+    <h3>Get Areas of Concern</h3>
+    <code>GET /assessment/v1/concerns</code>
+<pre>
+?facility_type=3&department_id=2
+</pre>
+
+    <h3>Get Sub-Standards</h3>
+    <code>GET /assessment/v1/standards</code>
+
+    <h3>Get Checklist Items</h3>
+    <code>GET /assessment/v1/checklist</code>
+</section>
+
+<section>
+    <h2>7. Assessment Response APIs</h2>
+
+    <h3>Save Response</h3>
+    <code>POST /assessment/v1/response/save</code>
+<pre>
+{
+  "csqa_id": 123,
+  "compliance": 2,
+  "facility_id": 1,
+  "department_id": 2,
+  "assessment_period": 2024
+}
+</pre>
+
+    <h3>Resume Assessment</h3>
+    <code>GET /assessment/v1/response/resume</code>
+
+    <h3>Get Progress</h3>
+    <code>GET /assessment/v1/response/progress</code>
+</section>
+
+<section>
+    <h2>8. Facility Master APIs</h2>
+
+    <h3>Hierarchy APIs</h3>
+<pre>
+GET /facility/v1/masters/states
+GET /facility/v1/masters/divisions?state_id=10
+GET /facility/v1/masters/districts?division_id=101
+GET /facility/v1/masters/blocks?district_id=2201
+</pre>
+
+    <h3>Facility CRUD</h3>
+<pre>
+GET  /facility/v1/masters/facilities/get.php
+POST /facility/v1/masters/facilities/create.php
+PUT  /facility/v1/masters/facilities/update.php?facility_id=1
+</pre>
+</section>
+
+<section>
+    <h2>9. Certification APIs</h2>
+
+    <h3>Create Certification</h3>
+    <code>POST /certification/v1/data/create.php</code>
+
+    <h3>Update Certification</h3>
+    <code>PUT /certification/v1/data/update.php?fac_nin=2711231247</code>
+
+    <h3>Get Certification Records</h3>
+    <code>GET /certification/v1/data/get.php</code>
+
+    <h3>Public Verification</h3>
+    <code>GET /certification/v1/verification/public.php?fac_nin=2711231247</code>
+
+    <h3>Certification Analytics</h3>
+<pre>
+/analytics.php?type=district_leaderboard
+/analytics.php?type=cert_type_summary&mode=history
+</pre>
+</section>
+
+<section>
+    <h2>10. Certification Rules (Calculated)</h2>
+    <ul>
+        <li><strong>Certified</strong> → Valid for <strong>3 years</strong></li>
+        <li><strong>Conditional</strong> → Valid for <strong>1 year</strong></li>
+    </ul>
+    <p>
+        Expiry dates are <strong>calculated dynamically</strong>
+        and never stored in the database.
+    </p>
+</section>
+
+<section>
+    <h2>11. Swagger API Testing</h2>
+    <code>http://localhost:94/api/swagger/</code>
+</section>
+
+<section>
+    <h2>12. Standard Response Format</h2>
+<pre>
+{
+  "status": "success",
+  "count": 3,
+  "data": [...]
+}
+</pre>
+</section>
+
+<section>
+    <h2>13. DPG Design Principles</h2>
+    <ul>
+        <li>Stateless APIs</li>
+        <li>OpenAPI compliant</li>
+        <li>Rule-based computation</li>
+        <li>JSON-only</li>
+        <li>Reusable & interoperable</li>
+    </ul>
+</section>
+
+<section>
+    <h2>14. Support</h2>
+    <p>
+        <strong>SaQshi Team</strong><br>
+        Email: support@saqshi.org
+    </p>
+</section>
+
+</body>
+</html>

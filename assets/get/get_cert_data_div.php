@@ -3,8 +3,7 @@ header('Content-Type: application/json');
 include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
 
-$divid =   $_SESSION['div_id'];
-
+$dist = $_SESSION['dist'];
 $query = "SELECT c.*
 FROM cert_details c
 INNER JOIN (
@@ -12,15 +11,10 @@ INNER JOIN (
     FROM cert_details
     GROUP BY fac_name
 ) t
-    ON c.fac_name = t.fac_name
-   AND c.validity = t.latest_validity
-WHERE c.lat IS NOT NULL
-  AND c.longi IS NOT NULL
-  AND c.dist_id IN (
-        SELECT dist_id
-        FROM dist_master
-        WHERE division_id =$divid
-  );";
+ON c.fac_name = t.fac_name 
+AND c.validity = t.latest_validity
+WHERE c.lat IS NOT NULL 
+  AND c.longi IS NOT NULL and c.dist_id=$dist;";
 
 $result = mysqli_query($con, $query);
 

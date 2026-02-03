@@ -1,5 +1,6 @@
 <?php
 include("assets/head/h.php");
+ $dist_id = $_SESSION['dist'];
 ?>
 
 <div class="pcoded-main-container">
@@ -128,7 +129,7 @@ include("assets/head/h.php");
                 }
 
                 // Fetch facility data
-                $.getJSON('assets/get/get_cert_data.php', function(facilities) {
+                $.getJSON('assets/get/get_cert_data_div.php', function(facilities) {
 
                     let tableData = [];
                     let expiredFacilities = [];
@@ -297,101 +298,227 @@ include("assets/head/h.php");
             });
         </script>
 
-        <style>
-            #facTable tbody tr.expired-row {
-                background-color: #ffe5e5 !important;
-                color: #b30000 !important;
-                font-weight: 500;
-            }
-        </style>
-
-        <!-- ================== Assessment Summary Section ================== -->
-        <div class="card shadow-sm border rounded-3 mt-3">
-            <div class="card-body">
-
-                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-1">
-                    <h6 class="fw-bold text-primary mb-0">
-                        Assessment Summary by Performance Category
-                    </h6>
-                    <div class="text-end">
-                        <span class="small d-block fw-semibold text-primary">
-                            * Total assessments & % distribution
-                        </span>
-                        <span class="small d-block fw-semibold text-primary">
-                            * Categories: &lt;50%, 50–80%, &gt;80%
-                        </span>
-                    </div>
-                </div>
-
-                <?php
-                $dist_id = $_SESSION['dist'];
-                $count = mysqli_query($con, "SELECT p1 FROM state_dash_view WHERE dist_id=$dist_id AND p<>0");
-
-                $gt80 = $btw50_80 = $lt50 = 0;
-                $total = 0;
-                $sum = 0;
-
-                while ($row = mysqli_fetch_assoc($count)) {
-                    $p = floatval($row['p1']);
-                    $total++;
-                    $sum += $p;
-
-                    if ($p > 80) $gt80++;
-                    elseif ($p >= 50) $btw50_80++;
-                    else $lt50++;
+       <style>
+                .small-card {
+                    border-radius: 14px;
+                    box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+                    border: 0;
+                    min-height: 90px;
                 }
 
-                $avg_p = $total > 0 ? round($sum / $total, 2) : 0;
+                .small-card .icon {
+                    font-size: 1.4rem;
+                    opacity: .9;
+                }
 
-                $cards = [
-                    ['icon' => 'bi bi-award-fill', 'comp' => $gt80, 'label' => '>80%', 'color' => 'bg-success text-white'],
-                    ['icon' => 'bi bi-bar-chart-line-fill', 'comp' => $btw50_80, 'label' => '50%-80%', 'color' => 'bg-warning text-dark'],
-                    ['icon' => 'bi bi-exclamation-circle-fill', 'comp' => $lt50, 'label' => '<50%', 'color' => 'bg-danger text-white'],
-                ];
-                ?>
+                .small-card .value {
+                    font-size: 1.3rem;
+                    font-weight: 700;
+                    line-height: 1.2;
+                }
 
-                <!-- SAME CARD STYLE — ONLY FLEX-WRAP ADDED -->
-                <div class="d-flex justify-content-between align-items-stretch text-center" style="flex-wrap: wrap;">
+                .small-card .label {
+                    font-size: .75rem;
+                    opacity: .9;
+                }
 
-                    <?php foreach ($cards as $data): ?>
-                        <div class="card <?= $data['color'] ?> shadow-sm border-0 flex-fill mx-1 my-1"
-                            style="border-radius:10px; min-width:150px;">
-                            <div class="card-body p-2">
-                                <i class="<?= $data['icon'] ?> mb-1" style="font-size: 1.6rem;"></i>
-                                <h5 class="fw-bold mb-0"><?= $data['comp'] ?> / <?= $total ?></h5>
-                                <div class="fw-semibold" style="font-size: 13px;"><?= $data['label'] ?></div>
-                            </div>
+                .small-card .ratio {
+                    font-size: .7rem;
+                    opacity: .85;
+                }
+            </style>
+
+            <!-- ==================== REST OF YOUR DASHBOARD ==================== -->
+            <!-- ================== Assessment Summary Section ================== -->
+            <div class="card shadow-sm border rounded-3 mt-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-1">
+                        <h6 class="fw-bold text-primary mb-0">
+                            Assessment Summary by Performance Category
+                        </h6>
+                        <div class="text-end">
+                            <span class="small d-block fw-semibold text-primary">
+                                * Total number of assessments done by facilities — shows total assessments and % distribution
+                            </span>
+                            <span class="small d-block fw-semibold text-primary">
+                                * Categories represent assessments scoring &lt;50%, 50–80%, &gt;80%.
+                            </span>
                         </div>
-                    <?php endforeach; ?>
+                    </div>
 
-                </div>
+                    <?php
+                    /* =========================================================
+                            FETCH DATA WITH STATUS
+                            ========================================================= */
+                    $sql = "
+                                        SELECT *,
+                                            CASE
+                                                WHEN IFNULL(obt,0)=0 AND IFNULL(tot,0)=0 THEN 'Not Started'
+                                                WHEN IFNULL(obt,0) < IFNULL(tot,0) THEN 'In Progress'
+                                                WHEN IFNULL(obt,0) = IFNULL(tot,0) THEN 'Completed'
+                                                ELSE 'Unknown'
+                                            END AS status
+                                        FROM state_dash_view
+                                        WHERE fac_id <> 1 and dist_id=$dist_id
+                                        ";
 
-                <!-- Average -->
-                <div class="text-end mt-2">
-                    <small class="text-muted fst-italic text-primary">
-                        Average compliance score: <strong><?= $avg_p ?>%</strong>
-                    </small>
+                    $res = mysqli_query($con, $sql);
+
+                    /* =========================================================
+                            INITIALIZE COUNTERS
+                            ========================================================= */
+                    $gt80 = $btw50_80 = $lt50 = 0;
+                    $completed = $in_progress = $not_started = 0;
+
+                    $total_facilities = 0;
+                    $total_completed_score = 0;
+
+                    /* =========================================================
+                    PROCESS DATA
+                    ========================================================= */
+                    while ($row = mysqli_fetch_assoc($res)) {
+
+                        $p = floatval($row['p1']);
+                        $total_facilities++;
+
+                        // Facility status counters
+                        switch ($row['status']) {
+                            case 'Completed':
+                                $completed++;
+                                $total_completed_score += $p;
+
+                                // Score buckets ONLY for completed
+                                if ($p > 80) {
+                                    $gt80++;
+                                } elseif ($p >= 50 && $p<80) {
+                                    $btw50_80++;
+                                } else {
+                                    $lt50++;
+                                }
+                                break;
+
+                            case 'In Progress':
+                                $in_progress++;
+                                break;
+
+                            case 'Not Started':
+                                $not_started++;
+                                break;
+                        }
+                    }
+
+                    /* =========================================================
+                        AVERAGE SCORE (COMPLETED ONLY)
+                        ========================================================= */
+                    $avg_p = $completed > 0 ? round($total_completed_score / $completed, 2) : 0;
+                    ?>
+                    <div class="row g-3">
+                        <div class="col-lg-6 col-md-12">
+
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header bg-light fw-bold py-2">
+                                    📊 Assessment Status
+                                </div>
+
+                                <div class="card-body py-2">
+                                    <div class="row g-2 text-center">
+
+                                        <div class="col-4">
+                                            <div class="card small-card bg-success text-white">
+                                                <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-award-fill"></i></div>
+                                                    <div class="value"><?= $gt80 ?></div>
+                                                    <div class="ratio">/ <?= $completed ?></div>
+                                                    <div class="label">&gt; 80%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-4">
+                                            <div class="card small-card bg-warning text-dark">
+                                                <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-bar-chart-line-fill"></i></div>
+                                                    <div class="value"><?= $btw50_80 ?></div>
+                                                    <div class="ratio">/ <?= $completed ?></div>
+                                                    <div class="label">50–80%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-4">
+                                            <div class="card small-card bg-danger text-white">
+                                                <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+                                                    <div class="value"><?= $lt50 ?></div>
+                                                    <div class="ratio">/ <?= $completed ?></div>
+                                                    <div class="label">&lt; 50%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col-lg-6 col-md-12">
+
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header bg-light fw-bold py-2">
+                                    🏥 Facility Progress
+                                </div>
+
+                                <div class="card-body py-2">
+                                    <div class="row g-2 text-center">
+
+                                        <div class="col-4">
+                                            <div class="card small-card bg-success text-white">
+                                                <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-check-circle-fill"></i></div>
+                                                    <div class="value"><?= $completed ?></div>
+                                                    <div class="ratio">/ <?= $total_facilities ?></div>
+                                                    <div class="label">Completed</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-4">
+                                            <div class="card small-card bg-warning text-dark">
+                                                <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-arrow-repeat"></i></div>
+                                                    <div class="value"><?= $in_progress ?></div>
+                                                    <div class="ratio">/ <?= $total_facilities ?></div>
+                                                    <div class="label">In Progress</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-4">
+                                            <div class="card small-card bg-secondary text-white">
+                                                <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-hourglass-split"></i></div>
+                                                    <div class="value"><?= $not_started ?></div>
+                                                    <div class="ratio">/ <?= $total_facilities ?></div>
+                                                    <div class="label">Not Started</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
-        </div>
-
-
-        <!-- Optional: Hover Effect -->
-        <style>
-            .card.shadow-sm {
-                transition: all 0.2s ease-in-out;
-            }
-
-            .card.shadow-sm:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            }
-        </style>
         <?php
         $dist_id = $_SESSION['dist'];
         $userid = $_SESSION['userid'];
-        $call_count = "SELECT * FROM state_dash_view WHERE Dist_id=$dist_id";
+        $call_count = "SELECT * FROM state_dash_view WHERE Dist_id=$dist_id and obt=tot";
         $count = mysqli_query($con, $call_count);
 
         // Initialize counters
@@ -401,9 +528,7 @@ include("assets/head/h.php");
         $total_facilities = 0;
         $total_p_sum = 0;
         $total_pending_action = 0; // sum of 'non' column
-        $top90_100 = 0; // >=90
-        $low_lt40 = 0; // <40
-
+      
         while ($row = mysqli_fetch_assoc($count)) {
             // $p = floatval($row['p']);
             $p = (isset($row['marks']) && isset($row['f']) && $row['marks'] && $row['f'])
@@ -419,10 +544,7 @@ include("assets/head/h.php");
             } elseif ($p < 50) {
                 $lt50++;
             }
-            // Extra indicators
-            if ($p >= 90 && $p <= 100) {
-                $top90_100++;
-            }
+            
         }
 
         // Calculate Average %
@@ -450,13 +572,6 @@ include("assets/head/h.php");
                 'total' => $total_facilities,
                 'label' => '<50%',
                 'colorClass' => 'text-danger'
-            ],
-            [
-                'icon' => 'bi bi-star-fill',
-                'comp' => $top90_100,
-                'total' => $total_facilities,
-                'label' => '>90%',
-                'colorClass' => 'text-white'
             ]
         ];
 
@@ -471,14 +586,13 @@ include("assets/head/h.php");
         $chartData = [
             '>80%' => $gt80,
             '50%-80%' => $btw50_80,
-            '<50%' => $lt50,
-            '>90%' => $top90_100,
+            '<50%' => $lt50,           
         ];
         ?>
 
         <?php
         // Read block score data
-        $call_block_score = "SELECT Block_Name, p,marks,f FROM state_dash_view WHERE Dist_id=$dist_id";
+        $call_block_score = "SELECT Block_Name, p,marks,f FROM state_dash_view WHERE Dist_id=$dist_id and obt=tot ";
         $block_score_res = mysqli_query($con, $call_block_score);
 
         // Build Block-wise Score Category counts in PHP
@@ -493,27 +607,25 @@ include("assets/head/h.php");
             // Determine score category
             if ($p < 50) {
                 $cat = '<50%';
-            } elseif ($p < 80) {
+            } elseif ($p>=50 && $p <= 80) {
                 $cat = '50%-80%';
-            } elseif ($p < 90) {
-                $cat = '80%-90%';
-            } else {
-                $cat = '>90%';
+                        } else {
+                $cat = '>80%';
             }
 
             if (!isset($block_score_data[$block])) {
                 $block_score_data[$block] = [
                     '<50%' => 0,
                     '50%-80%' => 0,
-                    '80%-90%' => 0,
-                    '>90%' => 0
+                    '>80%' => 0
+                    
                 ];
             }
 
             $block_score_data[$block][$cat]++;
         }
         $block_labels = array_keys($block_score_data);
-        $score_categories = ['<50%', '50%-80%', '80%-90%', '>90%'];
+        $score_categories = ['<50%', '50%-80%','>80%'];
 
         $series_data = [];
         foreach ($score_categories as $category) {
@@ -530,19 +642,10 @@ include("assets/head/h.php");
         ?>
 
 
-        <div class="row">
-            <!-- Pie Chart Card -->
-            <div class="col-lg-6 col-md-6 mb-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Facility Score Distribution</h5>
-                        <div id="pie-chart-1" style="width:100%; height: 300px;"></div>
-                    </div>
-                </div>
-            </div>
+        <div class="row">            
 
             <!-- Block Stacked Bar Chart Card -->
-            <div class="col-lg-6 col-md-6 mb-3">
+            <div class="col-sm-12">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h5 class="card-title">Block-wise Facility Performance</h5>
@@ -552,36 +655,7 @@ include("assets/head/h.php");
             </div>
         </div>
 
-        <script>
-            // Pie Chart
-            var optionsPie = {
-                series: <?php echo json_encode(array_values($chartData)); ?>,
-                chart: {
-                    width: '100%',
-                    type: 'pie'
-                },
-                labels: <?php echo json_encode(array_keys($chartData)); ?>,
-                responsive: [{
-                    breakpoint: 480,
-                    options: {
-                        chart: {
-                            width: '100%'
-                        },
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }],
-                colors: [
-                    'rgba(7, 156, 42, 0.89)', // >80% green
-                    'rgba(255, 193, 7, 0.89)', // 50%-80% yellow
-                    'rgba(227, 19, 40, 0.9)', // <50% red
-                    'rgba(15, 116, 225, 0.93)', // >=90% blue                        
-                ]
-            };
-
-            var chartPie = new ApexCharts(document.querySelector("#pie-chart-1"), optionsPie);
-            chartPie.render();
+        <script>            
 
             // Block Stacked Bar Chart
             var optionsBar = {
@@ -611,8 +685,7 @@ include("assets/head/h.php");
                 },
                 colors: [
                     '#e70505ff', // 40%-50% yellow
-                    '#28a745', // 50%-80% green
-                    '#007bff', // 80%-90% blue
+                    '#28a745', // 50%-80% green                  
                     '#20c997' // >=90% teal
                 ],
                 legend: {
@@ -654,7 +727,7 @@ include("assets/head/h.php");
                             $yellow_zone = [];
                             $red_zone = [];
 
-                            $call_count = "SELECT * FROM state_dash_view WHERE dist_id=$dist_id";
+                            $call_count = "SELECT * FROM state_dash_view  WHERE Dist_id=$dist_id and obt=tot";
                             $count = mysqli_query($con, $call_count);
 
                             while ($row = mysqli_fetch_assoc($count)) {
@@ -670,7 +743,7 @@ include("assets/head/h.php");
 
                                 if ($p > 80) {
                                     $green_zone[] = $entry;
-                                } elseif ($p >= 50 && $p <= 79.99) {
+                                } elseif ($p >= 50 && $p <80) {
                                     $yellow_zone[] = $entry;
                                 } else {
                                     $red_zone[] = $entry;
@@ -687,9 +760,7 @@ include("assets/head/h.php");
                             $gt80_percent = $total_facilities > 0 ? round(($gt80 / $total_facilities) * 100, 1) : 0;
                             $btw50_80_percent = $total_facilities > 0 ? round(($btw50_80 / $total_facilities) * 100, 1) : 0;
                             $lt50_percent = $total_facilities > 0 ? round(($lt50 / $total_facilities) * 100, 1) : 0;
-
-                            $top90_100_percent = $total_facilities > 0 ? round(($top90_100 / $total_facilities) * 100, 1) : 0;
-                            $low_lt40_percent = $total_facilities > 0 ? round(($low_lt40 / $total_facilities) * 100, 1) : 0;
+                          
                             ?>
 
                             <p>
@@ -706,11 +777,7 @@ include("assets/head/h.php");
                                 <li>State Certified Facilities: <strong><span id="state-cert-count">...</span></strong></li>
                                 <li>National Certified Facilities: <strong><span id="national-cert-count">...</span></strong></li>
                             </ul>
-
-                            <p>
-                                The Facility Score Distribution indicates <strong><?= $top90_100_percent ?>%</strong> of facilities have scored above <strong>90%</strong>.
-                                However, <strong><?= $low_lt40_percent ?>%</strong> of facilities are below <strong>40%</strong>, signaling urgent attention.
-                            </p>
+                            
 
                             <p>
                                 Block-wise performance charts reflect that some blocks consistently perform above 80%, while others show a concentration of low-scoring facilities.
@@ -862,48 +929,61 @@ include("assets/head/h.php");
 
 
         <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title">
-                            Compliance Summary
-                            <a href="assets/export/export_dist_score_card.php">
-                                <i class="bi bi-arrow-down-circle-fill"></i>
-                            </a>
-                        </h4>
-
-                        <div class="table-responsive">
-                            <table class="table datatable table-bordered table-striped table-hover small" id="tbl_exporttable_to_xls">
-                                <thead>
-                                    <tr class="table-primary">
-                                        <th>District</th>
-                                        <th>Block</th>
-                                        <th>Type</th>
-                                        <th>Name</th>
-                                        <th>Ass.</th>
-                                        <th>Non</th>
-                                        <th>Partially</th>
-                                        <th>Fully</th>
-                                        <th>Comp.</th>
-                                        <th>Total</th>
-                                        <th>%</th>
-                                        <th>PDist.</th>
-                                        <th>Obt.</th>
-                                        <th>Max.Score</th>
-                                        <th>%</th>
-                                        <th><i class="bi bi-arrow-down-circle-fill"></i></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $dist_id = $_SESSION['dist'];
-                                    $userid = $_SESSION['userid'];
-                                    $call_count = "SELECT * FROM state_dash_view WHERE dist_id=$dist_id";
-                                    $count = mysqli_query($con, $call_count);
-
-                                    function renderRow($row, $percentageClass, $marksClass, $p1Class)
-                                    {
-                                        echo "<tr>
+                <div class="col">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                Assessment Summary by Facility
+                                <a href="assets/export/export_dist_score_card.php">
+                                    <i class="bi bi-arrow-down-circle-fill"></i>
+                                </a>
+                            </h6>
+                            <!-- Note below title -->
+                            <p class="text-primary small mb-3 fst-italic">
+                                * This summary also includes facilities that have not yet started the assessment,
+                                and facilities that have undergone the assessment process twice or thrice.
+                            </p>
+                            <div class="table-responsive">
+                                <table class="table datatable table-bordered table-striped table-hover small" id="tbl_exporttable_to_xls">
+                                    <thead>
+                                        <tr class="table-primary">
+                                            <th>District</th>
+                                            <th>Block</th>
+                                            <th>Type</th>
+                                            <th>Name</th>
+                                            <th>Ass.</th>
+                                            <th>Non</th>
+                                            <th>Partially</th>
+                                            <th>Fully</th>
+                                            <th>Comp.</th>
+                                            <th>Total</th>
+                                            <th>%</th>
+                                            <th>PDist.</th>
+                                            <th>Obt.</th>
+                                            <th>Max.Score</th>
+                                            <th>%</th>
+                                            <th>status</th>
+                                            <th>Std</th>
+                                            <th>Expd</th>
+                                            <th>Compd</th>
+                                            <th><i class="bi bi-arrow-down-circle-fill"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $call_count = "SELECT 
+    *,
+    CASE
+        WHEN obt < tot THEN 'In Progress'
+        WHEN obt = tot THEN 'Completed'
+        ELSE 'Not started'
+    END AS status
+FROM state_dash_view
+WHERE fac_id NOT IN (1) and dist_id=$dist_id;";
+                                        $count = mysqli_query($con, $call_count);
+                                        function renderRow($row, $percentageClass, $marksClass, $p1Class)
+                                        {
+                                            echo "<tr>
                                                 <td class='table-primary'>{$row['Dist_Name']}</td>
                                                 <td class='table-primary'>{$row['Block_Name']}</td>
                                                 <td class='table-primary'>{$row['facilities_type']}</td>
@@ -915,40 +995,46 @@ include("assets/head/h.php");
                                                 <td class='{$percentageClass}'>{$row['obt']}</td>
                                                 <td class='{$percentageClass}'>{$row['tot']}</td>
                                                 <td class='{$percentageClass}'>{$row['p']}%</td>
-                                                <td class='table-info'><a href='pdist_details.php?id={$row['fac_id']}'>{$row['non']}</a></td>
+                                                <td class='table-info'><a href='assets/export/pdist_details.php?id={$row['fac_id']}'>{$row['non']}</a></td>
                                                 <td class='{$marksClass}'>{$row['marks']}</td>
                                                 <td class='{$marksClass}'>{$row['f']}</td>
                                                 <td class='{$p1Class}'>{$row['p1']}%</td>
+                                                <td class='table-primary'>{$row['status']}</td>
+                                                 <td class='table-primary'>{$row['Start_date']}</td>
+                                                  <td class='table-primary'>{$row['Expected_date']}</td>
+                                                   <td class='table-primary'>{$row['ass_completed']}</td>
                                                 <td class='table-success'><a href='assets/export/export_dist_dash_comp.php?id={$row['fac_id']}'><i class='bi bi-arrow-down-circle-fill'></i></a></td>
                                             </tr>";
-                                    }
+                                        }
 
-                                    while ($row = mysqli_fetch_array($count)) {
-                                        $obtained = $row['p'];
-                                        $row['p1'] = (isset($row['marks']) && isset($row['f']) && $row['marks'] && $row['f'])
-                                            ? round(($row['marks'] / $row['f']) * 100, 2)
-                                            : 0;
+                                        while ($row = mysqli_fetch_array($count)) {
+                                            $obtained = $row['p'];
+                                            $row['p1'] = (isset($row['marks']) && isset($row['f']) && $row['marks'] && $row['f'])
+                                                ? round(($row['marks'] / $row['f']) * 100, 2)
+                                                : 0;
 
-                                        $percentageClass = ($row['p'] > 70) ? "table-success" : (($row['p'] > 65) ? "table-warning" : "table-danger");
-                                        $marksClass = ($row['p1'] > 70) ? "table-success" : (($row['p1'] > 65) ? "table-warning" : "table-danger");
-                                        $p1Class = $marksClass;
-                                        renderRow($row, $percentageClass, $marksClass, $p1Class);
-                                    }
+                                            $percentageClass = ($row['p'] > 70) ? "table-success" : (($row['p'] > 65) ? "table-warning" : "table-danger");
+                                            $marksClass = ($row['p1'] > 70) ? "table-success" : (($row['p1'] > 65) ? "table-warning" : "table-danger");
+                                            $p1Class = $marksClass;
+                                            renderRow($row, $percentageClass, $marksClass, $p1Class);
+                                        }
 
-                                    mysqli_free_result($count);
-                                    $con->next_result();
-                                    ?>
-                                </tbody>
-                            </table>
+                                        mysqli_free_result($count);
+                                        $con->next_result();
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+
                         </div>
-
                     </div>
                 </div>
-            </div>
-        </div>
-
-    </div>
-</div>
+               <button class="btn btn-success mb-3" onclick="window.location.href='assets/get/fetch_phc_kpi_divdash_data.php'">
+                Download KPI & Outcome Summary (Excel)
+            </button>
+            <button class="btn btn-success mb-3" onclick="window.location.href='assets/get/fetch_data_actionplan_div.php'">
+                DownloadAction Plan Completed/pending summary (Excel)
+            </button>
 
 <!-- Include DataTables JS and CSS -->
 

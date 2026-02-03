@@ -1,0 +1,697 @@
+openapi: 3.0.3
+
+info:
+  title: SaQshi Assessment, Facility & Certification APIs
+  version: 1.0.0
+  description: |
+    Open APIs for the SaQshi platform.
+
+    Covers:
+    - Assessment master & response APIs
+    - Facility master hierarchy & CRUD APIs
+    - Certification master, analytics & verification APIs
+
+    Key Principles:
+    - Certification expiry is calculated by rule (not stored):
+        * Certified   → 3 years
+        * Conditional → 1 year
+    - Supports history and latest dashboard views
+    - Designed for interoperability and Digital Public Goods (DPG) compliance
+  contact:
+    name: SaQshi Team
+    email: support@saqshi.org
+
+servers:
+  - url: http://localhost:94/api
+    description: Local Development
+  - url: https://api.saqshi.in/api
+    description: Production
+
+tags:
+  - name: Assessment Master
+  - name: Assessment Response
+  - name: Facility Master
+  - name: Certification Master
+  - name: Certification Analytics
+  - name: Certification Verification
+
+# =========================================================
+# PATHS
+# =========================================================
+paths:
+
+  # =====================================================
+  # ASSESSMENT MASTER
+  # =====================================================
+  /assessment/v1/getchklist/concerns:
+    get:
+      tags: [Assessment Master]
+      summary: Get Areas of Concern
+      parameters:
+        - name: facility_type
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: department_id
+          in: query
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Concern list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConcernList"
+
+  /assessment/v1/getchklist/standards:
+    get:
+      tags: [Assessment Master]
+      summary: Get Sub-Standards
+      parameters:
+        - name: facility_type
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: department_id
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: concern_id
+          in: query
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Standards list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardList"
+
+  /assessment/v1/getchklist/checklist:
+    get:
+      tags: [Assessment Master]
+      summary: Get Checklist Items
+      parameters:
+        - name: facility_type
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: department_id
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: concern_id
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: subtype_id
+          in: query
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Checklist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistResponse"
+
+  # =====================================================
+  # ASSESSMENT RESPONSE
+  # =====================================================
+  /assessment/v1/assessment_response/save:
+    post:
+      tags: [Assessment Response]
+      summary: Save checklist response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveRequest"
+      responses:
+        "200":
+          description: Saved successfully
+        "400":
+          description: Invalid input
+ /assessment/v1/assessment_response/save:
+    post:
+      tags: [Assessment Response]
+      summary: Save Checklist Response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveRequest"
+      responses:
+        "200":
+          description: Response saved successfully
+        "400":
+          description: Invalid input
+
+  /assessment/v1/assessment_response/resume:
+    get:
+      tags: [Assessment Response]
+      summary: Resume Last Unanswered Checklist
+      parameters:
+        - name: facility_id
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: assessment_period
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Resume payload
+
+  /assessment/v1/assessment_response/progress:
+    get:
+      tags: [Assessment Response]
+      summary: Get Assessment Progress
+      parameters:
+        - name: facility_id
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: assessment_period
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Progress summary
+
+  /facility/v1/masters/states:
+    get:
+      tags: [Facility Master]
+      summary: Get States
+      responses:
+        "200":
+          description: List of states
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateList"
+
+  /facility/v1/masters/divisions:
+    get:
+      tags: [Facility Master]
+      summary: Get Divisions by State
+      parameters:
+        - name: state_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of divisions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DivisionList"
+
+  /facility/v1/masters/districts:
+    get:
+      tags: [Facility Master]
+      summary: Get Districts by Division
+      parameters:
+        - name: division_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of districts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DistrictList"
+
+  /facility/v1/masters/blocks:
+    get:
+      tags: [Facility Master]
+      summary: Get Blocks by District
+      parameters:
+        - name: district_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of blocks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlockList"
+  # =====================================================
+  # FACILITY MASTER (CRUD)
+  # =====================================================
+  /facility/v1/masters/facilities/get.php:
+    get:
+      tags: [Facility Master]
+      summary: Get facility or facility list
+      parameters:
+        - name: facility_id
+          in: query
+          schema: { type: integer }
+        - name: nin_no
+          in: query
+          schema: { type: string }
+        - name: state_id
+          in: query
+          schema: { type: integer }
+        - name: division_id
+          in: query
+          schema: { type: integer }
+        - name: district_id
+          in: query
+          schema: { type: integer }
+        - name: block_id
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Facility data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FacilityResponse"
+        "404":
+          description: Facility not found
+
+  /facility/v1/masters/facilities/create.php:
+    post:
+      tags: [Facility Master]
+      summary: Create facility
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FacilityCreateRequest"
+      responses:
+        "200":
+          description: Facility created
+        "409":
+          description: Duplicate NIN
+
+  /facility/v1/masters/facilities/update.php:
+    put:
+      tags: [Facility Master]
+      summary: Update facility
+      parameters:
+        - name: facility_id
+          in: query
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FacilityUpdateRequest"
+      responses:
+        "200":
+          description: Facility updated
+        "404":
+          description: Facility not found
+
+  ##################################################
+  # CERTIFICATION MASTER (✔ FIXED)
+  ##################################################
+  /certification/v1/data/create.php:
+    post:
+      tags: [Certification Master]
+      summary: Create Certification Record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CertificationCreate"
+      responses:
+        "200":
+          description: Certification created successfully
+        "400":
+          description: Invalid input
+
+  /certification/v1/data/update.php:
+    put:
+      tags: [Certification Master]
+      summary: Update Certification Record
+      parameters:
+        - name: fac_nin
+          in: query
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CertificationUpdate"
+      responses:
+        "200":
+          description: Certification updated successfully
+        "404":
+          description: Record not found
+
+  /certification/v1/data/get.php:
+    get:
+      tags: [Certification Master]
+      summary: Get Certification Records
+      parameters:
+        - name: fac_nin
+          in: query
+          schema: { type: integer }
+        - name: district_id
+          in: query
+          schema: { type: integer }
+        - name: block_id
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Certification records
+
+  ##################################################
+  # CERTIFICATION ANALYTICS
+  ##################################################
+  /certification/v1/data/analytics.php:
+    get:
+      tags: [Certification Analytics]
+      summary: Certification Analytics
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [district_leaderboard, state_leaderboard, cert_type_summary]
+        - name: mode
+          in: query
+          schema:
+            type: string
+            enum: [latest, history]
+      responses:
+        "200":
+          description: Analytics result
+
+  ##################################################
+  # CERTIFICATION VERIFICATION
+  ##################################################
+  /certification/v1/verification/public.php:
+    get:
+      tags: [Certification Verification]
+      summary: Public Certification Verification
+      parameters:
+        - name: fac_nin
+          in: query
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Verification result
+
+components:
+  schemas:
+
+    ConcernList:
+      type: object
+      properties:
+        status: { type: string }
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              concern_id: { type: integer }
+              concern_name: { type: string }
+
+    StandardList:
+      type: object
+      properties:
+        status: { type: string }
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              subtype_id: { type: integer }
+              reference: { type: string }
+              title: { type: string }
+
+    ChecklistResponse:
+      type: object
+      properties:
+        status: { type: string }
+        count: { type: integer }
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              csqa_id: { type: integer }
+              checkpoint: { type: string }
+
+    SaveRequest:
+      type: object
+      required: [csqa_id, compliance, facility_id, department_id, assessment_period]
+      properties:
+        csqa_id: { type: integer }
+        compliance: { type: integer, enum: [0, 1, 2] }
+        facility_id: { type: integer }
+        department_id: { type: integer }
+        assessment_period: { type: integer }
+
+    FacilityResponse:
+      type: object
+      properties:
+        status: { type: string }
+        count: { type: integer }
+        data:
+          oneOf:
+            - type: object
+            - type: array
+              items: { type: object }
+
+    FacilityCreateRequest:
+      type: object
+      required:
+        - state_id
+        - division_id
+        - district_id
+        - block_id
+        - facility_type
+        - facility_name
+        - nin_no
+      properties:
+        state_id: { type: integer }
+        division_id: { type: integer }
+        district_id: { type: integer }
+        block_id: { type: integer }
+        facility_type: { type: integer }
+        facility_name: { type: string }
+        nin_no: { type: string }
+        latitude: { type: string }
+        longitude: { type: string }
+        is_active: { type: integer }
+
+    FacilityUpdateRequest:
+      type: object
+      properties:
+        facility_name: { type: string }
+        facility_type: { type: integer }
+        latitude: { type: string }
+        longitude: { type: string }
+        is_active: { type: integer }
+
+    CertificationCreate:
+      type: object
+      required: [fac_nin, fac_name, cert_type, cert_status, date_of_ass]
+      properties:
+        fac_nin: { type: integer }
+        fac_name: { type: string }
+        cert_type: { type: string }
+        cert_status:
+          type: string
+          enum: [Certified, Conditional, Expired]
+        date_of_ass:
+          type: string
+          format: date
+        score:
+          type: number
+          format: double
+
+    CertificationUpdate:
+      type: object
+      properties:
+        cert_status:
+          type: string
+          enum: [Certified, Conditional, Expired]
+        date_of_ass:
+          type: string
+          format: date
+        score:
+          type: number
+          format: double
+
+# =========================================================
+# COMPONENTS
+# =========================================================
+components:
+  schemas:
+
+    # ---------- Assessment ----------
+    ConcernList:
+      type: object
+      properties:
+        status: { type: string }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Concern" }
+
+    Concern:
+      type: object
+      properties:
+        concern_id: { type: integer }
+        concern_name: { type: string }
+
+    StandardList:
+      type: object
+      properties:
+        status: { type: string }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Standard" }
+
+    Standard:
+      type: object
+      properties:
+        subtype_id: { type: integer }
+        reference: { type: string }
+        title: { type: string }
+
+    ChecklistResponse:
+      type: object
+      properties:
+        status: { type: string }
+        count: { type: integer }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/ChecklistItem" }
+
+    ChecklistItem:
+      type: object
+      properties:
+        csqa_id: { type: integer }
+        checkpoint: { type: string }
+
+    SaveRequest:
+      type: object
+      required: [csqa_id, compliance, facility_id, department_id, assessment_period]
+      properties:
+        csqa_id: { type: integer }
+        compliance: { type: integer, enum: [0,1,2] }
+        facility_id: { type: integer }
+        department_id: { type: integer }
+        assessment_period: { type: integer }
+
+    # ---------- Facility ----------
+    FacilityResponse:
+      type: object
+      properties:
+        status: { type: string }
+        count: { type: integer }
+        data:
+          oneOf:
+            - $ref: "#/components/schemas/Facility"
+            - type: array
+              items: { $ref: "#/components/schemas/Facility" }
+
+    Facility:
+      type: object
+      properties:
+        fac_id: { type: integer }
+        fac_name: { type: string }
+        nin_no: { type: string }
+        state_id: { type: integer }
+        division_id: { type: integer }
+        dist_id: { type: integer }
+        block_id: { type: integer }
+        facility_type: { type: integer }
+        is_active: { type: integer }
+
+    FacilityCreateRequest:
+      type: object
+      required:
+        - state_id
+        - division_id
+        - district_id
+        - block_id
+        - facility_type
+        - facility_name
+        - nin_no
+      properties:
+        state_id: { type: integer }
+        division_id: { type: integer }
+        district_id: { type: integer }
+        block_id: { type: integer }
+        facility_type: { type: integer }
+        facility_name: { type: string }
+        nin_no: { type: string }
+        latitude: { type: string }
+        longitude: { type: string }
+        is_active: { type: integer }
+
+    FacilityUpdateRequest:
+      type: object
+      properties:
+        facility_name: { type: string }
+        facility_type: { type: integer }
+        latitude: { type: string }
+        longitude: { type: string }
+        is_active: { type: integer }
+
+    # ---------- Certification ----------
+    CertificationCreate:
+      type: object
+      required: [fac_nin, fac_name, cert_type, Cert_status, date_of_ass]
+      properties:
+        fac_nin: { type: integer }
+        fac_name: { type: string }
+        cert_type: { type: string }
+        Cert_status:
+          type: string
+          enum: [Certified, Conditional, Expired]
+        date_of_ass:
+          type: string
+          format: date
+        score:
+          type: number
+          format: double
+
+    CertificationUpdate:
+      type: object
+      properties:
+        Cert_status:
+          type: string
+          enum: [Certified, Conditional, Expired]
+        date_of_ass:
+          type: string
+          format: date
+        score:
+          type: number
+          format: double

@@ -1,973 +1,399 @@
-<?php
-include("assets/head/h.php");
-ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
-?>
-<div id="dashboard-content">
-    <div class="pcoded-main-container">
-        <div class="pcoded-content">
-            <div class="pagetitle mb-2">
-                <h5 class="fw-bold text-primary mb-1">State Dashboard</h5>
-            </div>
+<?php include("assets/head/h.php"); ?>
+<style>
+    /* ================= FACILITY TYPE CARD ================= */
 
-            <!-- ==================== FACILITY MAP ==================== -->
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>Facility Certification Overview</h5>
-                            <!-- Map container -->
-                            <div id="map" style="width: 100%; height: 400px; border: 1px solid #ccc;"></div>
+.facility-card {
+  width: 170px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 12px 16px;
+  position: relative;
+  transition: all 0.25s ease;
+}
 
-                            <!-- Map Legend -->
-                            <h6 class="mt-2">
-                                <img src="https://maps.gstatic.com/mapfiles/ms2/micons/blue.png" style="width:18px;height:28px;vertical-align:middle;margin-right:6px;">
-                                <span class="fw-bold text-primary">State Certification</span>
-                                &nbsp;&nbsp;&nbsp;
-                                <img src="https://maps.gstatic.com/mapfiles/ms2/micons/green.png" style="width:18px;height:28px;vertical-align:middle;margin-right:6px;">
-                                <span class="fw-bold text-success">National Certification</span>
-                                &nbsp;&nbsp;&nbsp;
-                                <img src="https://maps.gstatic.com/mapfiles/ms2/micons/red.png" style="width:18px;height:28px;vertical-align:middle;margin-right:6px;">
-                                <span class="fw-bold text-danger">Expired Certificates</span>
-                            </h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
+.facility-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.12);
+}
 
-            <!-- ==================== FACILITY TABLE ==================== -->
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>Facility Certification Details Overview</h5>
+.facility-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 5px;
+  width: 100%;
+  border-radius: 14px 14px 0 0;
+}
 
-                            <div class="alert alert-warning mt-2">
-                                <strong>⚠️ Expired Certifications:</strong>
-                                <span id="expired-count">0</span> facilities —
-                                <a href="#" id="download-expired" class="text-decoration-underline fw-bold">Download List</a>
-                            </div>
+.facility-icon {
+  font-size: 26px;
+  color: #0d6efd;
+  margin-bottom: 6px;
+  text-align: center;
+}
 
-                            <div class="table-responsive">
-                                <table class="table datatable table-bordered table-striped table-hover small" id="facTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Facility Name</th>
-                                            <th>Facility Type</th>
-                                            <th>Certification Type</th>
-                                            <th>Details</th>
-                                            <th>Issue Date</th>
-                                            <th>Validity</th>
-                                            <th>Score</th> <!-- NEW -->
-                                            <th>Cert Status</th> <!-- NEW -->
-                                            <th>Assessment Mode</th> <!-- NEW -->
-                                            <th>Assessment Date</th> <!-- NEW -->
-                                            <th>District</th> <!-- NEW -->
-                                        </tr>
+.facility-body {
+  text-align: center;
+}
 
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+.facility-type {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
 
-            <!-- ==================== MAP SCRIPT ==================== -->
-            <script>
-$(document).ready(function() {
+.facility-count {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 4px 0;
+}
 
-    // ----------------------------------------------------------
-    // INITIALIZE MAP
-    // ----------------------------------------------------------
-    var map = L.map('map').setView([26.85, 80.95], 7);
+.facility-progress {
+  height: 6px;
+  border-radius: 6px;
+  margin: 6px 0;
+}
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18
-    }).addTo(map);
+.facility-percent {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
 
+/* Responsive */
+@media(max-width:768px){
+  .facility-card{
+    width: 100%;
+  }
+}
 
-    // ----------------------------------------------------------
-    // LOAD UTTAR PRADESH GEOJSON BOUNDARY
-    // ----------------------------------------------------------
-    $.getJSON("assets/map/UttarPradesh.json")
-        .done(function(geoData) {
+</style>
+<div class="pcoded-main-container">
+<div class="pcoded-content">
 
-            var boundaryLayer = L.geoJSON(geoData, {
-                style: {
-                    color: "#ed6d46ff",
-                    weight: 2,
-                    fillColor: "#cce2ff",
-                    fillOpacity: 0.1
-                }
-            }).addTo(map);
+<h5 class="fw-bold text-primary mb-3">State Dashboard</h5>
 
-            // Fit map to UP boundary
-            map.fitBounds(boundaryLayer.getBounds());
-        })
-        .fail(function() {
-            console.error("❌ ERROR: Cannot load UttarPradesh.json");
-            alert("UP Map JSON failed to load. Check file path.");
-        });
+<!-- =======================================================
+ MAP + CERTIFICATION OVERVIEW
+======================================================= -->
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="fw-bold">Facility Certification Overview</h6>
+    <div id="map" style="height:420px;border:1px solid #ddd;"></div>
 
+    <div class="mt-2 small">
+      <span class="me-3">
+        <img src="https://maps.gstatic.com/mapfiles/ms2/micons/blue.png" width="14"> State
+      </span>
+      <span class="me-3">
+        <img src="https://maps.gstatic.com/mapfiles/ms2/micons/green.png" width="14"> National
+      </span>
+      <span>
+        <img src="https://maps.gstatic.com/mapfiles/ms2/micons/red.png" width="14"> Expired
+      </span>
+    </div>
+  </div>
+</div>
 
-    // ----------------------------------------------------------
-    // LOAD FACILITY DATA
-    // ----------------------------------------------------------
-    $.getJSON('assets/get/get_cert_data_state.php', function(facilities) {
+<!-- =======================================================
+ CERTIFICATION TABLE
+======================================================= -->
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="alert alert-warning mb-2">
+      ⚠️ Expired Certifications:
+      <strong id="expired-count">0</strong>
+      <a href="#" id="download-expired" class="ms-2 fw-bold">Download CSV</a>
+    </div>
 
-        let tableData = [];
-        let expiredFacilities = [];
-        let stateCount = 0, nationalCount = 0;
-        const today = new Date();
+    <div class="table-responsive">
+      <table id="facTable" class="table table-bordered table-striped table-sm"></table>
+    </div>
+  </div>
+</div>
 
+<!-- =======================================================
+ PERFORMANCE SUMMARY
+======================================================= -->
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="fw-bold text-primary">Assessment Summary</h6>
 
-        facilities.forEach(function(facility) {
+    <div id="performanceCards" class="d-flex gap-2 flex-wrap mb-2"></div>
 
-            // -------------------- EXPIRY CHECK --------------------
-            let isExpired = false;
-            if (facility.validity) {
-                const v = new Date(facility.validity);
-                if (v < today) isExpired = true;
-            }
-            if (isExpired) expiredFacilities.push(facility);
-
-
-            // -------------------- MAP MARKER --------------------
-            if (facility.lat && facility.longi) {
-
-                const icon = getMarkerIcon(facility.cert_type, isExpired);
-
-                const marker = L.marker([facility.lat, facility.longi], { icon }).addTo(map);
-
-                marker.bindTooltip(`
-                    <b>${facility.fac_name}</b><br>
-                    Type: ${facility.fac_type}<br>
-                    Certification: ${facility.cert_type}<br>
-                    Score: ${facility.score ?? 'N/A'}<br>
-                    Status: ${facility.Cert_status ?? 'N/A'}<br>
-                    Mode: ${facility.ass_mod ?? 'N/A'}<br>
-                    Assessment Date: ${facility.date_of_ass ?? 'N/A'}<br>
-                    Validity: ${facility.validity || 'N/A'}<br>
-                    Details: ${facility.cert_detailscol || ''}<br>
-                    District: ${facility.dist ?? 'N/A'}
-                `, {
-                    permanent: false,
-                    direction: 'top',
-                    offset: [0, -10]
-                });
-            }
+    <div class="text-end text-muted small">
+      Average Compliance:
+      <strong id="avgScore">0%</strong>
+    </div>
+  </div>
+</div>
+                             
+<!-- =======================================================
+ FACILITY TYPE PROGRESS
+======================================================= -->
+<div class="card shadow-sm border-0 mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold text-primary mb-0">
+        Facility Type Progress
+      </h6>
+      <span class="small text-muted fst-italic">
+        Completed / Total
+      </span>
+    </div>
+ <div id="facilityTypeCards" class="d-flex flex-nowrap gap-3 justify-content-center overflow-auto py-3">
+    
+  </div>
+</div>
 
 
-            // -------------------- TABLE DATA --------------------
-            tableData.push({
-                data: [
-                    facility.fac_name,
-                    facility.fac_type,
-                    facility.cert_type,
-                    facility.cert_detailscol,
-                    facility.cert_issue,
-                    facility.validity,
-                    facility.score,
-                    facility.Cert_status,
-                    facility.ass_mod,
-                    facility.date_of_ass,
-                    facility.dist
-                ],
-                expired: isExpired
-            });
+<!-- =======================================================
+ DISTRICT PROGRESS TABLE
+======================================================= -->
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="fw-bold text-primary">District-wise Assessment Progress</h6>
+    <div class="table-responsive">
+      <table id="districtTable" class="table table-bordered table-sm"></table>
+    </div>
+  </div>
+</div>
 
-            // Count Types
-            if ((facility.cert_type || '').toLowerCase() === 'state') stateCount++;
-            if ((facility.cert_type || '').toLowerCase() === 'national') nationalCount++;
+<!-- =======================================================
+ PERFORMANCE ZONES
+======================================================= -->
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="fw-bold text-primary">Performance Zones</h6>
+    <div id="zoneTables"></div>
+  </div>
+</div>
 
-        });
+<!-- =======================================================
+ DOWNLOADS
+======================================================= -->
+<div class="mb-3">
+  <button class="btn btn-success me-2"
+    onclick="window.location.href='/api/dashboard/v1/state/export-kpi.php'">
+    Download KPI & Outcome (Excel)
+  </button>
 
+  <button class="btn btn-success"
+    onclick="window.location.href='/api/dashboard/v1/state/export-actionplan.php'">
+    Download Action Plan Summary
+  </button>
+</div>
 
-        // -------------------- UPDATE COUNT LABELS --------------------
-        $('#state-cert-count').text(stateCount);
-        $('#national-cert-count').text(nationalCount);
-        $('#expired-count').text(expiredFacilities.length);
-
-
-        // -------------------- INITIALIZE DATATABLE --------------------
-        if ($.fn.DataTable.isDataTable('#facTable')) {
-            $('#facTable').DataTable().clear().destroy();
-        }
-
-        $('#facTable').DataTable({
-            data: tableData.map(t => t.data),
-            columns: [
-                { title: "Facility Name" },
-                { title: "Type" },
-                { title: "Cert. Type" },
-                { title: "Details" },
-                { title: "Issue Date" },
-                { title: "Validity" },
-                { title: "Score" },
-                { title: "Cert Status" },
-                { title: "Assessment Mode" },
-                { title: "Assessment Date" },
-                { title: "District" }
-            ],
-            createdRow: function(row, data, index) {
-                if (tableData[index].expired) {
-                    $(row).addClass('expired-row');
-                }
-            },
-            pageLength: 5,
-            dom: 'Bfrtip',
-            buttons: [{
-                extend: 'excelHtml5',
-                title: 'State Certification Overview',
-                text: '📥 Export to Excel'
-            }]
-        });
+</div>
+</div>
 
 
-        // -------------------- DOWNLOAD CSV FOR EXPIRED --------------------
-        $('#download-expired').on('click', function(e) {
-            e.preventDefault();
+<!-- =======================================================
+ JS SECTION
+======================================================= -->
+<script>
+const STATE_ID = 10;
+const API = '/api/dashboard/v1/state';
 
-            if (expiredFacilities.length === 0) {
-                alert("No expired facilities found.");
-                return;
-            }
+/* =====================================================
+   MAP + CERTIFICATION TABLE
+===================================================== */
+fetch(`${API}/certification.php?state_id=${STATE_ID}`)
+.then(r => r.json())
+.then(res => {
 
-            let csv = "Facility Name,Facility Type,Cert Type,Details,Issue Date,Validity,Score,Status,Mode,Assessment Date,District\n";
+  if (res.status !== 'success') {
+    console.error('API error', res);
+    return;
+  }
 
-            expiredFacilities.forEach(f => {
-                csv += `"${f.fac_name}","${f.fac_type}","${f.cert_type}","${f.cert_detailscol}","${f.cert_issue}","${f.validity}","${f.score}","${f.Cert_status}","${f.ass_mod}","${f.date_of_ass}","${f.dist}"\n`;
-            });
+  const data = res.data || [];
 
-            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "Expired_Facility_List.csv";
-            link.click();
-        });
+  /* ================= EXPIRED COUNT ================= */
+  const expiredCount = data.filter(f => f.is_expired === true).length;
+  $('#expired-count').text(expiredCount);
 
-    }); // END OF FACILITY LOAD
+  /* ================= MAP ================= */
+  const map = L.map('map').setView([25.32, 82.99], 7);
 
-}); // END DOCUMENT READY
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18
+  }).addTo(map);
+
+  data.forEach(f => {
+
+    if (!f.lat || !f.lng) return;
+
+    const color = f.is_expired
+      ? 'red'
+      : (f.cert_type || '').toLowerCase() === 'national'
+        ? 'green'
+        : 'blue';
+
+    L.marker([f.lat, f.lng], {
+      icon: new L.Icon({
+        iconUrl: `https://maps.gstatic.com/mapfiles/ms2/micons/${color}.png`,
+        iconSize: [18, 28],
+        iconAnchor: [9, 28]
+      })
+    })
+    .addTo(map)
+    .bindTooltip(`
+      <b>${f.fac_name}</b><br>
+      Type: ${f.fac_type}<br>
+      Certification: ${f.cert_type}<br>
+      Status: ${f.cert_status}<br>
+      Score: ${f.score ?? 'NA'}<br>
+      Validity: ${f.validity ?? 'NA'}<br>
+      District: ${f.district ?? 'NA'}
+    `);
+  });
+
+  /* ================= TABLE ================= */
+  $('#facTable').DataTable({
+    destroy: true,
+    data: data,
+    pageLength: 5,
+    columns: [
+      { data: 'fac_name',   title: 'Facility' },
+      { data: 'fac_type',   title: 'Type' },
+      { data: 'cert_type',  title: 'Cert Type' },
+      { data: 'cert_detail',title: 'Details' },
+      { data: 'cert_issue', title: 'Issue Date' },
+      { data: 'validity',   title: 'Validity' },
+      { data: 'score',      title: 'Score' },
+      { data: 'cert_status',title: 'Status' },
+      { data: 'ass_mode',   title: 'Mode' },
+      { data: 'ass_date',   title: 'Assessment Date' },
+      { data: 'district',   title: 'District' }
+    ],
+    createdRow: function (row, rowData) {
+      if (rowData.is_expired) {
+        $(row).addClass('table-danger');
+      }
+    }
+  });
+
+});
+
+/* =====================================================
+  PERFORMANCE SUMMARY
+===================================================== */
+fetch(`${API}/performance-summary.php?state_id=${STATE_ID}`)
+.then(r => r.json())
+.then(r => {
+  $('#avgScore').text(r.average_score + '%');
+
+  $('#performanceCards').html(`
+    <div class="badge bg-success p-2">&gt;80% : ${r.categories.gt80}</div>
+    <div class="badge bg-warning text-dark p-2">50–80% : ${r.categories.btw50_80}</div>
+    <div class="badge bg-danger p-2">&lt;50% : ${r.categories.lt50}</div>
+  `);
+});
+
+/* =====================================================
+  FACILITY TYPE PROGRESS
+===================================================== */
+fetch(`${API}/facility-type-progress.php?state_id=${STATE_ID}`)
+.then(r => r.json())
+.then(r => {
+  let html = '';
+  r.data.forEach(f => {
+    const pct = f.total ? Math.round((f.completed / f.total) * 100) : 0;
+    html += `
+<div class="facility-card shadow-sm">
+  <div class="facility-strip ${pct >= 80 ? 'bg-success' : pct >= 50 ? 'bg-warning' : 'bg-danger'}"></div>
+
+  <div class="facility-icon">
+   <i class="${getFacilityIcon(f.type)}"></i>
+
+  </div>
+
+  <div class="facility-body">
+    <div class="facility-type">${f.type}</div>
+
+    <div class="facility-count">
+      ${f.completed} / ${f.total}
+    </div>
+
+    <div class="progress facility-progress">
+      <div class="progress-bar
+        ${pct >= 80 ? 'bg-success' : pct >= 50 ? 'bg-warning' : 'bg-danger'}"
+        style="width:${pct}%">
+      </div>
+    </div>
+
+    <div class="facility-percent">${pct}% completed</div>
+  </div>
+</div>
+`;
+
+  });
+  $('#facilityTypeCards').html(html);
+});
+
+/* =====================================================
+  DISTRICT PROGRESS TABLE
+===================================================== */
+fetch(`${API}/district-progress.php?state_id=${STATE_ID}`)
+.then(r => r.json())
+.then(r => {
+  $('#districtTable').DataTable({
+    data: r.data,
+    pageLength: 5,
+    columns: Object.keys(r.data[0]).map(k => ({
+      data: k,
+      title: k
+    }))
+  });
+});
+
+/* =====================================================
+  PERFORMANCE ZONES
+===================================================== */
+fetch(`${API}/zones.php?state_id=${STATE_ID}`)
+.then(r => r.json())
+.then(r => {
+  let html = '';
+  ['green','yellow','red'].forEach(z => {
+    html += `<h6 class="mt-3 text-uppercase">${z} Zone</h6>`;
+    html += `
+      <table class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th>District</th>
+            <th>Block</th>
+            <th>Facility</th>
+            <th>Type</th>
+            <th>Score</th>
+          </tr>
+        </thead><tbody>`;
+    r[z].forEach(f => {
+      html += `
+        <tr>
+          <td>${f.district}</td>
+          <td>${f.block}</td>
+          <td>${f.facility}</td>
+          <td>${f.type}</td>
+          <td>${f.score}%</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+  });
+  $('#zoneTables').html(html);
+});
+
+function getFacilityIcon(type){
+  switch(type){
+    case 'DH': return 'bi bi-hospital';
+    case 'CHC': return 'bi bi-hospital-fill';
+    case 'PHC': return 'bi bi-building';
+    case 'UPHC': return 'bi bi-house-heart';
+    case 'AAMSC': return 'bi bi-heart-pulse';
+    default: return 'bi bi-hospital';
+  }
+}
+
 </script>
 
-
-            <style>
-                #facTable tbody tr.expired-row {
-                    background-color: #ffe5e5 !important;
-                    color: #b30000 !important;
-                    font-weight: 500;
-                }
-            </style>
-
-            <!-- ==================== REST OF YOUR DASHBOARD ==================== -->
-            <!-- ================== Assessment Summary Section ================== -->
-            <div class="card shadow-sm border rounded-3 mt-3">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-1">
-                        <h6 class="fw-bold text-primary mb-0">
-                            Assessment Summary by Performance Category
-                        </h6>
-                        <div class="text-end">
-                            <span class="small d-block fw-semibold text-primary">
-                                * Total number of assessments done by facilities — shows total assessments and % distribution
-                            </span>
-                            <span class="small d-block fw-semibold text-primary">
-                                * Categories represent assessments scoring &lt;50%, 50–80%, &gt;80%.
-                            </span>
-                        </div>
-                    </div>
-
-                    <?php
-                    $call_count = "SELECT Dist_Name,p1 FROM state_dash_view WHERE p <> 0";
-                    $count = mysqli_query($con, $call_count);
-
-                    // Initialize counters
-                    $gt80 = 0;
-                    $btw50_80 = 0;
-                    $lt50 = 0;
-                    $total_facilities_assessments = 0;
-                    $total_p_sum = 0;
-                    $top90_100 = 0; // >=90
-                    $low_lt40 = 0;  // <40
-
-                    while ($row = mysqli_fetch_assoc($count)) {
-                        $p = floatval($row['p1']);
-                        $total_facilities_assessments++;
-                        $total_p_sum += $p;
-
-                        if ($p > 80) {
-                            $gt80++;
-                        } elseif ($p >= 50 && $p <= 80) {
-                            $btw50_80++;
-                        } elseif ($p < 50) {
-                            $lt50++;
-                        }
-
-                        //  if ($p >= 90 && $p <= 100) {
-                        //      $top90_100++;
-                        //  }
-                        // if ($p < 40) {
-                        //     $low_lt40++;
-                        // }
-                    }
-
-                    // Calculate Average %
-                    $avg_p = $total_facilities_assessments > 0 ? round($total_p_sum / $total_facilities_assessments, 2) : 0;
-
-                    // Prepare cards
-                    $cards = [
-                        [
-                            'icon' => 'bi bi-award-fill',
-                            'comp' => $gt80,
-                            'total' => $total_facilities_assessments,
-                            'label' => '>80%',
-                            'colorClass' => 'bg-success text-white'
-                        ],
-                        [
-                            'icon' => 'bi bi-bar-chart-line-fill',
-                            'comp' => $btw50_80,
-                            'total' => $total_facilities_assessments,
-                            'label' => '50%-80%',
-                            'colorClass' => 'bg-warning text-dark'
-                        ],
-                        [
-                            'icon' => 'bi bi-exclamation-circle-fill',
-                            'comp' => $lt50,
-                            'total' => $total_facilities_assessments,
-                            'label' => '<50%',
-                            'colorClass' => 'bg-danger text-white'
-                        ],
-                        //[
-                        //    'icon' => 'bi bi-star-fill',
-                        //     'comp' => $top90_100,
-                        //     'total' => $total_facilities_assessments,
-                        //     'label' => '≥90%',
-                        //     'colorClass' => 'bg-primary text-white'
-                        //  ],
-                        // [
-                        //    'icon' => 'bi bi-emoji-frown-fill',
-                        //    'comp' => $low_lt40,
-                        //    'total' => $total_facilities_assessments,
-                        //   'label' => '<40%',
-                        //   'colorClass' => 'bg-secondary text-white'
-                        // ]
-                    ];
-                    ?>
-
-                    <!-- Cards in Single Line -->
-                    <div class="d-flex justify-content-between align-items-stretch text-center">
-                        <?php
-                        foreach ($cards as $data) {
-                            echo "
-          <div class='card {$data['colorClass']} shadow-sm border-0 flex-fill mx-1' 
-               style='border-radius:10px; min-width:150px;'>
-              <div class='card-body p-2'>
-                  <i class='{$data['icon']} mb-1' style='font-size: 1.6rem;'></i>
-                  <h5 class='fw-bold mb-0'>{$data['comp']} / {$data['total']}</h5>
-                  <div class='fw-semibold' style='font-size: 13px;'>{$data['label']}</div>
-              </div>
-          </div>";
-                        }
-                        ?>
-                    </div>
-
-                    <!-- Average Display -->
-                    <div class="text-end mt-2">
-
-                        <small class="text-muted fst-italic text-primary">
-                            Average compliance score across all assessments: <strong><?= $avg_p ?>%</strong>
-                        </small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Optional: Hover Effect -->
-            <style>
-                .card.shadow-sm {
-                    transition: all 0.2s ease-in-out;
-                }
-
-                .card.shadow-sm:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-                }
-            </style>
-
-
-
-            <?php
-
-            // Read block score data
-            $call_block_score = "SELECT Dist_Name,p1 FROM state_dash_view where p <>0";
-            $block_score_res = mysqli_query($con, $call_block_score);
-
-            // Build Block-wise Score Category counts in PHP
-            $block_score_data = [];
-
-            while ($row = mysqli_fetch_assoc($block_score_res)) {
-                $block = $row['Dist_Name'];
-                $p1 = floatval($row['p1']);
-
-                // Determine score category
-                if ($p1 < 40) {
-                    $cat = '<40%';
-                } elseif ($p1 < 50) {
-                    $cat = '40%-50%';
-                } elseif ($p1 < 80) {
-                    $cat = '50%-80%';
-                } elseif ($p1 < 90) {
-                    $cat = '80%-90%';
-                } else {
-                    $cat = '>=90%';
-                }
-
-                if (!isset($block_score_data[$block])) {
-                    $block_score_data[$block] = [
-                        '<40%' => 0,
-                        '40%-50%' => 0,
-                        '50%-80%' => 0,
-                        '80%-90%' => 0,
-                        '>=90%' => 0
-                    ];
-                }
-
-                $block_score_data[$block][$cat]++;
-            }
-            $block_labels = array_keys($block_score_data);
-            $score_categories = ['<40%', '40%-50%', '50%-80%', '80%-90%', '>=90%'];
-
-            $series_data = [];
-            foreach ($score_categories as $category) {
-                $data_series = [];
-                foreach ($block_labels as $block) {
-                    $data_series[] = $block_score_data[$block][$category];
-                }
-                $series_data[] = [
-                    'name' => $category,
-                    'data' => $data_series
-                ];
-            }
-
-            ?>
-
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="card">
-                        <div class="card-body">
-
-                            <!-- REPORT CONTENT TO EXPORT -->
-                            <div id="report-content" style="
-                    font-family: 'Arial', sans-serif;
-                    font-size: 14px;
-                    line-height: 1.6;
-                    padding: 10px;
-                    background: white;
-                    color: #333;
-                ">
-                                <center>
-                                    <h4 class="card-title" style="font-size: 20px; margin-bottom: 5px; color: #0056b3;">
-                                        State Compliance Summary – Report
-                                    </h4>
-                                    <h4 style="font-size: 16px; margin-bottom: 15px; color: #333;">
-
-                                        State: <strong> Bihar</strong>
-                                    </h4>
-                                </center>
-                                <p class="text-muted mb-1" style="font-size: 13px;">
-                                    * Assessments started or Completed vs Registered facilities
-                                </p>
-                                <div class="d-flex flex-nowrap overflow-auto">
-                                    <?php
-                                    $call_q1 = "CALL state_dash_count";
-                                    $q22 = mysqli_query($con, $call_q1);
-
-                                    while ($row = mysqli_fetch_array($q22)) {
-                                        $facilities = [
-                                            'DH' => ['total' => $row['DH'], 'comp' => $row['DHcomp'], 'icon' => 'bi bi-hospital'],
-                                            'SDH' => ['total' => $row['SDH'], 'comp' => $row['SDHcomp'], 'icon' => 'bi bi-hospital'],
-                                            'APHC' => ['total' => $row['APHC'], 'comp' => $row['APHCcomp'], 'icon' => 'bi bi-hospital'],
-                                            'CHC' => ['total' => $row['CHC'], 'comp' => $row['CHCcomp'], 'icon' => 'bi bi-hospital'],
-                                            'PHC' => ['total' => $row['PHC'], 'comp' => $row['PHCcomp'], 'icon' => 'bi bi-hospital'],
-                                            'UPHC' => ['total' => $row['UPHC'], 'comp' => $row['UPHCcomp'], 'icon' => 'bi bi-hospital'],
-                                            'HWC' => ['total' => $row['HWC'], 'comp' => $row['HWCcomp'], 'icon' => 'bi bi-hospital']
-                                        ];
-
-                                        foreach ($facilities as $label => $data) {
-                                            $comp = intval($data['comp']);
-                                            $total = intval($data['total']);
-
-                                            if ($total == 0) {
-                                                $bgColor = 'bg-secondary';
-                                                $displayValue = 'N/A';
-                                            } elseif ($comp == $total) {
-                                                $bgColor = 'bg-success';
-                                                $displayValue = "$comp/$total";
-                                            } elseif ($comp > 0) {
-                                                $bgColor = 'bg-warning';
-                                                $displayValue = "$comp/$total";
-                                            } else {
-                                                $bgColor = 'bg-danger';
-                                                $displayValue = "$comp/$total";
-                                            }
-
-                                            echo "<div class='card flat-card widget-primary-card $bgColor text-white m-2' style='min-width: 90px;' title='Facility Type: $label | Completed: $comp / Total: $total'>
-                <div class='row-table'>
-                    <div class='col-sm-3 card-body d-flex align-items-center justify-content-between p-2'>
-                        <i class='{$data['icon']} text-white' style='font-size: 20px;'></i>
-                    </div>
-                    <div class='col-sm-9 py-3'>
-                        <h5 class='fw-bold mb-1'>$displayValue</h4>
-                        <h5 class='mb-0'>$label</h5>
-                    </div>
-                </div>
-            </div>";
-                                        }
-                                    }
-
-                                    mysqli_free_result($q22);
-                                    $con->next_result();
-                                    ?>
-                                </div>
-                                <?php
-                                $green_zone = [];
-                                $yellow_zone = [];
-                                $red_zone = [];
-
-
-                                $call_count = "SELECT * FROM state_dash_view  where p <>0";
-                                $count = mysqli_query($con, $call_count);
-
-                                while ($row = mysqli_fetch_assoc($count)) {
-                                    $p = floatval($row['p1']);
-                                    $entry = [
-                                        'district' => $row['Dist_Name'],
-                                        'block' => $row['Block_Name'],
-                                        'name' => $row['fac_name'],
-                                        'type' => $row['facilities_type'],
-                                        'score' => $p
-                                    ];
-
-                                    if ($p > 80) {
-                                        $green_zone[] = $entry;
-                                    } elseif ($p >= 50 && $p <= 79.99) {
-                                        $yellow_zone[] = $entry;
-                                    } else {
-                                        $red_zone[] = $entry;
-                                    }
-                                }
-
-                                mysqli_free_result($count);
-                                $con->next_result();
-                                ?>
-
-                                <?php
-                                $total_facilities_assessments = $gt80 + $btw50_80 + $lt50;
-
-                                $gt80_percent = $total_facilities_assessments > 0 ? round(($gt80 / $total_facilities_assessments) * 100, 1) : 0;
-                                $btw50_80_percent = $total_facilities_assessments > 0 ? round(($btw50_80 / $total_facilities_assessments) * 100, 1) : 0;
-                                $lt50_percent = $total_facilities_assessments > 0 ? round(($lt50 / $total_facilities_assessments) * 100, 1) : 0;
-
-                                $top90_100_percent = $total_facilities_assessments > 0 ? round(($top90_100 / $total_facilities_assessments) * 100, 1) : 0;
-                                $low_lt40_percent = $total_facilities_assessments > 0 ? round(($low_lt40 / $total_facilities_assessments) * 100, 1) : 0;
-                                ?>
-                                <div class="col-sm-12">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h6 class="card-title">
-                                                District-wise status of facility registration and assessment progress in SaQshi (Started / Completed)
-                                            </h6>
-
-                                            <div class="table-responsive">
-                                                <table id="districtStatusTable" class="table table-sm table-bordered table-hover">
-
-                                                    <thead style="background-color: #add8e6;"> <!-- Light blue heading background -->
-                                                        <tr>
-                                                            <th>District</th>
-                                                            <th>DH</th>
-                                                            <th>SDH</th>
-                                                            <th>APHC</th>
-                                                            <th>CHC</th>
-                                                            <th>PHC</th>
-                                                            <th>UPHC</th>
-                                                            <th>HWC</th>
-
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <?php
-                                                        $call_q1 = "CALL state_dash_count_dist1(1)";
-                                                        $q22 = mysqli_query($con, $call_q1);
-
-                                                        while ($row = mysqli_fetch_array($q22)) {
-                                                            $categories = [
-                                                                'DH' => ['total' => $row['DH'], 'completed' => $row['DHcomp']],
-                                                                'SDH' => ['total' => $row['SDH'], 'completed' => $row['SDHCcomp']],
-                                                                'APHC' => ['total' => $row['APHC'], 'completed' => $row['APHCcomp']],
-                                                                'CHC' => ['total' => $row['CHC'], 'completed' => $row['CHCcomp']],
-                                                                'PHC' => ['total' => $row['PHC'], 'completed' => $row['PHCcomp']],
-                                                                'UPHC' => ['total' => $row['UPHC'], 'completed' => $row['UPHCcomp']],
-                                                                'HWC' => ['total' => $row['HWC'], 'completed' => $row['HWCcomp']],
-                                                            ];
-
-                                                            echo "<tr>";
-                                                            // District name in bold blue
-                                                            echo "<td style='font-weight:bold; color: #003366;'>" . $row['Dist_Name'] . "</td>";
-
-
-                                                            foreach ($categories as $label => $data) {
-                                                                $completed = intval($data['completed']);
-                                                                $total = intval($data['total']);
-                                                                $percentage = ($total > 0) ? round(($completed / $total) * 100, 1) : 0;
-
-                                                                // Bootstrap contextual color
-                                                                if ($percentage >= 70) {
-                                                                    $colorClass = 'bg-success text-white';
-                                                                } elseif ($percentage >= 50) {
-                                                                    $colorClass = 'bg-warning text-dark';
-                                                                } else {
-                                                                    $colorClass = 'bg-danger text-white';
-                                                                }
-
-                                                                echo "<td class='$colorClass' style='padding: 4px;'>";
-
-                                                                if ($total > 0) {
-                                                                    // Show progress bar + Completed/Total + %
-                                                                    echo "<div style='font-size: 12px; text-align:center; margin-bottom: 2px;'>" . $completed . "/" . $total . " (" . $percentage . "%)</div>";
-                                                                    echo "
-                                        <div class='progress' style='height: 6px;'>
-                                            <div class='progress-bar' role='progressbar' style='width: {$percentage}%;' aria-valuenow='{$percentage}' aria-valuemin='0' aria-valuemax='100'></div>
-                                        </div>
-                                    ";
-                                                                } else {
-                                                                    echo "N/A";
-                                                                }
-
-                                                                echo "</td>";
-                                                            }
-
-                                                            echo "</tr>";
-                                                        }
-
-                                                        mysqli_free_result($q22);
-                                                        $con->next_result();
-                                                        ?>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p>
-                                    A total of <strong><?= $total_facilities_assessments ?></strong> assessments have been conducted in the state.
-                                    Out of these, <strong><?= $gt80 ?> assessments (<?= $gt80_percent ?>%)</strong> achieved a compliance score of more than <strong>80%</strong>, indicating high performance.
-                                    Additionally, <strong><?= $btw50_80 ?> assessments (<?= $btw50_80_percent ?>%)</strong> scored between <strong>50%</strong> and <strong>80%</strong>.
-                                    However, <strong><?= $lt50 ?> assessments (<?= $lt50_percent ?>%)</strong> scored below <strong>50%</strong> and require focused improvement.
-
-                                </p>
-
-                                <p>
-                                    Certification coverage includes:
-                                </p>
-                                <ul style="margin-bottom: 15px;">
-                                    <li>State Certified Facilities: <strong><span id="state-cert-count">...</span></strong></li>
-                                    <li>National Certified Facilities: <strong><span id="national-cert-count">...</span></strong></li>
-                                </ul>
-
-                                <p>
-                                    District-wise performance charts reflect that some districts consistently perform above 80%, while others show a concentration of low-scoring facilities.
-                                    These patterns should guide future quality improvement and support.
-                                </p>
-                                <h5 style="font-size: 16px; margin-top: 20px; color: green;">Green Zone - Facilities with > 80%</h5>
-                                <table id="greenZoneTable" class="table table-bordered table-striped table-hover table-sm">
-                                    <thead class="table-success">
-                                        <tr>
-                                            <th>Sl. No.</th>
-                                            <th>Dist. Name</th>
-                                            <th>Block Name</th>
-                                            <th>Facility Name</th>
-                                            <th>Facility Type</th>
-                                            <th>Score %</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php $slno = 1;
-                                        foreach ($green_zone as $row): ?>
-                                            <tr>
-                                                <td><?= $slno++ ?></td>
-                                                <td><?= htmlspecialchars($row['district']) ?></td>
-                                                <td><?= htmlspecialchars($row['block']) ?></td>
-                                                <td><?= htmlspecialchars($row['name']) ?></td>
-                                                <td><?= htmlspecialchars($row['type']) ?></td>
-                                                <td><?= $row['score'] ?>%</td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-
-                                <h5 style="font-size: 16px; margin-top: 20px; color: orange;">Yellow Zone - Facilities with 50% to 79%</h5>
-                                <table id="yellowZoneTable" class="table table-bordered table-striped table-hover table-sm">
-                                    <thead class="table-warning">
-                                        <tr>
-                                            <th>Sl. No.</th>
-                                            <th>Dist. Name</th>
-                                            <th>Block Name</th>
-                                            <th>Facility Name</th>
-                                            <th>Facility Type</th>
-                                            <th>Score %</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php $slno = 1;
-                                        foreach ($yellow_zone as $row): ?>
-                                            <tr>
-                                                <td><?= $slno++ ?></td>
-                                                <td><?= htmlspecialchars($row['district']) ?></td>
-                                                <td><?= htmlspecialchars($row['block']) ?></td>
-                                                <td><?= htmlspecialchars($row['name']) ?></td>
-                                                <td><?= htmlspecialchars($row['type']) ?></td>
-                                                <td><?= $row['score'] ?>%</td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-
-                                <h5 style="font-size: 16px; margin-top: 20px; color: red;">Red Zone - Facilities with < 50%</h5>
-                                        <table id="redZoneTable" class="table table-bordered table-striped table-hover table-sm">
-                                            <thead class="table-danger">
-                                                <tr>
-                                                    <th>Sl. No.</th>
-                                                    <th>Dist. Name</th>
-                                                    <th>Block Name</th>
-                                                    <th>Facility Name</th>
-                                                    <th>Facility Type</th>
-                                                    <th>Score %</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php $slno = 1;
-                                                foreach ($red_zone as $row): ?>
-                                                    <tr>
-                                                        <td><?= $slno++ ?></td>
-                                                        <td><?= htmlspecialchars($row['district']) ?></td>
-                                                        <td><?= htmlspecialchars($row['block']) ?></td>
-                                                        <td><?= htmlspecialchars($row['name']) ?></td>
-                                                        <td><?= htmlspecialchars($row['type']) ?></td>
-                                                        <td><?= $row['score'] ?>%</td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-
-
-                                        <p class="text-muted" style="font-size: 12px; margin-top: 20px;">
-                                            <em>Report generated on <?= date('d M Y h:i A') ?></em>
-                                        </p>
-
-                                        <p class="text-muted" style="font-size: 12px; margin-top: 5px;">
-                                            <em>This report is generated by <strong>SaQshi</strong></em>
-                                        </p>
-
-                            </div> <!-- END of report-content -->
-
-                            <!-- PDF Button OUTSIDE report-content -->
-                            <div class="text-end mb-3 mt-3">
-                                <button class="btn btn-danger" onclick="downloadDashboardAsPDF()">Download Dashboard as PDF</button>
-
-                            </div>
-
-                        </div> <!-- end card-body -->
-                    </div> <!-- end card -->
-                </div> <!-- end col -->
-            </div> <!-- end row -->
-
-            <!-- Place this BEFORE your <script> that uses html2canvas -->
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-            <script>
-                async function downloadDashboardAsPDF() {
-                    const {
-                        jsPDF
-                    } = window.jspdf;
-                    const dashboard = document.getElementById('report-content');
-
-                    window.scrollTo(0, 0);
-
-                    html2canvas(dashboard, {
-                        scale: 1,
-                        useCORS: true,
-                        ignoreElements: el => el.classList.contains('exclude-from-pdf')
-                    }).then(canvas => {
-                        const imgData = canvas.toDataURL('image/jpeg', 0.7);
-                        const pdf = new jsPDF('p', 'mm', 'a4');
-                        const pdfWidth = pdf.internal.pageSize.getWidth();
-                        const pdfHeight = pdf.internal.pageSize.getHeight();
-
-                        const imgWidth = pdfWidth;
-                        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-                        let heightLeft = imgHeight;
-                        let position = 0;
-
-                        // Add first page
-                        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-                        heightLeft -= pdfHeight;
-
-                        // Add remaining pages if needed
-                        while (heightLeft > 0) {
-                            position = heightLeft - imgHeight;
-                            pdf.addPage();
-                            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-                            heightLeft -= pdfHeight;
-                        }
-
-                        pdf.save("SaQshi_State_Report.pdf");
-                    }).catch(err => {
-                        console.error("PDF generation error:", err);
-                    });
-                }
-            </script>
-
-
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                Assessment Summary by Facility
-                                <a href="assets/export/export_state_score_card.php">
-                                    <i class="bi bi-arrow-down-circle-fill"></i>
-                                </a>
-                            </h6>
-                            <!-- Note below title -->
-                            <p class="text-primary small mb-3 fst-italic">
-                                * This summary also includes facilities that have not yet started the assessment,
-                                and facilities that have undergone the assessment process twice or thrice.
-                            </p>
-                            <div class="table-responsive">
-                                <table class="table datatable table-bordered table-striped table-hover small" id="tbl_exporttable_to_xls">
-                                    <thead>
-                                        <tr class="table-primary">
-                                            <th>District</th>
-                                            <th>Block</th>
-                                            <th>Type</th>
-                                            <th>Name</th>
-                                            <th>Ass.</th>
-                                            <th>Non</th>
-                                            <th>Partially</th>
-                                            <th>Fully</th>
-                                            <th>Comp.</th>
-                                            <th>Total</th>
-                                            <th>%</th>
-                                            <th>PDist.</th>
-                                            <th>Obt.</th>
-                                            <th>Max.Score</th>
-                                            <th>%</th>
-                                            <th><i class="bi bi-arrow-down-circle-fill"></i></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                        $call_count = "SELECT * FROM state_dash_view";
-                                        $count = mysqli_query($con, $call_count);
-                                        function renderRow($row, $percentageClass, $marksClass, $p1Class)
-                                        {
-                                            echo "<tr>
-                                                <td class='table-primary'>{$row['Dist_Name']}</td>
-                                                <td class='table-primary'>{$row['Block_Name']}</td>
-                                                <td class='table-primary'>{$row['facilities_type']}</td>
-                                                <td class='table-primary'>{$row['fac_name']}</td>
-                                                <td class='table-primary'>{$row['ass_name']}</td>
-                                                <td class='{$percentageClass}'>{$row['zero']}</td>
-                                                <td class='{$percentageClass}'>{$row['one']}</td>
-                                                <td class='{$percentageClass}'>{$row['two']}</td>
-                                                <td class='{$percentageClass}'>{$row['obt']}</td>
-                                                <td class='{$percentageClass}'>{$row['tot']}</td>
-                                                <td class='{$percentageClass}'>{$row['p']}%</td>
-                                                <td class='table-info'><a href='pdist_details.php?id={$row['fac_id']}'>{$row['non']}</a></td>
-                                                <td class='{$marksClass}'>{$row['marks']}</td>
-                                                <td class='{$marksClass}'>{$row['f']}</td>
-                                                <td class='{$p1Class}'>{$row['p1']}%</td>
-                                                <td class='table-success'><a href='assets/export/export_dist_dash_comp.php?id={$row['fac_id']}'><i class='bi bi-arrow-down-circle-fill'></i></a></td>
-                                            </tr>";
-                                        }
-
-                                        while ($row = mysqli_fetch_array($count)) {
-                                            $obtained = $row['p'];
-                                            $row['p1'] = (isset($row['marks']) && isset($row['f']) && $row['marks'] && $row['f'])
-                                                ? round(($row['marks'] / $row['f']) * 100, 2)
-                                                : 0;
-
-                                            $percentageClass = ($row['p'] > 70) ? "table-success" : (($row['p'] > 65) ? "table-warning" : "table-danger");
-                                            $marksClass = ($row['p1'] > 70) ? "table-success" : (($row['p1'] > 65) ? "table-warning" : "table-danger");
-                                            $p1Class = $marksClass;
-                                            renderRow($row, $percentageClass, $marksClass, $p1Class);
-                                        }
-
-                                        mysqli_free_result($count);
-                                        $con->next_result();
-                                        ?>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <button class="btn btn-success mb-3" onclick="window.location.href='assets/get/fetch_phc_kpi_statedash_data.php'">
-                Download KPI & Outcome Summary (Excel)
-            </button>
-            <button class="btn btn-success mb-3" onclick="window.location.href='assets/get/fetch_data_actionplan.php'">
-                DownloadAction Plan Completed/pending summary (Excel)
-            </button>
-
-
-
-            <!-- Include DataTables JS and CSS -->
-
-
-            <script>
-                $(document).ready(function() {
-                    // Initialize DataTable with your settings
-                    $('#tbl_exporttable_to_xls').DataTable({
-                        "pageLength": 5,
-                        "lengthMenu": [5, 10, 25, 50, 100, "All"],
-                        "paging": true,
-                        "searching": true,
-                        "ordering": true,
-                        "info": true,
-                        "language": {
-                            "search": "Search table:"
-                        }
-                    });
-                }); // <-- only ONE closing });
-            </script>
-            <script>
-                $(document).ready(function() {
-                    ['greenZoneTable', 'yellowZoneTable', 'redZoneTable', 'districtStatusTable'].forEach(function(id) {
-                        if ($.fn.DataTable.isDataTable('#' + id)) {
-                            $('#' + id).DataTable().destroy();
-                        }
-                        $('#' + id).DataTable({
-                            dom: 'Bfrtip',
-                            pageLength: 5,
-                            buttons: [{
-                                extend: 'excelHtml5',
-                                title: id + ' Full Export',
-                                text: '📥 Export Excel',
-                                exportOptions: {
-                                    modifier: {
-                                        page: 'all' // Export all rows
-                                    }
-                                }
-                            }]
-                        });
-                    });
-                });
-            </script>
-            <?php include("assets/head/f.php"); ?>
+<?php include("assets/head/f.php"); ?>

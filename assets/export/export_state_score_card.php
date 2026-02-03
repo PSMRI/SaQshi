@@ -8,10 +8,14 @@ $userid = $_SESSION['userid'];
 // Excel file name for download 
 $fileName = "State_Facility_indicators_Summary_" . date('Y-m-d') . ".xlsx";
 // Define column names 
-$excelData[] = array('District', 'Block', 'Fac. Type', 'Facility','Assessment','Non Comp.','Partially Comp.','Fully Comp.','Compliance Completed','Indicators','Comp.%','Obtained Score','Tot Score','Score %','Pending for action Dist.');
+$excelData[] = array('District', 'Block', 'Fac. Type', 'Facility','Assessment','Non Comp.','Partially Comp.','Fully Comp.','Compliance Completed','Indicators','Comp.%','Obtained Score','Tot Score','Score %','Pending for action Dist.','status','StartDate','ExpectedDate','Completion Date');
 
 // Fetch records from database and store in an array 
-$tablequery1 = "SELECT * FROM state_dash_view";
+$tablequery1 = "SELECT *, CASE
+        WHEN obt < tot THEN 'In Progress'
+        WHEN obt = tot THEN 'Completed'
+        ELSE 'Not started'
+    END AS status FROM state_dash_view WHERE fac_id NOT IN (1)";
 $q2 = mysqli_query($con, $tablequery1);
 while ($row = mysqli_fetch_array($q2)) {
     $obtained = $row['p'];
@@ -25,7 +29,7 @@ while ($row = mysqli_fetch_array($q2)) {
     
     if ($obtained != null) {       
 
-        $lineData = array($row['Dist_Name'],  $row['Block_Name'],$row['facilities_type'],$row['fac_name'],$row['ass_name'],$row['zero'],$row['one'],$row['two'],$row['obt'],$row['tot'],$row['p'],$row['marks'],$row['f'],$p1,$row['non']);
+        $lineData = array($row['Dist_Name'],  $row['Block_Name'],$row['facilities_type'],$row['fac_name'],$row['ass_name'],$row['zero'],$row['one'],$row['two'],$row['obt'],$row['tot'],$row['p'],$row['marks'],$row['f'],$p1,$row['non'],$row['status'],$row['Start_date'],$row['Expected_date'],$row['ass_completed']);
         $excelData[] = $lineData;
     }
 }

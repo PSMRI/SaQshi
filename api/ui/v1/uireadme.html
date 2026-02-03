@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SaQshi UI Service – Integration Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:24px;
+    color:#333;
+}
+h1,h2,h3{
+    color:#0d6efd;
+}
+h1{
+    border-bottom:2px solid #0d6efd;
+    padding-bottom:6px;
+}
+section{
+    background:#fff;
+    padding:20px;
+    border-radius:8px;
+    margin-bottom:20px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+code,pre{
+    background:#111;
+    color:#0f0;
+    padding:12px;
+    border-radius:6px;
+    display:block;
+    overflow-x:auto;
+    font-size:13px;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    font-size:14px;
+}
+th{
+    background:#f1f1f1;
+    text-align:left;
+}
+ul,ol{ padding-left:20px; }
+.tag{
+    display:inline-block;
+    background:#0d6efd;
+    color:#fff;
+    padding:2px 8px;
+    border-radius:4px;
+    font-size:12px;
+    margin-left:6px;
+}
+.note{
+    background:#eef4ff;
+    border-left:4px solid #0d6efd;
+    padding:10px 14px;
+    margin:12px 0;
+}
+</style>
+</head>
+
+<body>
+
+<h1>SaQshi UI Service <span class="tag">v1</span></h1>
+
+<section>
+<h2>1. Purpose</h2>
+<p>
+The <strong>SaQshi UI Service</strong> provides a <strong>frontend-friendly, stateless API layer</strong>
+for building assessment user interfaces on top of the SaQshi platform.
+</p>
+
+<p>
+These APIs are designed for:
+</p>
+<ul>
+    <li>Web Applications</li>
+    <li>Mobile Applications (Android / iOS)</li>
+    <li>Government & Partner Systems</li>
+</ul>
+
+<p>
+The UI Service hides all database and business logic.
+Integrators interact only with stable JSON APIs.
+</p>
+</section>
+
+<section>
+<h2>2. Architecture Overview</h2>
+<pre>
+UI / Mobile App
+      ↓
+SaQshi UI Service (this layer)
+      ↓
+Assessment Service (business logic)
+      ↓
+Database
+</pre>
+
+<div class="note">
+<strong>Important:</strong> UI applications must never directly access database tables
+or stored procedures.
+</div>
+</section>
+
+<section>
+<h2>3. Base URLs</h2>
+
+<h3>Local / Development</h3>
+<code>http://localhost:94/api/ui/v1</code>
+
+<h3>Production (Example)</h3>
+<code>https://api.saqshi.in/api/ui/v1</code>
+</section>
+
+<section>
+<h2>4. Authentication</h2>
+<p>
+UI APIs are currently <strong>open</strong> for ease of integration.
+</p>
+<p>
+Authentication (API Key / Token / OAuth2) can be enabled later
+<strong>without changing API contracts</strong>.
+</p>
+</section>
+
+<section>
+<h2>5. Assessment Lifecycle APIs</h2>
+
+<h3>5.1 Start / Resume Assessment</h3>
+<code>GET /assessment/start</code>
+
+<pre>
+/assessment/start?facility_id=1&department_id=2&assessment_period=2024
+</pre>
+
+<p><strong>Response</strong></p>
+<pre>
+{
+  "status": "success",
+  "data": {
+    "completed": false,
+    "subtype_id": 14,
+    "csqa_id": 233
+  }
+}
+</pre>
+
+<hr>
+
+<h3>5.2 Get Single Checklist Question</h3>
+<code>GET /assessment/checkpoint</code>
+
+<pre>
+/assessment/checkpoint?csqa_id=233
+</pre>
+
+<hr>
+
+<h3>5.3 Save Checklist Response</h3>
+<code>POST /assessment/save</code>
+
+<pre>
+{
+  "facility_id": 1,
+  "department_id": 2,
+  "assessment_period": 2024,
+  "csqa_id": 233,
+  "compliance": 2,
+  "user_id": 15
+}
+</pre>
+
+<hr>
+
+<h3>5.4 Resume / Next Question</h3>
+<code>GET /assessment/resume</code>
+
+<pre>
+/assessment/resume?facility_id=1&department_id=2&assessment_period=2024
+</pre>
+</section>
+
+<section>
+<h2>6. Progress & Navigation APIs</h2>
+
+<h3>6.1 Overall Assessment Progress</h3>
+<code>GET /assessment/progress</code>
+
+<pre>
+/assessment/progress?facility_id=1&assessment_period=2024
+</pre>
+
+<hr>
+
+<h3>6.2 Subtype-wise Progress</h3>
+<code>GET /assessment/subtype-progress</code>
+
+<pre>
+/assessment/subtype-progress?
+facility_id=1&
+department_id=2&
+assessment_period=2024&
+facility_type=3&
+concern_id=4
+</pre>
+
+<hr>
+
+<h3>6.3 Concern-wise Progress</h3>
+<code>GET /assessment/concern-progress</code>
+</section>
+
+<section>
+<h2>7. Completion API</h2>
+
+<h3>7.1 Mark Assessment Complete</h3>
+<code>POST /assessment/complete</code>
+
+<pre>
+{
+  "facility_id": 1,
+  "department_id": 2,
+  "assessment_period": 2024,
+  "user_id": 15
+}
+</pre>
+
+<div class="note">
+Once completed, assessments can optionally be locked from further edits.
+</div>
+</section>
+
+<section>
+<h2>8. Master Data APIs</h2>
+
+<h3>8.1 Areas of Concern</h3>
+<code>GET /masters/concerns</code>
+
+<hr>
+
+<h3>8.2 Subtypes by Concern</h3>
+<code>GET /masters/subtypes</code>
+
+<pre>
+/masters/subtypes?concern_id=3&facility_type=2
+</pre>
+</section>
+
+<section>
+<h2>9. Standard Response Format</h2>
+<pre>
+{
+  "status": "success",
+  "message": "Optional message",
+  "data": {...}
+}
+</pre>
+
+<h3>Error Format</h3>
+<pre>
+{
+  "status": "error",
+  "message": "Reason for failure"
+}
+</pre>
+</section>
+
+<section>
+<h2>10. HTTP Status Codes</h2>
+<table>
+<tr><th>Code</th><th>Meaning</th></tr>
+<tr><td>200</td><td>Success</td></tr>
+<tr><td>400</td><td>Invalid or missing parameters</td></tr>
+<tr><td>401</td><td>Unauthorized (future)</td></tr>
+<tr><td>500</td><td>Server error</td></tr>
+</table>
+</section>
+
+<section>
+<h2>11. Design Principles</h2>
+<ul>
+    <li>Stateless APIs</li>
+    <li>JSON-only communication</li>
+    <li>Rule-based calculations (no derived storage)</li>
+    <li>Versioned endpoints</li>
+    <li>Reusable across applications</li>
+    <li>DPG-compliant architecture</li>
+</ul>
+</section>
+
+<section>
+<h2>12. Support</h2>
+<p>
+<strong>SaQshi Platform Team</strong><br>
+Email: support@saqshi.org
+</p>
+</section>
+
+</body>
+</html>

@@ -1,8 +1,6 @@
 <?php
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="Facility_KPI_Outcome_Summary.csv"');
-
-// Output UTF-8 BOM to ensure Excel opens as UTF-8
 echo "\xEF\xBB\xBF";
 
 include(__DIR__ . "/../../assets/conn/db.php");
@@ -10,42 +8,70 @@ include(__DIR__ . "/../../assets/conn/session.php");
 
 $output = fopen('php://output', 'w');
 
-// Table header
-$header = ['District', 'Block', 'Facility', 'Facility Type'];
-
-$months = [];
-$startingMonth = strtotime("first day of last month");
-for ($i = 0; $i < 8; $i++) {
-    $months[] = date("M Y", strtotime("first day of -$i month", $startingMonth));
+/* =========================================================
+   EXECUTE STORED PROCEDURE
+========================================================= */
+$result = mysqli_query($con, "CALL generate_outcomekpi_all()");
+if (!$result) {
+    fputcsv($output, ['Error executing stored procedure']);
+    exit;
 }
 
-$header = array_merge($header, $months);
+/* =========================================================
+   READ COLUMN NAMES DYNAMICALLY
+========================================================= */
+$fields = mysqli_fetch_fields($result);
+
+$header = [];
+$monthCols = [];
+
+foreach ($fields as $f) {
+    if (in_array($f->name, ['fac_id'])) {
+        continue; // ignore internal id
+    }
+    $header[] = $f->name;
+
+    // detect month columns like Dec-25, Jan-26
+    if (preg_match('/^\d{2}-[A-Za-z]{3}$/', $f->name)) {
+        $monthCols[] = $f->name;
+    }
+}
+
 fputcsv($output, $header);
 
-// Data query
-$query = "CALL generate_outcomekpi_all()";
-$result = mysqli_query($con, $query);
+/* =========================================================
+   WRITE DATA
+========================================================= */
+while ($row = mysqli_fetch_assoc($result)) {
 
-if ($result) {
-    while ($row = mysqli_fetch_assoc($result)) {
-        $dataRow = [
-            $row['Dist'],
-            $row['Block'],
-            $row['Facility'],
-            $row['FacType']
-        ];
+    $dataRow = [];
 
-        foreach ($months as $monthKey) {
-            $value = isset($row[$monthKey]) ? $row[$monthKey] : 'No Data';
-            $dataRow[] = $value;
+    foreach ($header as $col) {
+
+        if (!isset($row[$col])) {
+            $dataRow[] = 'No Data';
+            continue;
         }
 
-        fputcsv($output, $dataRow);
+        // Map 1/0 to ✔ / No Data
+        if ($row[$col] === '1' || $row[$col] === 1) {
+            $dataRow[] = '✔';
+        } elseif ($row[$col] === '0' || $row[$col] === 0) {
+            $dataRow[] = 'x';
+        } else {
+            $dataRow[] = $row[$col];
+        }
     }
 
-    mysqli_free_result($result);
-} else {
-    fputcsv($output, ['Error running query']);
+    fputcsv($output, $dataRow);
+}
+
+/* =========================================================
+   CLEANUP (VERY IMPORTANT)
+========================================================= */
+mysqli_free_result($result);
+while (mysqli_more_results($con)) {
+    mysqli_next_result($con);
 }
 
 fclose($output);

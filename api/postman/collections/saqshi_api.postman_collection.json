@@ -1,0 +1,223 @@
+{
+  "info": {
+    "_postman_id": "9c7a8d10-7e7e-4c8f-bd62-123456789abc",
+    "name": "SaQshi APIs (Assessment + Facility Master)",
+    "description": "Postman collection for SaQshi APIs covering Assessment and Facility Master services. DPG-ready.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:94/api"
+    }
+  ],
+
+  "item": [
+
+    {
+      "name": "Assessment APIs",
+      "item": [
+
+        {
+          "name": "Get Areas of Concern",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/assessment/v1/concerns.php?facility_type=3&department_id=2",
+              "host": ["{{base_url}}"],
+              "path": ["assessment", "v1", "concerns.php"],
+              "query": [
+                { "key": "facility_type", "value": "3" },
+                { "key": "department_id", "value": "2" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Get Sub-Standards",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/assessment/v1/standards.php?facility_type=3&department_id=2&concern_id=10",
+              "host": ["{{base_url}}"],
+              "path": ["assessment", "v1", "standards.php"],
+              "query": [
+                { "key": "facility_type", "value": "3" },
+                { "key": "department_id", "value": "2" },
+                { "key": "concern_id", "value": "10" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Get Checklist",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/assessment/v1/checklist.php?facility_type=3&department_id=2&concern_id=10&subtype_id=5&method=SI",
+              "host": ["{{base_url}}"],
+              "path": ["assessment", "v1", "checklist.php"],
+              "query": [
+                { "key": "facility_type", "value": "3" },
+                { "key": "department_id", "value": "2" },
+                { "key": "concern_id", "value": "10" },
+                { "key": "subtype_id", "value": "5" },
+                { "key": "method", "value": "SI" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Save Assessment Response",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"csqa_id\": 123,\n  \"compliance\": 2,\n  \"facility_id\": 1,\n  \"department_id\": 2,\n  \"assessment_period\": 2024\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/assessment/v1/response/save.php",
+              "host": ["{{base_url}}"],
+              "path": ["assessment", "v1", "response", "save.php"]
+            }
+          }
+        },
+
+        {
+          "name": "Resume Assessment",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/assessment/v1/response/resume.php?facility_id=1&assessment_period=2024",
+              "host": ["{{base_url}}"],
+              "path": ["assessment", "v1", "response", "resume.php"],
+              "query": [
+                { "key": "facility_id", "value": "1" },
+                { "key": "assessment_period", "value": "2024" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Get Assessment Progress",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/assessment/v1/response/progress.php?facility_id=1&assessment_period=2024",
+              "host": ["{{base_url}}"],
+              "path": ["assessment", "v1", "response", "progress.php"],
+              "query": [
+                { "key": "facility_id", "value": "1" },
+                { "key": "assessment_period", "value": "2024" }
+              ]
+            }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Facility Master APIs",
+      "item": [
+
+        {
+          "name": "Get Facility by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/facility/v1/masters/facilities/get.php?facility_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["facility", "v1", "masters", "facilities", "get.php"],
+              "query": [
+                { "key": "facility_id", "value": "1" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Get Facility by NIN",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/facility/v1/masters/facilities/get.php?nin_no=BRPHC220145",
+              "host": ["{{base_url}}"],
+              "path": ["facility", "v1", "masters", "facilities", "get.php"],
+              "query": [
+                { "key": "nin_no", "value": "BRPHC220145" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "List Facilities by Hierarchy",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/facility/v1/masters/facilities/get.php?state_id=10&district_id=101",
+              "host": ["{{base_url}}"],
+              "path": ["facility", "v1", "masters", "facilities", "get.php"],
+              "query": [
+                { "key": "state_id", "value": "10" },
+                { "key": "district_id", "value": "101" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Create Facility",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"state_id\": 10,\n  \"division_id\": 5,\n  \"district_id\": 101,\n  \"block_id\": 2201,\n  \"facility_type\": 4,\n  \"facility_name\": \"PHC Barh East\",\n  \"nin_no\": \"BRPHC220145\",\n  \"latitude\": \"25.4821\",\n  \"longitude\": \"85.7096\",\n  \"is_active\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/facility/v1/masters/facilities/create.php",
+              "host": ["{{base_url}}"],
+              "path": ["facility", "v1", "masters", "facilities", "create.php"]
+            }
+          }
+        },
+
+        {
+          "name": "Update Facility",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facility_name\": \"PHC Barh East Updated\",\n  \"facility_type\": 4,\n  \"latitude\": \"25.4821\",\n  \"longitude\": \"85.7096\",\n  \"is_active\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/facility/v1/masters/facilities/update.php?facility_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["facility", "v1", "masters", "facilities", "update.php"],
+              "query": [
+                { "key": "facility_id", "value": "1" }
+              ]
+            }
+          }
+        }
+
+      ]
+    }
+
+  ]
+}

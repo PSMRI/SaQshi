@@ -101,7 +101,7 @@ if (isset($_POST['submit1'])) {
     $period   = $_SESSION['period'];
     $priority = $_SESSION['priority'];
     $concern  = $_SESSION['concern'];
-
+$dept_id=$_SESSION['dept_id1'];
     if ($period == 0) {
         echo "<div class='alert alert-warning'>Please select an Assessment Cycle.</div>";
       //  exit();
