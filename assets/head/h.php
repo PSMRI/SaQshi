@@ -128,9 +128,16 @@ include(__DIR__ . "/../../assets/conn/session.php");
 								?>
 									<li><a href="phckpi.php">KPI</a></li>
 								<?php
-								} elseif (in_array($facilitytype, [2, 10, 1])) {
+								} elseif (in_array($facilitytype, [2, 10])) {
 								?>
 									<li><a href="dhkpi.php">NQAS KPI</a></li>
+									<li><a href="mkpi.php">MusQan KPI</a></li>
+									<li><a href="anxc.php">Anexure C for LaQshya</a></li>
+
+								<?php
+								} elseif (in_array($facilitytype, [1])) {
+								?>
+									<li><a href="chckpi.php">NQAS KPI</a></li>
 									<li><a href="mkpi.php">MusQan KPI</a></li>
 									<li><a href="anxc.php">Anexure C for LaQshya</a></li>
 

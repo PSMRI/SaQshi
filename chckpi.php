@@ -35,7 +35,7 @@ if (isset($_POST['submit1'])) {
         echo "<div class='alert alert-danger'>Kindly select a valid month.</div>";
     } else {
         $fac_id = $_SESSION['u_facilityid'];
-        $check_query = "SELECT COUNT(dh_kpi_id) AS total FROM dh_kpi_in WHERE dh_kpi_date = ? AND dh_kpi_fac_id = ?";
+        $check_query = "SELECT COUNT(dh_kpi_id) AS total FROM chc_kpi_in WHERE dh_kpi_date = ? AND dh_kpi_fac_id = ?";
         $stmt1 = $con->prepare($check_query);
         $stmt1->bind_param("si", $new_date1, $fac_id);
         $stmt1->execute();
@@ -45,7 +45,7 @@ if (isset($_POST['submit1'])) {
         if ((int)$row1['total'] > 0) {
             echo "<div class='alert alert-danger'>The values for this month <b>($new_date1)</b> have already been recorded.</div>";
         } else {
-            $q3 = mysqli_query($con, "SELECT * FROM dhkpi");
+            $q3 = mysqli_query($con, "SELECT * FROM chckpi");
             $q = 0;
             $total = mysqli_num_rows($q3);
 
@@ -100,7 +100,7 @@ if (isset($_POST['submit1'])) {
                 echo "</div></div></div>";
             }
             echo "</form>";
-            echo "<script src='assets/calculationjs/dhkpi.js'></script>";
+            echo "<script src='assets/calculationjs/chckpi.js'></script>";
         }
     }
 }
@@ -111,7 +111,7 @@ if (isset($_POST['postsubmit3'])) {
     $date1 = $_SESSION['new_date1'];
     $fac_id = $_SESSION['u_facilityid'];
 
-    $result = mysqli_query($con, "SELECT dh_kpi_id FROM dhkpi");
+    $result = mysqli_query($con, "SELECT dh_kpi_id FROM chckpi");
     $success = true;
     $errorMessages = [];
     $index = 0;
@@ -123,7 +123,7 @@ if (isset($_POST['postsubmit3'])) {
         $value = $_POST[$key] ?? null;
 
         if ($value !== null) {
-            $stmt = $con->prepare("CALL insert_dhkpi(?, ?, ?, ?)");
+            $stmt = $con->prepare("CALL insert_chckpi(?, ?, ?, ?)");
             $stmt->bind_param("issi", $kpi_id, $value, $date1, $fac_id);
             if (!$stmt->execute()) {
                 $success = false;
