@@ -1,46 +1,7 @@
-
-<?php
-/* =========================================================
-   GLOBAL ERROR & LOG CONFIG (SaQshi)
-========================================================= */
-
-// --- Error visibility ---
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-
-// --- Logging ---
-ini_set('log_errors', '1');
-ini_set('error_log', 'C:/logs/php_errors.log');
-
-// --- Error levels ---
-error_reporting(E_ALL & ~E_DEPRECATED);
-
-
-// --- Catch fatal errors (500-safe) ---
-register_shutdown_function(function () {
-    $error = error_get_last();
-    if ($error !== null) {
-        error_log("FATAL ERROR:\n" . print_r($error, true));
-    }
-});
-
-// --- Catch uncaught exceptions ---
-set_exception_handler(function ($e) {
-    error_log("UNCAUGHT EXCEPTION: " . $e->getMessage());
-    error_log($e->getTraceAsString());
-
-    if (!headers_sent()) {
-        http_response_code(500);
-    }
-    exit;
-});
-?>
 <!DOCTYPE html>
 <html lang="en">
-	
 <?php include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
-include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 ?>
 
 <head>
@@ -167,21 +128,14 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 								?>
 									<li><a href="phckpi.php">KPI</a></li>
 								<?php
-								} elseif (in_array($facilitytype, [2, 10])) {
+								} elseif (in_array($facilitytype, [2, 10, 1])) {
 								?>
 									<li><a href="dhkpi.php">NQAS KPI</a></li>
 									<li><a href="mkpi.php">MusQan KPI</a></li>
 									<li><a href="anxc.php">Anexure C for LaQshya</a></li>
 
 								<?php
-								} elseif (in_array($facilitytype, [1])) {
-								?>
-									<li><a href="chckpi.php">NQAS KPI</a></li>
-									<li><a href="mkpi.php">MusQan KPI</a></li>
-									<li><a href="anxc.php">Anexure C for LaQshya</a></li>
-
-								<?php
-								}?>
+								} ?>
 							</ul>
 						</li>
 
@@ -205,40 +159,14 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
 						</li>
 						<li class="nav-item">
-							<a href="feedback.php" class="nav-link position-relative">
-								<span class="pcoded-micon">
-									<i class="bi bi-star-half"></i>
-
-								</span>
-								<span class="pcoded-mtext">Feedback</span>
-
-								<!-- 🔴 Notification badge -->
-								<span id="feedbackBadge"
-									class="badge bg-danger position-absolute top-0 start-100 translate-middle"
-									style="display:none;">
-									0
-								</span>
-							</a>
+							<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
 						</li>
 
 
-
 					<?php } elseif ($user_role == 4) { ?>
-						<li class="nav-item pcoded-hasmenu">
-					<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Dashboard</span></a>
-					<ul class="pcoded-submenu">
-
-
-						<li><a href="distdash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">NQAS</span></a></li>
-						<li><a href="distmusdash.php"> <span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">MusQan</span></a></li>
-						<li><a href="distlaxydash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">LaQshya</span></a></li>
-
-
-
-					</ul>
-
-				</li>
-						
+						<li class="nav-item">
+							<a href="distdash.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
+						</li>
 						<li class="nav-item pcoded-menu-caption">
 							<label>Resources</label>
 						</li>
@@ -246,7 +174,7 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 						</li>
 						<li class="nav-item">
-							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
+							<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a-->
 						</li>
 						<li class="nav-item">
 							<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
@@ -286,6 +214,21 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 				</li>
 
 				<li class="nav-item pcoded-hasmenu">
+					<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Setup</span></a>
+					<ul class="pcoded-submenu">
+
+
+						<li><a href="healthblock.php"><span class="pcoded-micon"><i class="bi bi-person-vcard"></i></span><span class="pcoded-mtext">Add health block</span></a></li>
+						<li><a href="fac.php"> <span class="pcoded-micon"><i class="bi bi-card-checklist"></i></span><span class="pcoded-mtext">Facility Setup</span></a></li>
+						<li><a href="useradd.php"><span class="pcoded-micon"><i class="bi-journal-plus"></i></span><span class="pcoded-mtext">User</span></a></li>
+						<li><a href="cert.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Certification</span></a></li>
+						<!--li><a href="data.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Data Maintenance</span></a></li-->
+
+
+					</ul>
+
+				</li>
+				<li class="nav-item pcoded-hasmenu">
 					<a href="#!" class="nav-link">
 						<span class="pcoded-micon"><i class="feather icon-layout"></i></span>
 						<span class="pcoded-mtext">Gap Analysis</span>
@@ -303,25 +246,7 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 						</li>
 					</ul>
 				</li>
-				<li class="nav-item pcoded-menu-caption">
-					<label>Administration</label>
-				</li>
-				<li class="nav-item pcoded-hasmenu">
-					<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Setup</span></a>
-					<ul class="pcoded-submenu">
 
-
-						<li><a href="healthblock.php"><span class="pcoded-micon"><i class="bi bi-person-vcard"></i></span><span class="pcoded-mtext">Add health block</span></a></li>
-						<li><a href="fac.php"> <span class="pcoded-micon"><i class="bi bi-card-checklist"></i></span><span class="pcoded-mtext">Facility Setup</span></a></li>
-						<li><a href="useradd.php"><span class="pcoded-micon"><i class="bi-journal-plus"></i></span><span class="pcoded-mtext">User</span></a></li>
-						<li><a href="cert.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Certification</span></a></li>
-						<!--li><a href="outsource.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Outcome Source</span></a></li-->
-						<!--li><a href="data.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Data Maintenance</span></a></li-->
-						<!--li>li><a href="login_analytics.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Login Analytics</span></a></li-->
-						<!--li><a href="system_monitoring.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">System monitoring</span></a></li-->
-					</ul>
-
-				</li>
 				<li class="nav-item pcoded-hasmenu">
 					<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Message</span></a>
 					<ul class="pcoded-submenu">
@@ -353,7 +278,7 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
 				</li>
 				<li class="nav-item">
-					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
+					<!--a href="chatbot/chat.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a-->
 				</li>
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
@@ -404,81 +329,30 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 				echo 'Block: ';
 				echo $bdiv;
 			} else {
-				echo 'Admin';
+				echo 'State Admin';
 			} ?></span>
 			<ul class="navbar-nav ml-auto">
 				<li>
 					<?php
-$facility_id = (int)($_SESSION['u_facilityid'] ?? 0);
+					$facility_id = $_SESSION['u_facilityid'] ?? 0;  // currently logged-in facility ID
 
-/* ============================================================
-   FETCH LATEST 5 UNREAD ADMIN NOTIFICATIONS
-   (DIRECT + BROADCAST)
-============================================================ */
+					// Fetch latest 5 messages from Admin to this facility or All
+					$notif_query = "SELECT message_text, message_date 
+                FROM facility_chat_messages 
+                WHERE
+                 receiver_facility_id = $facility_id and is_read=0
+                ORDER BY message_date DESC ";
 
-$notif_query = "
-    (
-        -- Direct admin → facility
-        SELECT message_text, message_date
-        FROM facility_chat_messages
-        WHERE sender_facility_id = 0
-          AND receiver_facility_id = {$facility_id}
-          AND is_read = 0
-    )
-    UNION ALL
-    (
-        -- Broadcast admin → all (not yet read by this facility)
-        SELECT m.message_text, m.message_date
-        FROM facility_chat_messages m
-        WHERE m.sender_facility_id = 0
-          AND m.receiver_facility_id = 0
-          AND NOT EXISTS (
-              SELECT 1
-              FROM facility_broadcast_read r
-              WHERE r.message_id = m.message_id
-                AND r.facility_id = {$facility_id}
-          )
-    )
-    ORDER BY message_date DESC
-    LIMIT 5
-";
-
-$notif_result = mysqli_query($con, $notif_query);
-
-/* ============================================================
-   BADGE COUNT (TOTAL UNREAD)
-============================================================ */
-
-$count_query = "
-    SELECT
-    (
-        -- Direct admin messages
-        SELECT COUNT(*)
-        FROM facility_chat_messages
-        WHERE sender_facility_id = 0
-          AND receiver_facility_id = {$facility_id}
-          AND is_read = 0
-    ) +
-    (
-        -- Broadcast messages not read by this facility
-        SELECT COUNT(*)
-        FROM facility_chat_messages m
-        WHERE m.sender_facility_id = 0
-          AND m.receiver_facility_id = 0
-          AND NOT EXISTS (
-              SELECT 1
-              FROM facility_broadcast_read r
-              WHERE r.message_id = m.message_id
-                AND r.facility_id = {$facility_id}
-          )
-    ) AS cnt
-";
-
-$count_result = mysqli_query($con, $count_query);
-$count_row    = mysqli_fetch_assoc($count_result);
-$notif_count  = (int)$count_row['cnt'];
-?>
-
+					$notif_result = mysqli_query($con, $notif_query);
+					// For badge count → count total messages from Admin to this facility or All
+					$count_query = "SELECT COUNT(*) as cnt 
+                FROM facility_chat_messages  
+                WHERE 
+                 receiver_facility_id = $facility_id  and is_read=0";
+					$count_result = mysqli_query($con, $count_query);
+					$count_row = mysqli_fetch_assoc($count_result);
+					$notif_count = (int)$count_row['cnt'];
+					?>
 
 					<div class="dropdown">
 						<a class="dropdown-toggle" href="#" data-toggle="dropdown">
@@ -560,36 +434,4 @@ $notif_count  = (int)$count_row['cnt'];
 			</ul>
 		</div>
 	</header>
-
-	<script>
-		(function() {
-
-			const badge = document.getElementById('feedbackBadge');
-			if (!badge) return; // no badge on this page
-
-			function checkFeedbackNotification() {
-				fetch('assets/get/unread_feedback_count.php') // ✅ FIXED PATH
-					.then(res => res.json())
-					.then(data => {
-						if (data.count > 0) {
-							badge.innerText = data.count;
-							badge.style.display = 'inline-block';
-						} else {
-							badge.style.display = 'none';
-						}
-					})
-					.catch(err => console.error('Feedback notification error', err));
-			}
-
-			// check immediately
-			checkFeedbackNotification();
-
-			// check every 10 seconds
-			setInterval(checkFeedbackNotification, 10000);
-
-		})();
-	</script>
-
-
-
 	<!-- [ Header ] end -->

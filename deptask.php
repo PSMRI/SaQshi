@@ -6,6 +6,13 @@ $factype      = $_SESSION['f_type_id'];
 $assid        = $_SESSION['assperiod'];
 $facname      = $_SESSION['facname'];
 $factypename1 = $_SESSION['factypename'];
+auditLog(
+    $con,
+    'VIEW_PAGE',
+    'Assessment Setup',
+    'Opened Facility Assessment Setup page',
+    $_SESSION['u_facilityid']
+);
 
 // =======================
 // Handle Assessment Switch
@@ -195,7 +202,16 @@ if (!empty($_SESSION['assperiod'])) {
 
                             echo "<div class='alert alert-success mt-2'>
             Selected <strong>{$data['ass_name']}</strong> as current assessment.
+            
           </div>";
+          auditLog(
+    $con,
+    'SWITCH_ASSESSMENT',
+    'Assessment Setup',
+    'Switched current assessment to '.$data['ass_name'],
+    $selectedId
+);
+
                         }
 
 
@@ -289,9 +305,25 @@ $ac->close();
 
                     echo "<div class='alert alert-success'>Activated successfully.</div>";
                     $activeCount++;
+                    auditLog(
+    $con,
+    'ACTIVATE_DEPARTMENT',
+    'Assessment Setup',
+    'Activated department ID '.$deptId,
+    $deptId
+);
+
 
                 } else {
                     echo "<div class='alert alert-info'>Already activated.</div>";
+                    auditLog(
+    $con,
+    'ACTIVATE_DEPARTMENT',
+    'Assessment Setup',
+    'AAlready activated department ID '.$deptId,
+    $deptId
+);
+
                 }
 
                 $chk->close();
@@ -324,6 +356,14 @@ $ac->close();
 
                 echo "<div class='alert alert-warning'>Department disabled.</div>";
                 $activeCount--;
+                auditLog(
+    $con,
+    'DISABLE_DEPARTMENT',
+    'Assessment Setup',
+    'Disabled department ID '.$deptId,
+    $deptId
+);
+
             }
         }
         ?>

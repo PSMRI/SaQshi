@@ -780,7 +780,7 @@ AND sdv.obt = sdv.tot;
                             <div class="d-flex flex-nowrap gap-3 justify-content-center overflow-auto py-3">
 
                                 <?php
-                                $call_q1 = "CALL`dist_dash_startvscomplete`($dist_id)";
+                                $call_q1 = "CALL `sarbsoft_nqa`.`dist_dash_startvscomplete`($dist_id)";
                                 $q22 = mysqli_query($con, $call_q1);
 
                                 while ($row = mysqli_fetch_array($q22)) {

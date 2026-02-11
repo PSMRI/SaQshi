@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
 
-$dist =  $_SESSION['div_id'];
+$dist = $_SESSION['dist'];
 $query = "SELECT c.*
 FROM cert_details c
 INNER JOIN (

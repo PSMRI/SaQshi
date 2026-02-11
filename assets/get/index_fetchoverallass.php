@@ -1,5 +1,5 @@
 <?php
-include(__DIR__ . "/../../assets/conn/db.php");
+//include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
 
 $fid = $_SESSION['u_facilityid'];

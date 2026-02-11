@@ -1,7 +1,7 @@
 <?php
 include(__DIR__ . "/../../assets/conn/db.php");
 include(__DIR__ . "/../../assets/conn/session.php");
-
+include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 $fac_id = $_SESSION['u_facilityid'] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_assessor'])) {
@@ -23,8 +23,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_assessor'])) {
         if (mysqli_stmt_execute($stmtInsert)) {
             $_SESSION['success'] = "New assessment cycle created successfully.";
               $_SESSION['ass_create_success'] = true;
+              auditLog(
+    $con,
+    'CREATE_ASSESSMENT_success',
+    'Assessment Setup',
+    'Created new assessment cycle: '.$_POST['ass_name'],
+    $_POST['fac_id_fk']
+);
+
         } else {
             $_SESSION['error'] = "Error: Unable to create new assessment cycle.";
+            auditLog(
+    $con,
+    'CREATE_ASSESSMENT_failed',
+    'Assessment Setup',
+    'Creating new assessment cycle faield: '.$_POST['ass_name'],
+    $_POST['fac_id_fk']
+);
+
         }
 
         mysqli_stmt_close($stmtInsert);

@@ -23,11 +23,7 @@ SELECT
     GROUP_CONCAT(
         CONCAT(
             d.dept_name,
-            ' (',
-            t.month_count,
-            ' month: ',
-            t.month_list,
-            ')'
+            '(', t.month_count, ' month)'
         )
         ORDER BY d.dept_name
         SEPARATOR ', '
@@ -36,23 +32,7 @@ FROM (
     SELECT
         o.institute_id,
         o.dept_id,
-        COUNT(
-            DISTINCT LEFT(REPLACE(TRIM(o.month_in), '/', '-'), 7)
-        ) AS month_count,
-        GROUP_CONCAT(
-            DISTINCT DATE_FORMAT(
-                STR_TO_DATE(
-                    CONCAT(
-                        LEFT(REPLACE(TRIM(o.month_in), '/', '-'), 7),
-                        '-01'
-                    ),
-                    '%Y-%m-%d'
-                ),
-                '%b %y'
-            )
-            ORDER BY LEFT(REPLACE(TRIM(o.month_in), '/', '-'), 7)
-            SEPARATOR ', '
-        ) AS month_list
+        COUNT(DISTINCT o.month_in) AS month_count
     FROM outcome_values_in o
     GROUP BY o.institute_id, o.dept_id
 ) t
@@ -63,7 +43,7 @@ JOIN fac_department d
 GROUP BY
     f.dist_name,
     f.block_name,
-    f.fac_name;
+    f.fac_name
 ";
 
 $result = mysqli_query($con, $sql);

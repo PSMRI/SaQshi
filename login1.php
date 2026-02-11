@@ -1,6 +1,5 @@
 <?php
 include("assets/conn/db.php");
-require_once("assets/helpers/audit_logger.php");
 ob_start();
 session_start();
 
@@ -64,12 +63,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['urole'] = $userrole;              // REQUIRED for area-of-concern
             $_SESSION['dist'] = $district_id;
             $_SESSION['login_time'] = date('d M Y h:i A');
-auditLog(
-    $con,
-    'LOGIN_SUCCESS',
-    'Authentication',
-    'User logged in successfully with role '.$userrole
-);
 
             /* ---------------- LOG DEVICE ---------------- */
             $logStmt = $con->prepare("
@@ -189,30 +182,10 @@ auditLog(
             }
 
         } else {
-            auditLog(
-    $con,
-    'LOGIN_FAILED',
-    'Authentication',
-    'Invalid password',
-    null,
-    $myusername
-);
-
-$error = "Invalid password. Please try again.";
-
+            $error = "Invalid password. Please try again.";
         }
     } else {
-        auditLog(
-    $con,
-    'LOGIN_FAILED',
-    'Authentication',
-    'Invalid password',
-    null,
-    $myusername
-);
-
-$error = "Invalid Email or password. Please try again.";
-
+        $error = "Email or password incorrect!";
     }
 }
 ?>

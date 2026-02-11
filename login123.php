@@ -64,12 +64,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['urole'] = $userrole;              // REQUIRED for area-of-concern
             $_SESSION['dist'] = $district_id;
             $_SESSION['login_time'] = date('d M Y h:i A');
-auditLog(
-    $con,
-    'LOGIN_SUCCESS',
-    'Authentication',
-    'User logged in successfully with role '.$userrole
-);
+if (!auditLog($con,'TEST','Debug','Audit test success')) {
+    die('Audit log failed – check php_errors.log');
+}
+
 
             /* ---------------- LOG DEVICE ---------------- */
             $logStmt = $con->prepare("

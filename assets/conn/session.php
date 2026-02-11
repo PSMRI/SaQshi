@@ -1,29 +1,89 @@
 <?php
-   include('db.php');
-   session_start();
-   // Check if the user is logged in by verifying the session
-   if (!isset($_SESSION['u_name'])) {
-       // User is not logged in, redirect to 404 page
-       header("Location: 404.php");
-       exit(); // Ensure that no further code is executed after the redirect
-   }
-   // Sanitize and fetch the username securely
-   $user_check = $_SESSION['u_name'];   
-   // Prepare SQL statement to prevent SQL injection
-   $stmt = $con->prepare("SELECT u_name FROM s_user WHERE u_name = ?");
-   $stmt->bind_param("s", $user_check); // "s" for string
-   $stmt->execute();
-   $result = $stmt->get_result();
-   // Check if the user exists in the database
-   if ($row = $result->fetch_assoc()) {
-       // If user exists, store the session username
-       $login_session = $row['u_name'];
-   } else {
-       // If user not found in the database, redirect to 404 page
-       header("Location: 404.php");
-       exit(); // Ensure that no further code is executed after the redirect
-   }
-   // Close the prepared statement
-   $stmt->close();   
-   // At this point, the user is logged in and session is valid
-  ?>
+/**
+ * session.php
+ * Central authentication & session validation file
+ * SaQshi – Production Safe
+ */
+
+require_once __DIR__ . '/db.php';
+
+/* -------------------------------------------------
+   SESSION CONFIG (Redis with safe fallback)
+-------------------------------------------------- */
+
+ini_set('session.save_handler', 'redis');
+ini_set(
+    'session.save_path',
+    'tcp://127.0.0.1:6379?database=2&prefix=saqshi_sess_&timeout=2&read_timeout=2'
+);
+
+// Start session safely (fallback to files if Redis fails)
+if (!@session_start()) {
+    ini_set('session.save_handler', 'files');
+    session_start();
+}
+
+/* -------------------------------------------------
+   AUTH CHECK
+-------------------------------------------------- */
+
+// User must be logged in
+if (empty($_SESSION['u_name'])) {
+    header("Location: 404.php");
+    exit;
+}
+
+$userName = $_SESSION['u_name'];
+
+/* -------------------------------------------------
+   VERIFY USER EXISTS IN DATABASE
+-------------------------------------------------- */
+
+$sql = "SELECT u_name FROM s_user WHERE u_name = ? LIMIT 1";
+$stmt = $con->prepare($sql);
+
+if (!$stmt) {
+    error_log("Session DB prepare failed: " . $con->error);
+    session_unset();
+    session_destroy();
+    header("Location: 404.php");
+    exit;
+}
+
+$stmt->bind_param("s", $userName);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows !== 1) {
+    // Session tampered or user removed
+    session_unset();
+    session_destroy();
+    header("Location: 404.php");
+    exit;
+}
+
+// Valid authenticated user
+$login_session = $userName;
+
+$stmt->close();
+
+/* -------------------------------------------------
+   OPTIONAL: SESSION TIMEOUT (RECOMMENDED)
+-------------------------------------------------- */
+
+$SESSION_TIMEOUT = 1800; // 30 minutes
+
+if (isset($_SESSION['LAST_ACTIVITY']) &&
+    (time() - $_SESSION['LAST_ACTIVITY']) > $SESSION_TIMEOUT
+) {
+    session_unset();
+    session_destroy();
+    header("Location: login.php");
+    exit;
+}
+
+$_SESSION['LAST_ACTIVITY'] = time();
+
+/* -------------------------------------------------
+   SESSION IS VALID BEYOND THIS POINT
+-------------------------------------------------- */

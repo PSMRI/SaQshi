@@ -2,187 +2,254 @@
 include("assets/head/h.php");
 include("assets/conn/db.php");
 
-$distid   = (int)$_SESSION['div_id'];
-$distname = $_SESSION['div_name'];
+echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
+echo '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
+echo '<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>';
+echo '<script src="https://cdn.jsdelivr.net/npm/file-saver"></script>';
+ $distid= $_SESSION['div_id'];
+ $distname=$_SESSION['div_name'];
+$dhTotal = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS cnt FROM facilities WHERE Health_facilty_type = 2 and dist_id=$distid"))['cnt'];
+$sdhTotal = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS cnt FROM facilities WHERE Health_facilty_type = 10 and dist_id=$distid"))['cnt'];
+$chcTotal = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS cnt FROM facilities WHERE Health_facilty_type = 1 and dist_id=$distid"))['cnt'];
 
-/* =========================
-   FACILITY TOTALS
-========================= */
-function getCount($con, $sql) {
-    return mysqli_fetch_assoc(mysqli_query($con, $sql))['cnt'] ?? 0;
-}
+$dhMusqanCount = mysqli_fetch_assoc(mysqli_query($con, "
+    SELECT COUNT(DISTINCT facid) AS cnt 
+    FROM department_wise_state_dash 
+    WHERE Health_facilty_type = 2 AND fac_dept_id_fk IN (33, 9) and dist_id=$distid
+"))['cnt'];
 
-$dhTotal  = getCount($con, "SELECT COUNT(*) cnt FROM facilities WHERE Health_facilty_type=2  AND dist_id=$distid");
-$sdhTotal = getCount($con, "SELECT COUNT(*) cnt FROM facilities WHERE Health_facilty_type=10 AND dist_id=$distid");
-$chcTotal = getCount($con, "SELECT COUNT(*) cnt FROM facilities WHERE Health_facilty_type=1  AND dist_id=$distid");
+$sdhMusqanCount = mysqli_fetch_assoc(mysqli_query($con, "
+    SELECT COUNT(DISTINCT facid) AS cnt 
+    FROM department_wise_state_dash 
+    WHERE Health_facilty_type = 10 AND fac_dept_id_fk IN (33, 9) and dist_id=$distid
+"))['cnt'];
 
-$dhMusqanCount  = getCount($con, "SELECT COUNT(DISTINCT facid) cnt FROM department_wise_state_dash WHERE Health_facilty_type=2  AND fac_dept_id_fk IN (33,9)  AND dist_id=$distid");
-$sdhMusqanCount = getCount($con, "SELECT COUNT(DISTINCT facid) cnt FROM department_wise_state_dash WHERE Health_facilty_type=10 AND fac_dept_id_fk IN (33,9)  AND dist_id=$distid");
-$chcMusqanCount = getCount($con, "SELECT COUNT(DISTINCT facid) cnt FROM department_wise_state_dash WHERE Health_facilty_type=1  AND fac_dept_id_fk IN (3,39) AND dist_id=$distid");
+$chcMusqanCount = mysqli_fetch_assoc(mysqli_query($con, "
+    SELECT COUNT(DISTINCT facid) AS cnt 
+    FROM department_wise_state_dash 
+    WHERE Health_facilty_type = 1 AND fac_dept_id_fk IN (3, 39) and dist_id=$distid
+"))['cnt'];
 
-/* =========================
-   MAIN REPORT DATA
-========================= */
-mysqli_query($con,"SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
+mysqli_query($con, "SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
 
-$sql = "
-SELECT
-    MIN(Dist_Name) district,
-    MIN(Block_Name) block,
-    MIN(fac_name) facility,
-    ass_name assessment_name,
-    Health_facilty_type,
-    SUM(zero) zero_count,
-    SUM(one) one_count,
-    SUM(two) two_count,
-    SUM(non) non_compliant,
-    SUM(total) total_checks,
-    SUM(marks_obtained) marks_obtained,
-    SUM(total_marks) total_marks,
-    ROUND(AVG(percentage),2) avg_percentage
-FROM department_wise_state_dash
-WHERE dist_id=$distid
-  AND (
-        (Health_facilty_type IN (2,10) AND fac_dept_id_fk IN (33,9)) OR
-        (Health_facilty_type = 1       AND fac_dept_id_fk IN (3,39))
-      )
-GROUP BY facid, ass_name, Health_facilty_type
+$query = "
+    SELECT 
+       
+        MIN(Dist_Name) AS district,
+        MIN(Block_Name) AS block,
+        MIN(fac_name) AS facility,
+        MIN(facility_type) AS facility_type,
+        ass_name AS assessment_name,
+        Health_facilty_type,
+        SUM(zero) AS zero_count,
+        SUM(one) AS one_count,
+        SUM(two) AS two_count,
+        SUM(non) AS non_compliant,
+        SUM(total) AS total_checks,
+        SUM(marks_obtained) AS marks_obtained,
+        SUM(total_marks) AS total_marks,
+        ROUND(AVG(percentage), 2) AS avg_percentage
+    FROM department_wise_state_dash
+    WHERE 
+       ( (Health_facilty_type IN (2,10) AND fac_dept_id_fk IN (33,9)) OR
+        (Health_facilty_type = 1 AND fac_dept_id_fk IN (3,39))) and dist_id=$distid
+    GROUP BY facid, ass_name, Health_facilty_type
 ";
 
-$res = mysqli_query($con,$sql);
-$dhData = $sdhData = $chcData = [];
+$result = mysqli_query($con, $query);
+$dhData = [];
+$sdhData = [];
+$chcData = [];
 
-while($r = mysqli_fetch_assoc($res)){
-    if($r['Health_facilty_type']==2)  $dhData[]  = $r;
-    if($r['Health_facilty_type']==10) $sdhData[] = $r;
-    if($r['Health_facilty_type']==1)  $chcData[] = $r;
+while ($row = mysqli_fetch_assoc($result)) {
+    if ($row['Health_facilty_type'] == 2) $dhData[] = $row;
+    elseif ($row['Health_facilty_type'] == 10) $sdhData[] = $row;
+    elseif ($row['Health_facilty_type'] == 1) $chcData[] = $row;
 }
 ?>
+
 <div class="pcoded-main-container">
-<div class="pcoded-content">
-
-<div class="row g-3">
-  <?php
-  $cards = [
-    ['DH','District Hospitals','primary',$dhMusqanCount,$dhTotal,'dh'],
-    ['SDH','Sub-Divisional Hospitals','success',$sdhMusqanCount,$sdhTotal,'sdh'],
-    ['CHC','Community Health Centres','info',$chcMusqanCount,$chcTotal,'chc']
-  ];
-  foreach($cards as $c):
-  ?>
-  <div class="col-md-4">
-    <div class="card shadow-sm border-0 bg-<?= $c[2] ?> text-white h-100 report-card" onclick="showReport('<?= $c[5] ?>')">
-      <div class="card-body">
-        <h5 class="fw-bold"><?= $c[1] ?></h5>
-        <p class="mb-1">LaQshya: <strong><?= $c[3] ?></strong> / <?= $c[4] ?></p>
-        <small>Click to view compliance report</small>
-      </div>
-    </div>
-  </div>
-  <?php endforeach; ?>
-</div>
-
-<div class="text-center my-3">
-  <span class="badge bg-success">≥ 80%</span>
-  <span class="badge bg-warning text-dark">60–79%</span>
-  <span class="badge bg-danger">&lt; 60%</span>
-</div>
-
-<div id="report-section" style="display:none;">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 id="report-title" class="fw-bold text-primary"></h5>
-        <div>
-          <button class="btn btn-outline-success btn-sm" onclick="downloadChart()">Chart</button>
-          <button class="btn btn-outline-primary btn-sm" onclick="downloadExcel()">Excel</button>
+  <div class="pcoded-content">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card text-white bg-primary" style="cursor:pointer;" onclick="showReport('dh')">
+          <div class="card-body">
+            <h5 class="card-title">District Hospitals (DH)</h5>
+            <p>LaQshya: <strong><?= $dhMusqanCount ?></strong> / <strong><?= $dhTotal ?></strong></p>
+            <p>Click to view compliance report.</p>
+          </div>
         </div>
       </div>
+      <div class="col-md-4">
+        <div class="card text-white bg-success" style="cursor:pointer;" onclick="showReport('sdh')">
+          <div class="card-body">
+            <h5 class="card-title">Sub-Divisional Hospitals (SDH)</h5>
+            <p>LaQshya: <strong><?= $sdhMusqanCount ?></strong> / <strong><?= $sdhTotal ?></strong></p>
+            <p>Click to view compliance report.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-white bg-info" style="cursor:pointer;" onclick="showReport('chc')">
+          <div class="card-body">
+            <h5 class="card-title">Community Health Centres (CHC)</h5>
+            <p>LaQshya: <strong><?= $chcMusqanCount ?></strong> / <strong><?= $chcTotal ?></strong></p>
+            <p>Click to view compliance report.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <canvas id="chartCanvas" height="90"></canvas>
+    <div class="text-center mt-2">
+      <span style="display:inline-block;width:20px;height:20px;background:#28a745;"></span> ≥ 80%
+      <span style="display:inline-block;width:20px;height:20px;background:#ffc107;margin-left:15px;"></span> 60–79%
+      <span style="display:inline-block;width:20px;height:20px;background:#dc3545;margin-left:15px;"></span> < 60%
+    </div>
 
-      <div class="table-responsive mt-3">
-        <table class="table table-bordered table-sm" id="report-table">
-          <thead class="table-light">
-            <tr>
-              <th>District</th><th>Block</th><th>Facility</th><th>Assessment</th>
-              <th>0</th><th>1</th><th>2</th><th>NC</th>
-              <th>Total</th><th>Obt.</th><th>Max</th><th>%</th>
-            </tr>
-          </thead>
-          <tbody id="report-body"></tbody>
-        </table>
+    <div class="row mt-3" id="report-section" style="display:none;">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <h5 id="report-title" class="text-primary mb-2"></h5>
+              <div>
+                <button class="btn btn-outline-success mb-2" onclick="downloadChartAsImage()">Download Chart</button>
+                <button class="btn btn-outline-primary mb-2" onclick="downloadExcel()">Download as Excel</button>
+              </div>
+            </div>
+            <canvas id="chartCanvas" height="100" class="mb-3"></canvas>
+            <div class="table-responsive">
+              <table class="table table-bordered" id="report-table">
+                <thead class="table-light">
+                  <tr>
+                   
+                    <th>District</th>
+                    <th>Block</th>
+                    <th>Facility</th>
+                    <th>Assessment</th>
+                    <th>Zero</th>
+                    <th>One</th>
+                    <th>Two</th>
+                    <th>Non-Compliant</th>
+                    <th>Total Checks</th>
+                    <th>Marks Obtained</th>
+                    <th>Total Marks</th>
+                    <th>Avg. %</th>
+                  </tr>
+                </thead>
+                <tbody id="report-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-
-</div>
-</div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
-<script src="https://cdn.jsdelivr.net/npm/file-saver"></script>
+<?php include("assets/head/f.php"); ?>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 <script>
-const DATA = {
-  dh: <?= json_encode($dhData) ?>,
-  sdh: <?= json_encode($sdhData) ?>,
-  chc: <?= json_encode($chcData) ?>
-};
+const dhData = <?= json_encode($dhData); ?>;
+const sdhData = <?= json_encode($sdhData); ?>;
+const chcData = <?= json_encode($chcData); ?>;
+let currentData = [];
+let chartInstance = null;
 
-let chart=null;
+function showReport(type) {
+  currentData = type === 'dh' ? dhData : type === 'sdh' ? sdhData : chcData;
+  const title = type === 'dh' ? "District Hospital (DH) Report" : type === 'sdh' ? "Sub-Divisional Hospital (SDH) Report" : "CHC Report";
 
-function showReport(type){
-  const rows = DATA[type];
-  $('#report-section').show();
-  $('#report-title').text(type.toUpperCase() + " Compliance Report");
-
-  let body='', labels=[], values=[], colors=[];
-
-  rows.forEach(r=>{
-    const p = parseFloat(r.avg_percentage);
-    const cls = p>=80?'table-success':p>=60?'table-warning':'table-danger';
-
-    body+=`
-      <tr class="${cls}">
-        <td>${r.district}</td><td>${r.block}</td><td>${r.facility}</td>
-        <td>${r.assessment_name}</td>
-        <td>${r.zero_count}</td><td>${r.one_count}</td><td>${r.two_count}</td>
-        <td>${r.non_compliant}</td>
-        <td>${r.total_checks}</td><td>${r.marks_obtained}</td>
-        <td>${r.total_marks}</td><td>${p}%</td>
-      </tr>`;
-
-    labels.push(r.facility);
-    values.push(p);
-    colors.push(p>=80?'#28a745':p>=60?'#ffc107':'#dc3545');
-  });
-
-  $('#report-body').html(body);
-
-  if($.fn.DataTable.isDataTable('#report-table')){
-    $('#report-table').DataTable().destroy();
+  if ($.fn.DataTable.isDataTable('#report-table')) {
+    $('#report-table').DataTable().clear().destroy();
   }
-  $('#report-table').DataTable({pageLength:5});
 
-  if(chart) chart.destroy();
-  chart = new Chart(chartCanvas,{
-    type:'bar',
-    data:{labels, datasets:[{data:values, backgroundColor:colors}]},
-    options:{plugins:{legend:{display:false}}, scales:{y:{max:100,beginAtZero:true}}}
+  document.getElementById("report-title").innerText = title;
+  document.getElementById("report-section").style.display = "block";
+  const tbody = document.getElementById("report-body");
+  let html = "";
+  const chartLabels = [];
+  const chartData = [];
+  const chartColors = [];
+
+  currentData.forEach(row => {
+    const perc = parseFloat(row.avg_percentage);
+    let colorClass = perc >= 80 ? 'table-success' : (perc >= 60 ? 'table-warning' : 'table-danger');
+    html += `<tr class="${colorClass}">
+       
+        <td>${row.district}</td>
+        <td>${row.block}</td>
+        <td>${row.facility}</td>
+        <td>${row.assessment_name}</td>
+        <td>${row.zero_count}</td>
+        <td>${row.one_count}</td>
+        <td>${row.two_count}</td>
+        <td>${row.non_compliant}</td>
+        <td>${row.total_checks}</td>
+        <td>${row.marks_obtained}</td>
+        <td>${row.total_marks}</td>
+        <td>${row.avg_percentage}%</td>
+      </tr>`;
+    chartLabels.push(`${row.facility} (${row.assessment_name})`);
+    chartData.push(perc);
+    chartColors.push(perc >= 80 ? '#28a745' : perc >= 60 ? '#ffc107' : '#dc3545');
+  });
+  tbody.innerHTML = html;
+
+  $('#report-table').DataTable({
+    pageLength: 5,
+    lengthChange: true,
+    ordering: true,
+    responsive: true,
+    language: { search: "Search facility:" }
+  });
+
+  const ctx = document.getElementById('chartCanvas').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: chartLabels,
+      datasets: [{
+        label: 'Avg. % Compliance',
+        data: chartData,
+        backgroundColor: chartColors
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Percentage' } },
+        x: { ticks: { autoSkip: false } }
+      }
+    }
   });
 }
 
-function downloadExcel(){
-  const html = document.getElementById("report-table").outerHTML;
-  const blob = new Blob([html],{type:'application/vnd.ms-excel'});
-  saveAs(blob,"LaQshya_Report.xls");
+function downloadExcel() {
+  const table = document.getElementById("report-table");
+  const html = table.outerHTML;
+  const blob = new Blob([`<html><head><meta charset='utf-8'></head><body>${html}</body></html>`], { type: "application/vnd.ms-excel" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "LaQshya_state_Report.xls";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
-function downloadChart(){
-  html2canvas(chartCanvas).then(c=>c.toBlob(b=>saveAs(b,"LaQshya_Chart.png")));
+function downloadChartAsImage() {
+  html2canvas(document.getElementById("chartCanvas")).then(canvas => {
+    canvas.toBlob(blob => {
+      saveAs(blob, "LaQshya_state_chat.png");
+    });
+  });
 }
 </script>
-<?php include("assets/head/f.php"); ?>

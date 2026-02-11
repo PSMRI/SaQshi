@@ -27,7 +27,7 @@ if ($result && $row = mysqli_fetch_assoc($result)) {
         } else {
             $percentage_class = 'text-danger';
         }
-    }
+    }    
 }
 mysqli_free_result($result);
 $con->next_result();
