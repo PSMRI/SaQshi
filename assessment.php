@@ -70,8 +70,9 @@ $_SESSION['Means']        = $suffix ? "Means_of_Verification_$suffix" : "Means_o
 
                         <!-- Area of Concern -->
                         <div class="col-md-4">
-                            <label class="fw-bold small mb-1">Area of Concern</label>
+                                                       <label class="fw-bold small mb-1">Area of Concern</label>
                             <select class="form-control form-control-sm" id="Concern" name="Concern">
+                               
                                 <option value="0">- Select Area Of Concern -</option>
                                 <?php
                                 // Clean up previous results
@@ -80,7 +81,7 @@ $_SESSION['Means']        = $suffix ? "Means_of_Verification_$suffix" : "Means_o
                                 $ftype = $_SESSION['facilty_type'];
                                 $colname = $_SESSION['concern_name'];
 
-                                $sql = "CALL get_area_of_con($ftype,'$colname')";
+                                $sql = "CALL get_area_of_con1($ftype,'$colname',$dept_id)";
                                 $res = $con->query($sql);
 
                                 if ($res && $res->num_rows > 0) {

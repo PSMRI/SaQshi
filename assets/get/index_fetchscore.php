@@ -9,7 +9,7 @@ $fat = $_SESSION['f_type_id'];
 $p = $_SESSION['assperiod'];
 
 // Query to fetch data
-$tablequery1 = "CALL Area_of_concern_NQAS($fat, $Fa, $dept_id, $p)";
+$tablequery1 = "CALL Area_of_concern_NQAS1($fat, $Fa, $dept_id, $p)";
 $q2 = mysqli_query($con, $tablequery1);
 
 // Prepare the response data

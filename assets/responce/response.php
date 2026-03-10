@@ -13,7 +13,7 @@ if (!empty($_POST["cid"])) {
     $facilityType = $_SESSION['f_type_id'] ?? 0;
 
     // Build query
-    $query = "CALL get_Standards_count_load($cid, $facilityType, $facilityId, $deptId, $assessmentPeriod)";
+    $query = "CALL get_Standards_count_load1($cid, $facilityType, $facilityId, $deptId, $assessmentPeriod)";
     $result = mysqli_query($con, $query);
 
     if ($result) {

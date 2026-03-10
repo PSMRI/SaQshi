@@ -80,10 +80,10 @@ if (isset($_POST['submit1'])) {
                         </div>";
                 } else {
                     echo "<div class='col-md-4'>
-                            <input type='number' class='form-control' name='input$inputNumId' id='input$inputNumId' placeholder='Numerator' oninput='calculateResult($q)'>
+                            <input type='number'  step='any' class='form-control' name='input$inputNumId' id='input$inputNumId' placeholder='Numerator' oninput='calculateResult($q)'>
                         </div>
                         <div class='col-md-4'>
-                            <input type='number' class='form-control' name='input$inputDenId' id='input$inputDenId' placeholder='Denominator' oninput='calculateResult($q)' $readonly>
+                            <input type='number'  step='any' class='form-control' name='input$inputDenId' id='input$inputDenId' placeholder='Denominator' oninput='calculateResult($q)' $readonly>
                         </div>";
                 }
 
@@ -124,7 +124,7 @@ if (isset($_POST['postsubmit3'])) {
 
         if ($value !== null) {
             $stmt = $con->prepare("CALL insert_chckpi(?, ?, ?, ?)");
-            $stmt->bind_param("issi", $kpi_id, $value, $date1, $fac_id);
+            $stmt->bind_param("idsi", $kpi_id, $value, $date1, $fac_id);
             if (!$stmt->execute()) {
                 $success = false;
                 $errorMessages[] = "Error inserting for Outcome ID: {$kpi_id}";

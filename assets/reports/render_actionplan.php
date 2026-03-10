@@ -49,10 +49,10 @@ if ($query && $query->num_rows > 0): ?>
                                 <td><?= htmlspecialchars($row['Checkpoint']) ?></td>
                                 <td><?= htmlspecialchars($row['Assessment_Method']) ?></td>
                                 <td><?= htmlspecialchars($row['Means_of_Verification']) ?></td>
-                                <td><?= htmlspecialchars($row['action_plan']) ?></td>
+                               <td><?= htmlspecialchars($row['action_plan'] ?? '') ?></td>
                                 <td><?= htmlspecialchars($row['ass_compliance']) ?></td>
-                                <td><?= htmlspecialchars($row['dept_res']) ?></td>
-                                <td><?= htmlspecialchars($row['dept_res_date']) ?></td>
+                                <td><?= htmlspecialchars($row['dept_res']?? '') ?></td>
+                                <td><?= htmlspecialchars($row['dept_res_date']?? '') ?></td>
                             </tr>
                         <?php endwhile; ?>
                     </tbody>

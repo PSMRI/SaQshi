@@ -21,7 +21,7 @@ $_SESSION['count'] = $count;
 <?php
 $assperiod = $_SESSION['assperiod'] ?? 0;
 $facility  = $_SESSION['u_facilityid'] ?? 0;
-
+$dep1= $_SESSION['dept_id1']??0;
 $sql = "
     SELECT 
         s.Assessor_name, 
@@ -34,7 +34,7 @@ $sql = "
             SELECT id FROM assessment_desc 
             WHERE id = ? AND current_assment = 1
         )
-    AND s.institute_id = ?
+    AND s.institute_id = ? and s.dept_id= $dep1
 ";
 
 $stmt = $con->prepare($sql);

@@ -7,7 +7,7 @@ if (isset($_POST['distid']) && isset($_POST['block_id'])) {
     $block_id1 = $_POST['block_id'];
 
     // Query to get facilities based on district and block
-    $query = "SELECT fac_id, dist_id, block_id, fac_name, nin_no 
+    $query = "SELECT fac_id,fac_name
 FROM facilities 
 WHERE dist_id = $dist_id1 
   AND block_id = $block_id1
@@ -17,17 +17,19 @@ WHERE dist_id = $dist_id1
     WHERE block_id = $block_id1
       AND dist_id = $dist_id1 
       AND fac_id_fk IS NOT NULL 
-    GROUP BY fac_id_fk
-   HAVING  COUNT(fac_id_fk) <2 AND COUNT(fac_id_fk) >0
+    GROUP BY fac_id_fk  
   ); ";
     $result = mysqli_query($con, $query);
 
     if (mysqli_num_rows($result) > 0) {
         // Output the facility options
-        echo '<option value="">- Select Facility -</option>';
+        echo '<option value="0">- Select Facility -</option>';
         while ($row = mysqli_fetch_array($result)) {
-            echo '<option value="' . $row['fac_id'] . '">' . $row['fac_name'] . '</option>';
+         //   echo '<option value="' . $row['fac_id'] . '">' . $row['fac_name'] . '</option>';
+             echo "<option value='{$row['fac_id']}'>{$row['fac_name']}</option>";
         }
+         mysqli_free_result($result);
+                           $con->next_result();
     } else {
         echo '<option value="">No facilities found</option>';
     }

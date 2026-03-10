@@ -125,7 +125,7 @@
                                         $queryInsert = "INSERT INTO `facilities`
             (`state_name`, `Dist_Name`, `Block_Name`, `fac_name`, `Health_facilty_type`, `block_id`, `dist_id`, `state_code`, `NIN_no`,`division_id`)
             VALUES
-            ('Bihar', '$dist_name', '$block_name', '$facname', '$factype', $block_id, $dist_id, 10, '$nin',$dividcount)";
+            ('Up', '$dist_name', '$block_name', '$facname', '$factype', $block_id, $dist_id, 9, '$nin',$dividcount)";
 
                                         $insertResult = $con->query($queryInsert);
 

@@ -16,9 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['department_id'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-include("assets/head/h.php");
-$showDeptModal = empty($_SESSION['dept_id1']) || $_SESSION['dept_id1'] == 0;
-$dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
+
 /* -----------------------------------------
    SESSION VARIABLES
 ------------------------------------------ */
@@ -30,139 +28,178 @@ $dept_name = $_SESSION['dept_name1'] ?? '0';
  2) AJAX SAVE OUTCOME
  ***************************************************/
 if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST['action'] ?? '') === "save_outcome") {
-    session_start();
+
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
     header("Content-Type: application/json");
 
-    $required = ['u_facilityid', 'dept_id1', 'new_date1', 'assperiod', 'f_type_id'];
-    foreach ($required as $r) {
-        if (empty($_SESSION[$r])) {
-            echo json_encode(["status" => "error", "msg" => "Session expired"]);
+    try {
+
+        $required = ['u_facilityid', 'dept_id1', 'new_date1', 'assperiod', 'f_type_id'];
+        foreach ($required as $r) {
+            if (empty($_SESSION[$r])) {
+                echo json_encode(["status" => "error", "msg" => "Session expired"]);
+                exit;
+            }
+        }
+
+        $fac   = $_SESSION['u_facilityid'];
+        $dept  = $_SESSION['dept_id1'];
+        $month = $_SESSION['new_date1'];
+        $per   = $_SESSION['assperiod'];
+
+        $ind = (int)$_POST['indicator_id'];
+
+        $num = ($_POST['numerator'] !== "") ? (float)$_POST['numerator'] : null;
+        $den = ($_POST['denominator'] !== "") ? (float)$_POST['denominator'] : null;
+        $res = ($_POST['result_value'] !== "") ? (float)str_replace('%', '', $_POST['result_value']) : null;
+
+        $opt = (!empty($_POST['selected_option'])) ? trim($_POST['selected_option']) : null;
+
+        if ($res === null && $num !== null && $den !== null && $den != 0) {
+            $res = round($num / $den, 2);
+        }
+
+        if (!is_numeric($res)) {
+            echo json_encode(["status" => "error", "msg" => "Invalid result"]);
             exit;
         }
-    }
 
-    $fac   = $_SESSION['u_facilityid'];
-    $dept  = $_SESSION['dept_id1'] ?? 0;
-    $month = $_SESSION['new_date1'];
-    $per   = $_SESSION['assperiod'];
+        /* CHECK EXISTING */
+        $chk = $con->prepare("
+            SELECT outcome_id_values,
+            (SELECT file_path FROM outcome_value_files 
+             WHERE outcome_value_id=outcome_id_values LIMIT 1) old_file
+            FROM outcome_values_in
+            WHERE month_in=? AND institute_id=? AND dept_id=? AND id_out_hwc=?
+        ");
+        $chk->bind_param("siii", $month, $fac, $dept, $ind);
+        $chk->execute();
+        $exist = $chk->get_result()->fetch_assoc();
+        $chk->close();
 
-    $ind = (int)$_POST['indicator_id'];
-    $num = ($_POST['numerator'] !== "") ? (float)$_POST['numerator'] : null;
-    $den = ($_POST['denominator'] !== "") ? (float)$_POST['denominator'] : null;
-    $res = ($_POST['result_value'] !== "") ? (float)str_replace('%', '', $_POST['result_value']) : null;
-    $opt = trim($_POST['selected_option']);
+        if ($exist) {
 
-    if ($res === null && $num !== null && $den !== null && $den != 0) {
-        $res = round($num / $den, 2);
-    }
+            $oid = $exist['outcome_id_values'];
+            $oldFile = $exist['old_file'];
 
-    if (!is_numeric($res)) {
-        echo json_encode(["status" => "error", "msg" => "Invalid result"]);
+            $u = $con->prepare("
+                UPDATE outcome_values_in
+                SET values_in=?, neu_val=?, deno_val=?
+                WHERE outcome_id_values=?
+            ");
+            $u->bind_param("dddi", $res, $num, $den, $oid);
+            $u->execute();
+            $u->close();
+
+        } else {
+
+            $i = $con->prepare("CALL insert_outcome_values(?,?,?,?,?,?,?,?)");
+            $i->bind_param("idsiiidd", $ind, $res, $month, $fac, $dept, $per, $den, $num);
+            $i->execute();
+            $i->close();
+
+            /* 🔥 VERY IMPORTANT FOR STORED PROCEDURE */
+            while ($con->more_results() && $con->next_result()) {}
+
+            $g = $con->prepare("
+                SELECT outcome_id_values 
+                FROM outcome_values_in
+                WHERE month_in=? AND institute_id=? AND dept_id=? AND id_out_hwc=?
+                ORDER BY outcome_id_values DESC LIMIT 1
+            ");
+            $g->bind_param("siii", $month, $fac, $dept, $ind);
+            $g->execute();
+            $oid = $g->get_result()->fetch_assoc()['outcome_id_values'];
+            $g->close();
+
+            $oldFile = null;
+        }
+
+        /* FILE UPLOAD (Optional) */
+        $path = $oldFile;
+
+        if (!empty($_FILES['evidence_file']['name'])) {
+
+            $ext = strtolower(pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION));
+            $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+
+            if (!in_array($ext, $allowed)) {
+                echo json_encode(["status" => "error", "msg" => "Invalid file"]);
+                exit;
+            }
+
+            $dir = "uploads/outcome/$fac/$month/";
+            if (!is_dir($dir)) mkdir($dir, 0777, true);
+
+            if ($oldFile && file_exists($oldFile)) unlink($oldFile);
+
+            $path = $dir . time() . "_" . $ind . "." . $ext;
+
+            if (!move_uploaded_file($_FILES['evidence_file']['tmp_name'], $path)) {
+                echo json_encode(["status" => "error", "msg" => "File upload failed"]);
+                exit;
+            }
+        }
+
+        /* FILE TABLE (Optional) */
+        if ($opt !== null || !empty($path)) {
+
+            $fchk = $con->prepare("SELECT id FROM outcome_value_files WHERE outcome_value_id=?");
+            $fchk->bind_param("i", $oid);
+            $fchk->execute();
+            $have = $fchk->get_result()->fetch_assoc();
+            $fchk->close();
+
+            if ($have) {
+
+                $fu = $con->prepare("
+                    UPDATE outcome_value_files
+                    SET selected_option=?, file_path=?
+                    WHERE outcome_value_id=?
+                ");
+                $fu->bind_param("ssi", $opt, $path, $oid);
+                $fu->execute();
+                $fu->close();
+
+            } else {
+
+                $fi = $con->prepare("
+                    INSERT INTO outcome_value_files(outcome_value_id,selected_option,file_path)
+                    VALUES (?,?,?)
+                ");
+                $fi->bind_param("iss", $oid, $opt, $path);
+                $fi->execute();
+                $fi->close();
+            }
+        }
+
+        echo json_encode([
+            "status" => "success",
+            "file"   => $path ?? null
+        ]);
+
+        exit;
+
+    } catch (Exception $e) {
+
+        echo json_encode([
+            "status" => "error",
+            "msg" => $e->getMessage()
+        ]);
         exit;
     }
-
-    /* CHECK EXISTING */
-    $chk = $con->prepare("
-        SELECT outcome_id_values,
-        (SELECT file_path FROM outcome_value_files 
-         WHERE outcome_value_id=outcome_id_values LIMIT 1) old_file
-        FROM outcome_values_in
-        WHERE month_in=? AND institute_id=? AND dept_id=? AND id_out_hwc=?
-    ");
-    $chk->bind_param("siii", $month, $fac, $dept, $ind);
-    $chk->execute();
-    $exist = $chk->get_result()->fetch_assoc();
-    $chk->close();
-
-    if ($exist) {
-        $oid = $exist['outcome_id_values'];
-        $oldFile = $exist['old_file'];
-
-        $u = $con->prepare("
-            UPDATE outcome_values_in
-            SET values_in=?, neu_val=?, deno_val=?
-            WHERE outcome_id_values=?
-        ");
-        $u->bind_param("dddi", $res, $num, $den, $oid);
-        $u->execute();
-        $u->close();
-    } else {
-        $i = $con->prepare("CALL insert_outcome_values(?,?,?,?,?,?,?,?)");
-        $i->bind_param("idsiiidd", $ind, $res, $month, $fac, $dept, $per, $den, $num);
-        $i->execute();
-        $i->close();
-
-        $g = $con->prepare("
-            SELECT outcome_id_values FROM outcome_values_in
-            WHERE month_in=? AND institute_id=? AND dept_id=? AND id_out_hwc=?
-            ORDER BY outcome_id_values DESC LIMIT 1
-        ");
-        $g->bind_param("siii", $month, $fac, $dept, $ind);
-        $g->execute();
-        $oid = $g->get_result()->fetch_assoc()['outcome_id_values'];
-        $g->close();
-
-        $oldFile = null;
-    }
-
-    /* FILE UPLOAD */
-    $path = $oldFile;
-    if (!empty($_FILES['evidence_file']['name'])) {
-
-        $ext = strtolower(pathinfo($_FILES['evidence_file']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
-
-        if (!in_array($ext, $allowed)) {
-            echo json_encode(["status" => "error", "msg" => "Invalid file"]);
-            exit;
-        }
-
-        $dir = "uploads/outcome/$fac/$month/";
-        if (!is_dir($dir)) mkdir($dir, 0777, true);
-
-        if ($oldFile && file_exists($oldFile)) unlink($oldFile);
-
-        $path = $dir . time() . "_" . $ind . "." . $ext;
-        move_uploaded_file($_FILES['evidence_file']['tmp_name'], $path);
-    }
-
-    /* FILE TABLE */
-    $fchk = $con->prepare("SELECT id FROM outcome_value_files WHERE outcome_value_id=?");
-    $fchk->bind_param("i", $oid);
-    $fchk->execute();
-    $have = $fchk->get_result()->fetch_assoc();
-    $fchk->close();
-
-    if ($have) {
-        $fu = $con->prepare("
-            UPDATE outcome_value_files
-            SET selected_option=?, file_path=?
-            WHERE outcome_value_id=?
-        ");
-        $fu->bind_param("ssi", $opt, $path, $oid);
-        $fu->execute();
-    } else {
-        $fi = $con->prepare("
-            INSERT INTO outcome_value_files(outcome_value_id,selected_option,file_path)
-            VALUES (?,?,?)
-        ");
-        $fi->bind_param("iss", $oid, $opt, $path);
-        $fi->execute();
-    }
-
-    echo json_encode([
-        "status" => "success",
-        "file"   => $path
-    ]);
-
-    exit;
 }
+include("assets/head/h.php");
+$showDeptModal = empty($_SESSION['dept_id1']) || $_SESSION['dept_id1'] == 0;
+$dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
 
 /***************************************************
  UI START
  ***************************************************/
-//include("assets/head/h.php");
-//$showDept = empty($_SESSION['dept_id1']);
+
 ?>
 
 <style>
@@ -321,15 +358,17 @@ WHERE out_come_hwc_factype=? AND out_come_dept=?
 
                         <div class="row g-2 mb-2">
                             <div class="col-md-6">
-                                <label class="fw-bold">Source of Verification</label>
+                                <label class="fw-bold">Source of Verification(Optional)</label>
                                 <select id="opt<?= $i ?>" class="form-control">
+                                    <option value="">-- Optional --</option>
                                     <option value="<?= htmlspecialchars($r['out_come_source']) ?>">
                                         <?= htmlspecialchars($r['out_come_source']) ?>
                                     </option>
                                 </select>
+
                             </div>
                             <div class="col-md-6">
-                                <label class="fw-bold">Upload Evidence</label>
+                                <label class="fw-bold">Upload Evidence (Optional)</label>
                                 <input type="file"
                                     id="file<?= $i ?>"
                                     class="form-control"
@@ -620,7 +659,9 @@ WHERE out_come_hwc_factype=? AND out_come_dept=?
             fd.append("numerator", document.getElementById("input" + (i * 2 - 1)).value);
             fd.append("denominator", document.getElementById("input" + (i * 2)).value);
             fd.append("result_value", document.getElementById("result" + i).value);
-            fd.append("selected_option", document.getElementById("opt" + i).value);
+            let selectedOption = document.getElementById("opt" + i).value || "";
+            fd.append("selected_option", selectedOption);
+
 
             if (selectedFiles[i]) {
                 fd.append("evidence_file", selectedFiles[i]);
@@ -668,8 +709,11 @@ WHERE out_come_hwc_factype=? AND out_come_dept=?
                     }
 
                 } catch {
-                    showMsg("Server response error", "danger");
-                }
+    console.log("RAW RESPONSE:");
+    console.log(xhr.responseText);
+    showMsg("Server response error", "danger");
+}
+
             };
 
             xhr.onerror = () => {
@@ -724,15 +768,15 @@ WHERE out_come_hwc_factype=? AND out_come_dept=?
             }
         }
     </script>
-<script>
-$(document).ready(function () {
-    <?php if ($showDeptModal): ?>
-        $('#departmentModal').modal({
-            backdrop: 'static',
-            keyboard: false
+    <script>
+        $(document).ready(function() {
+            <?php if ($showDeptModal): ?>
+                $('#departmentModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                $('#departmentModal').modal('show');
+            <?php endif; ?>
         });
-        $('#departmentModal').modal('show');
-    <?php endif; ?>
-});
-</script>
+    </script>
     <?php include("assets/head/f.php"); ?>

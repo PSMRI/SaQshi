@@ -10,7 +10,7 @@ if (!empty($_POST["cid"])) {
    $query="select block_id,block_name from block_master where dist_id= $dist order by block_name asc ";
    $result = mysqli_query($con, $query);   
    if ($result->num_rows > 0) {
-       // echo '<option value="">   </option>';
+       echo  '<option value="0">-Select Block-</option>';
        
         while ($row = mysqli_fetch_assoc($result)) {
             //echo '<option value="' . $row['block_id'] . '-' . $row['block_name'] . '">' . $row['block_name'] . '</option>';
