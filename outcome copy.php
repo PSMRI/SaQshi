@@ -23,8 +23,7 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
                 <i class="bi bi-person-badge-fill me-2"></i>Outcome Indicator for <?php echo htmlspecialchars($dept_name); ?>
                 <button type="button" class="btn btn-sm btn-link text-warning ms-2" data-toggle="modal" data-target="#departmentModal">
                     Change Department
-                </button>
-                </button>
+                </button>              
             </h5>
         </div>
 
@@ -74,7 +73,7 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
                     echo '<form method="post">';
                     while ($row = mysqli_fetch_array($q3)) {
                         $q++;
-                        $readonly = ($row['deno'] === 'N/A') ? 'readonly' : '';
+                        $readonly = ($row['deno'] === 'N/A') ? 'readonly' : 'NA';
                         $isLast = ($q == $total);
                         echo "<div class='card mb-3 outcome-card' id='card$q' style='" . ($q > 1 ? "display:none;" : "") . "'>
               <div class='card-body'>
@@ -103,17 +102,18 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
             </div>";
                     }
                     echo "</form>";
-                    if ($ftype == 3) {
-                        echo "<script src='assets/calculationjs/departmentphc{$dept_id}.js?v=<?= time() ?'></script>";
-                    } elseif ($ftype == 9) {
-                        echo "<script src='assets/calculationjs/departmentaphc{$dept_id}.js?v=<?= time() ?'></script>";
-                    } elseif ($ftype == 8 || $ftype == 4) {
-                        echo "<script src='assets/calculationjs/departmenthwc2{$dept_id}.js?v=<?= time() ?'></script>";
-                    } elseif ($ftype == 1) {
-                        echo "<script src='assets/calculationjs/chc{$dept_id}.js?v=<?= time() ?'></script>";
-                    } else {
-                        echo "<script src='assets/calculationjs/department{$dept_id}.js?v=<?= time() ?'></script>";
-                    }
+                   if ($ftype == 3) {
+    echo "<script src='assets/calculationjs/departmentphc{$dept_id}.js?v=" . time() . "'></script>";
+} elseif ($ftype == 9) {
+    echo "<script src='assets/calculationjs/departmentaphc{$dept_id}.js?v=" . time() . "'></script>";
+} elseif ($ftype == 8 || $ftype == 4) {
+    echo "<script src='assets/calculationjs/departmenthwc2{$dept_id}.js?v=" . time() . "'></script>";
+} elseif ($ftype == 1) {
+    echo "<script src='assets/calculationjs/chc{$dept_id}.js?v=" . time() . "'></script>";
+} else {
+    echo "<script src='assets/calculationjs/department{$dept_id}.js?v=" . time() . "'></script>";
+}
+
                 }
             }
         }
@@ -276,12 +276,10 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
 
     // Show department modal on load if needed
     <?php if ($showDeptModal): ?>
-        window.addEventListener('load', function() {
-            var deptModal = new bootstrap.Modal(document.getElementById('departmentModal'), {
-                backdrop: 'static',
-                keyboard: false
-            });
-            deptModal.show();
+        $('#departmentModal').modal({
+            backdrop: 'static',
+            keyboard: false
         });
+        $('#departmentModal').modal('show');
     <?php endif; ?>
 </script>

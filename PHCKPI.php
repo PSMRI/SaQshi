@@ -63,10 +63,10 @@
                                 </div>
                                 <div class='row g-2'>
                                     <div class='col-md-4'>
-                                       <input type='number' class='form-control' name='input" . ($q * 2 - 1) . "' id='input" . ($q * 2 - 1) . "' placeholder='Numerator' oninput='calculateResult($q)'>
+                                       <input type='number' step='any' class='form-control' name='input" . ($q * 2 - 1) . "' id='input" . ($q * 2 - 1) . "' placeholder='Numerator' oninput='calculateResult($q)'>
                                     </div>
                                     <div class='col-md-4'>
-                                        <input type='number' class='form-control' name='input" . ($q * 2) . "' id='input" . ($q * 2) . "' placeholder='Denominator' oninput='calculateResult($q)' $readonly>
+                                        <input type='number' step='any' class='form-control' name='input" . ($q * 2) . "' id='input" . ($q * 2) . "' placeholder='Denominator' oninput='calculateResult($q)' $readonly>
                                     </div>
                                     <div class='col-md-4'>
                                         <input type='text' class='form-control' name='result$q' id='result$q' readonly placeholder='Result'>
@@ -108,7 +108,8 @@
 
                 if ($value !== null) {
                     $stmt = $con->prepare("CALL insert_PHCKPI(?, ?, ?, ?)");
-                    $stmt->bind_param("iisi", $kpi_id, $value, $date1, $fac_id);
+                  $stmt->bind_param("idsi", $kpi_id, $value, $date1, $fac_id);
+
                     if (!$stmt->execute()) {
                         $success = false;
                         $errorMessages[] = "Error inserting for Outcome ID: {$kpi_id}";
