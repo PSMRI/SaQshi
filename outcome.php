@@ -563,25 +563,32 @@ WHERE out_come_hwc_factype=? AND out_come_dept=?
            NAVIGATION
         ================================ */
         function skipCard(i, total, e) {
-            e.preventDefault();
-            skippedAny = true;
 
-            showMsg(
-                "⏭ <b>Indicator skipped.</b>",
-                "warning"
-            );
-            if (i < total) {
-                showCard(i + 1);
-            } else {
-                // If skip happens on LAST card
-                showMsg(
-                    i,
-                    "⚠️ <b>You reached the end, but some indicators were skipped.</b><br>" +
-                    "🔁 Please go back and complete them.",
-                    "warning"
-                );
-            }
-        }
+    e.preventDefault();
+    skippedAny = true;
+
+    showMsg("⏭ <b>Indicator skipped.</b>", "warning");
+
+    if (i < total) {
+
+        showCard(i + 1);
+
+    } else {
+
+        showMsg(
+            "⚠️ Last indicator skipped. Redirecting to document upload...",
+            "warning"
+        );
+
+        setTimeout(function(){
+
+            window.location = "outcome_documents.php";
+
+        },1200);
+
+    }
+
+}
 
 
         function back(i, e) {
@@ -694,16 +701,20 @@ WHERE out_come_hwc_factype=? AND out_come_dept=?
 
                         showMsg("✅ <b>Indicator saved successfully</b>", "success");
 
-                        if (i < total) {
-                            showCard(i + 1);
-                        } else {
-                            showMsg(
-                                skippedAny ?
-                                "⚠️ Some indicators were skipped. Please review." :
-                                "🎉 You have reached the end!",
-                                skippedAny ? "warning" : "success"
-                            );
-                        }
+                       if (i < total) {
+
+    showCard(i + 1);
+
+} else {
+
+    showMsg("All indicators completed. Redirecting to document upload...","success");
+
+    setTimeout(function(){
+
+        window.location = "outcome_documents.php";
+
+    },1200);
+}
                     } else {
                         showMsg(res.msg || "Save failed", "danger");
                     }
