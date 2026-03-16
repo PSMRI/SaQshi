@@ -46,11 +46,11 @@ while ($row = mysqli_fetch_assoc($res)) {
         $sr++,
         htmlspecialchars($row['username']) .
             "<br><small class='text-muted'>User ID: " . (int)$row['user_id'] . "</small>",
-        htmlspecialchars($row['action']),
-        htmlspecialchars($row['module']),
-        htmlspecialchars($row['description']),
-        htmlspecialchars($row['reference_id']),
-        htmlspecialchars($row['ip_address']),
+        htmlspecialchars($row['action']?? ''),
+        htmlspecialchars($row['module']?? ''),
+        htmlspecialchars($row['description']?? ''),
+        htmlspecialchars($row['reference_id']?? ''),
+        htmlspecialchars($row['ip_address']?? ''),
         $row['created_at']
     ];
 }
