@@ -212,7 +212,7 @@ function calculateResult(row) {
             break;
         case 22:
             numerator = parseFloat(document.getElementById('input43').value);
-            denominator = parseFloat(document.getElementById('input42').value);
+            denominator = parseFloat(document.getElementById('input44').value);
             if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
                 result = ((numerator / denominator) * 100);// Example calculation
                 document.getElementById('result22').value = result.toFixed(2) + '%';
