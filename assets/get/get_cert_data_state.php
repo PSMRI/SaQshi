@@ -5,7 +5,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 
 
 
-$query = "SELECT fac_name, fac_type, cert_type, cert_detailscol, lat, longi, score, cert_issue, validity ,dist
+$query = "SELECT dist,block,fac_name, fac_type, cert_type, cert_detailscol, lat, longi, score, cert_issue, validity ,dist
           FROM cert_details 
           WHERE lat IS NOT NULL AND longi IS NOT NULL";
 
@@ -15,6 +15,8 @@ $facilities = [];
 
 while ($row = mysqli_fetch_assoc($result)) {
     $facilities[] = [
+        'dist'      => $row['dist'],
+        'block'      => $row['block'],
         'fac_name'      => $row['fac_name'],
         'fac_type'      => $row['fac_type'],
         'cert_type'     => $row['cert_type'],

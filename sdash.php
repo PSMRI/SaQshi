@@ -115,6 +115,8 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                 <table class="table datatable table-bordered table-striped table-hover small" id="facTable">
                                     <thead>
                                         <tr>
+                                            <th>Dist</th>
+                                            <th>Block</th>
                                             <th>Facility Name</th>
                                             <th>Facility Type</th>
                                             <th>Certification Type</th>
@@ -190,6 +192,8 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                     icon
                                 }).addTo(map);
                                 const tooltip = `
+                                 <b>${facility.dist}</b><br>
+                                  <b>${facility.block}</b><br>
                   <b>${facility.fac_name}</b><br>
                   Type: ${facility.fac_type}<br>
                   Certification: ${facility.cert_type}<br>
@@ -206,6 +210,8 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                             // Row
                             tableData.push({
                                 data: [
+                                    facility.dist,
+                                    facility.block,
                                     facility.fac_name,
                                     facility.fac_type,
                                     facility.cert_type,
@@ -232,7 +238,13 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
 
                         $('#facTable').DataTable({
                             data: tableData.map(t => t.data),
-                            columns: [{
+                            columns: [
+                                {
+                                    title: "Dist"
+                                },
+                                {
+                                    title: "Block"
+                                },{
                                     title: "Facility Name"
                                 },
                                 {
@@ -273,9 +285,9 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                                 alert('No expired facilities found.');
                                 return;
                             }
-                            let csv = "Facility Name,Facility Type,Certification Type,Details,Certification Issue Date,Validity\n";
+                            let csv = "Dist,Block,Facility Name,Facility Type,Certification Type,Details,Certification Issue Date,Validity\n";
                             expiredFacilities.forEach(f => {
-                                csv += `"${f.fac_name}","${f.fac_type}","${f.cert_type}","${f.cert_detailscol}","${f.cert_issue}","${f.validity}"\n`;
+                                csv += `"${f.dist}","${f.block}","${f.fac_name}","${f.fac_type}","${f.cert_type}","${f.cert_detailscol}","${f.cert_issue}","${f.validity}"\n`;
                             });
                             const blob = new Blob([csv], {
                                 type: 'text/csv;charset=utf-8;'
