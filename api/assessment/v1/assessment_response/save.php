@@ -1,7 +1,8 @@
 <?php
 require_once dirname(__DIR__, 4) . "/_bootstrap.php";
 // validate_token();
-
+require_once "../../../core/AuthMiddleware.php";
+$user = AuthMiddleware::check(); // login required
 require_once __DIR__ . "/../_service/AssessmentService.php";
 
 /* =====================================================

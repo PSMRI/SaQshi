@@ -1,5 +1,5 @@
 <?php
-require_once dirname(__DIR__, 5) . "/_bootstrap.php";
+require_once dirname(__DIR__, 3) . "/_bootstrap.php";
 require_once dirname(__DIR__, 3) . "/assessment/v1/_service/AssessmentService.php";
 
 $fid  = (int)($_GET['facility_id'] ?? 0);
