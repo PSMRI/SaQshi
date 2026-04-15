@@ -315,6 +315,7 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 						<li><a href="fac.php"> <span class="pcoded-micon"><i class="bi bi-card-checklist"></i></span><span class="pcoded-mtext">Facility Setup</span></a></li>
 						<li><a href="useradd.php"><span class="pcoded-micon"><i class="bi-journal-plus"></i></span><span class="pcoded-mtext">User</span></a></li>
 						<li><a href="cert.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Certification</span></a></li>
+						<li><a href="resources.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Upload Resources</span></a></li>
 						<!--li><a href="outsource.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Outcome Source</span></a></li-->
 						<!--li><a href="data.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Data Maintenance</span></a></li-->
 						<!--li>li><a href="login_analytics.php"><span class="pcoded-micon"><i class="bi-journal-check"></i></span><span class="pcoded-mtext">Login Analytics</span></a></li-->
