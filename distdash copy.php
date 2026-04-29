@@ -1,232 +1,304 @@
 <?php
 include("assets/head/h.php");
-ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
-$dist_id = $_SESSION['dist'];
+ $dist_id = $_SESSION['dist'];
 ?>
-<div id="dashboard-content">
-    <div class="pcoded-main-container">
-        <div class="pcoded-content">
-            <div class="pagetitle mb-2">
-                <h5 class="fw-bold text-primary mb-1">District Dashboard</h5>
-            </div>
 
-            <!-- ==================== FACILITY MAP ==================== -->
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>Facility Certification Overview</h5>
-                            <!-- Map container -->
-                            <div id="map" style="width: 100%; height: 400px; border: 1px solid #ccc;"></div>
+<div class="pcoded-main-container">
+    <div class="pcoded-content">
+        <div class="pagetitle mb-2">
+            <h5 class="fw-bold text-primary mb-1">District Dashboard</h5>
+        </div>
 
-                            <!-- Map Legend -->
-                            <h6 class="mt-2">
-                                <img src="https://maps.gstatic.com/mapfiles/ms2/micons/blue.png" style="width:18px;height:28px;vertical-align:middle;margin-right:6px;">
-                                <span class="fw-bold text-primary">State Certification</span>
-                                &nbsp;&nbsp;&nbsp;
-                                <img src="https://maps.gstatic.com/mapfiles/ms2/micons/green.png" style="width:18px;height:28px;vertical-align:middle;margin-right:6px;">
-                                <span class="fw-bold text-success">National Certification</span>
-                                &nbsp;&nbsp;&nbsp;
-                                <img src="https://maps.gstatic.com/mapfiles/ms2/micons/red.png" style="width:18px;height:28px;vertical-align:middle;margin-right:6px;">
-                                <span class="fw-bold text-danger">Expired Certificates</span>
-                            </h6>
+        <!-- ==================== FACILITY MAP ==================== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+
+                        <h5 class="mb-2">Facility Certification Overview</h5>
+
+                        <!-- Map -->
+                        <div id="map" style="width: 100%; height: 350px; border: 1px solid #ccc;"></div>
+
+                        <!-- Legend → now mobile friendly -->
+                        <div class="mt-3 d-flex flex-wrap align-items-center gap-3">
+
+                            <div class="d-flex align-items-center">
+                                <img src="https://maps.gstatic.com/mapfiles/ms2/micons/blue.png"
+                                    style="width:14px;height:20px;margin-right:4px;">
+                                <span class="text-primary small">State Certification</span>
+                            </div>
+
+                            <div class="d-flex align-items-center">
+                                <img src="https://maps.gstatic.com/mapfiles/ms2/micons/green.png"
+                                    style="width:14px;height:20px;margin-right:4px;">
+                                <span class="text-success small">National Certification</span>
+                            </div>
+
+                            <div class="d-flex align-items-center">
+                                <img src="https://maps.gstatic.com/mapfiles/ms2/micons/red.png"
+                                    style="width:14px;height:20px;margin-right:4px;">
+                                <span class="text-danger small">Expired Certificates</span>
+                            </div>
+
                         </div>
+
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- ==================== FACILITY TABLE ==================== -->
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>Facility Certification Details Overview</h5>
 
-                            <div class="alert alert-warning mt-2">
-                                <strong>⚠️ Expired Certifications:</strong>
-                                <span id="expired-count">0</span> facilities —
-                                <a href="#" id="download-expired" class="text-decoration-underline fw-bold">Download List</a>
-                            </div>
+        <!-- ==================== FACILITY TABLE ==================== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
 
-                            <div class="table-responsive">
-                                <table class="table datatable table-bordered table-striped table-hover small" id="facTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Facility Name</th>
-                                            <th>Facility Type</th>
-                                            <th>Certification Type</th>
-                                            <th>Details</th>
-                                            <th>Certification Issue Date</th>
-                                            <th>Validity</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
+                        <!-- Title -->
+                        <h5 class="mb-2">Facility Certification Details Overview</h5>
+
+                        <!-- Alert -->
+                        <div class="alert alert-warning py-2 small">
+                            <strong>⚠️ Expired Certifications:</strong>
+                            <span id="expired-count">0</span> facilities —
+                            <a href="#" id="download-expired" class="fw-bold text-decoration-underline">Download List</a>
                         </div>
+
+                        <!-- Scrollable Table for Mobile -->
+                        <div class="table-responsive" style="overflow-x:auto;">
+                            <table class="table table-bordered table-striped table-hover small mb-0" id="facTable">
+                                <thead class="table-primary text-center">
+                                    <tr>
+                                        <th>Facility Name</th>
+                                        <th>Type</th>
+                                        <th>Cert. Type</th>
+                                        <th>Details</th>
+                                        <th>Issue Date</th>
+                                        <th>Validity</th>
+                                        <th>Score</th>
+                                        <th>Cert Status</th>
+                                        <th>Assessment Mode</th>
+                                        <th>Assessment Date</th>
+                                        <th>District</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- ==================== MAP SCRIPT ==================== -->
+        <script>
+            $(document).ready(function() {
+                var map = L.map('map').setView([25.32, 82.99], 9);
 
-            <!-- ==================== MAP SCRIPT ==================== -->
-            <script>
-                $(document).ready(function() {
-                    var map = L.map('map').setView([25.2, 85.5], 8);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 18
-                    }).addTo(map);
 
-                    // Icon chooser
-                    function getMarkerIcon(certType, isExpired) {
-                        let iconUrl;
-                        if (isExpired) {
-                            iconUrl = 'https://maps.gstatic.com/mapfiles/ms2/micons/red.png'; // 🔴 Expired
-                        } else {
-                            switch ((certType || '').toLowerCase()) {
-                                case 'state':
-                                    iconUrl = 'https://maps.gstatic.com/mapfiles/ms2/micons/blue.png'; // 🟦 State
-                                    break;
-                                case 'national':
-                                    iconUrl = 'https://maps.gstatic.com/mapfiles/ms2/micons/green.png'; // 🟩 National
-                                    break;
-                                default:
-                                    iconUrl = 'https://maps.gstatic.com/mapfiles/ms2/micons/blue.png';
-                            }
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18
+                }).addTo(map);
+
+                // Icon chooser
+                function getMarkerIcon(certType, isExpired) {
+                    let iconUrl;
+                    if (isExpired) {
+                        iconUrl = 'https://maps.gstatic.com/mapfiles/ms2/micons/red.png'; // 🔴 Expired
+                    } else {
+                        switch ((certType || '').toLowerCase()) {
+                            case 'state':
+                                iconUrl = 'https://maps.gstatic.com/mapfiles/ms2/micons/blue.png'; // 🟦 State
+                                break;
+                            case 'national':
+                                iconUrl = 'https://maps.gstatic.com/mapfiles/ms2/micons/green.png'; // 🟩 National
+                                break;
+                            default:
+                                iconUrl = 'https://maps.gstatic.com/mapfiles/ms2/micons/blue.png';
                         }
-                        return new L.Icon({
-                            iconUrl: iconUrl,
-                            iconSize: [10, 16],
-                            iconAnchor: [8, 26],
-                            popupAnchor: [1, -20],
-                            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                            shadowSize: [10, 10]
+                    }
+                    return new L.Icon({
+                        iconUrl: iconUrl,
+                        iconSize: [8, 12], // smaller icon
+                        iconAnchor: [4, 12], // adjust anchor for smaller icon
+                        popupAnchor: [1, -10], // adjust popup position
+                        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                        shadowSize: [4, 4] // smaller shadow
+                    });
+                }
+
+                // Fetch facility data
+                $.getJSON('assets/get/get_cert_data_div.php', function(facilities) {
+
+                    let tableData = [];
+                    let expiredFacilities = [];
+                    let stateCount = 0,
+                        nationalCount = 0;
+                    const today = new Date();
+
+                    facilities.forEach(function(facility) {
+
+                        // -------------------------------
+                        // Check Expiry
+                        // -------------------------------
+                        let isExpired = false;
+                        if (facility.validity) {
+                            const validDate = new Date(facility.validity);
+                            if (validDate < today) isExpired = true;
+                        }
+                        if (isExpired) expiredFacilities.push(facility);
+
+                        // -------------------------------
+                        // MAP MARKER
+                        // -------------------------------
+                        if (facility.lat && facility.longi) {
+
+                            const icon = getMarkerIcon(facility.cert_type, isExpired);
+
+                            const marker = L.marker([facility.lat, facility.longi], {
+                                icon
+                            }).addTo(map);
+
+                            const tooltip = `
+                <b>${facility.fac_name}</b><br>
+                Type: ${facility.fac_type}<br>
+                Certification: ${facility.cert_type}<br>
+                Score: ${facility.score ?? 'N/A'}<br>
+                Mode: ${facility.ass_mod ?? 'N/A'}<br>
+                Assessment Date: ${facility.date_of_ass ?? 'N/A'}<br>
+                Validity: ${facility.validity || 'N/A'}<br>
+                Details: ${facility.cert_detailscol || ''}<br>
+                District: ${facility.dist ?? 'N/A'}
+            `;
+
+                            marker.bindTooltip(tooltip, {
+                                permanent: false,
+                                direction: "top",
+                                offset: [0, -10]
+                            });
+                        }
+
+                        // -------------------------------
+                        // TABLE ROW DATA
+                        // -------------------------------
+                        tableData.push({
+                            data: [
+                                facility.fac_name,
+                                facility.fac_type,
+                                facility.cert_type,
+                                facility.cert_detailscol,
+                                facility.cert_issue,
+                                facility.validity,
+                                facility.score,
+                                facility.Cert_status,
+                                facility.ass_mod,
+                                facility.date_of_ass,
+                                facility.dist
+                            ],
+                            expired: isExpired
                         });
+
+                        // Count for summary
+                        if ((facility.cert_type || "").toLowerCase() === "state") stateCount++;
+                        if ((facility.cert_type || "").toLowerCase() === "national") nationalCount++;
+                    });
+
+                    // -------------------------------
+                    // Update Summary Counts
+                    // -------------------------------
+                    $("#state-cert-count").text(stateCount);
+                    $("#national-cert-count").text(nationalCount);
+                    $("#expired-count").text(expiredFacilities.length);
+
+                    // -------------------------------
+                    // Initialize DataTable
+                    // -------------------------------
+                    if ($.fn.DataTable && $.fn.DataTable.isDataTable("#facTable")) {
+                        $("#facTable").DataTable().clear().destroy();
                     }
 
-                    // Fetch facility data
-                    $.getJSON('assets/get/get_cert_data_div.php', function(facilities) {
-                        let tableData = [];
-                        let expiredFacilities = [];
-                        let stateCount = 0,
-                            nationalCount = 0;
-                        const today = new Date();
-
-                        facilities.forEach(function(facility) {
-                            // Check expiry
-                            let isExpired = false;
-                            if (facility.validity) {
-                                const validDate = new Date(facility.validity);
-                                if (validDate < today) isExpired = true;
+                    $("#facTable").DataTable({
+                        data: tableData.map(t => t.data),
+                        columns: [{
+                                title: "Facility Name"
+                            },
+                            {
+                                title: "Type"
+                            },
+                            {
+                                title: "Cert. Type"
+                            },
+                            {
+                                title: "Details"
+                            },
+                            {
+                                title: "Issue Date"
+                            },
+                            {
+                                title: "Validity"
+                            },
+                            {
+                                title: "Score"
+                            },
+                            {
+                                title: "Cert Status"
+                            },
+                            {
+                                title: "Assessment Mode"
+                            },
+                            {
+                                title: "Assessment Date"
+                            },
+                            {
+                                title: "District"
                             }
-                            if (isExpired) expiredFacilities.push(facility);
+                        ],
+                        createdRow: function(row, data, dataIndex) {
+                            const rowInfo = tableData[dataIndex];
+                            if (rowInfo.expired) $(row).addClass("expired-row");
+                        },
+                        pageLength: 5,
+                        dom: "Bfrtip",
+                        buttons: [{
+                            extend: "excelHtml5",
+                            title: "Facility Certification Overview",
+                            text: "📥 Export to Excel"
+                        }]
+                    });
 
-                            // Marker
-                            if (facility.lat && facility.longi) {
-                                const icon = getMarkerIcon(facility.cert_type, isExpired);
-                                const marker = L.marker([facility.lat, facility.longi], {
-                                    icon
-                                }).addTo(map);
-                                const tooltip = `
-                  <b>${facility.fac_name}</b><br>
-                  Type: ${facility.fac_type}<br>
-                  Certification: ${facility.cert_type}<br>
-                  Validity: ${facility.validity || 'N/A'}<br>
-                  Details: ${facility.cert_detailscol || ''}
-                `;
-                                marker.bindTooltip(tooltip, {
-                                    permanent: false,
-                                    direction: 'top',
-                                    offset: [0, -10]
-                                });
-                            }
+                    // -------------------------------
+                    // Download Expired CSV
+                    // -------------------------------
+                    $("#download-expired").on("click", function(e) {
+                        e.preventDefault();
 
-                            // Row
-                            tableData.push({
-                                data: [
-                                    facility.fac_name,
-                                    facility.fac_type,
-                                    facility.cert_type,
-                                    facility.cert_detailscol,
-                                    facility.cert_issue,
-                                    facility.validity,
-                                ],
-                                expired: isExpired
-                            });
-
-                            if ((facility.cert_type || '').toLowerCase() === 'state') stateCount++;
-                            if ((facility.cert_type || '').toLowerCase() === 'national') nationalCount++;
-                        });
-
-                        // Update counts
-                        $('#state-cert-count').text(stateCount);
-                        $('#national-cert-count').text(nationalCount);
-                        $('#expired-count').text(expiredFacilities.length);
-
-                        // DataTable
-                        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#facTable')) {
-                            $('#facTable').DataTable().clear().destroy();
+                        if (expiredFacilities.length === 0) {
+                            alert("No expired facilities found.");
+                            return;
                         }
 
-                        $('#facTable').DataTable({
-                            data: tableData.map(t => t.data),
-                            columns: [{
-                                    title: "Facility Name"
-                                },
-                                {
-                                    title: "Facility Type"
-                                },
-                                {
-                                    title: "Certification Type"
-                                },
-                                {
-                                    title: "Details"
-                                },
-                                {
-                                    title: "Certification Issue Date"
-                                },
-                                {
-                                    title: "Validity"
-                                }
-                            ],
-                            createdRow: function(row, data, dataIndex) {
-                                const rowInfo = tableData[dataIndex];
-                                if (rowInfo.expired) {
-                                    $(row).addClass('expired-row');
-                                }
-                            },
-                            pageLength: 5,
-                            dom: 'Bfrtip',
-                            buttons: [{
-                                extend: 'excelHtml5',
-                                title: 'Facility Certification Overview',
-                                text: '📥 Export to Excel'
-                            }]
+                        let csv = "Facility Name,Facility Type,Cert Type,Details,Issue Date,Validity,Score,Status,Mode,Assessment Date,District\n";
+
+                        expiredFacilities.forEach(f => {
+                            csv += `"${f.fac_name}","${f.fac_type}","${f.cert_type}","${f.cert_detailscol}","${f.cert_issue}","${f.validity}","${f.score}","${f.Cert_status}","${f.ass_mod}","${f.date_of_ass}","${f.dist}"\n`;
                         });
 
-                        // Download expired list
-                        $('#download-expired').on('click', function(e) {
-                            e.preventDefault();
-                            if (expiredFacilities.length === 0) {
-                                alert('No expired facilities found.');
-                                return;
-                            }
-                            let csv = "Facility Name,Facility Type,Certification Type,Details,Certification Issue Date,Validity\n";
-                            expiredFacilities.forEach(f => {
-                                csv += `"${f.fac_name}","${f.fac_type}","${f.cert_type}","${f.cert_detailscol}","${f.cert_issue}","${f.validity}"\n`;
-                            });
-                            const blob = new Blob([csv], {
-                                type: 'text/csv;charset=utf-8;'
-                            });
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = 'Expired_Facility_List.csv';
-                            link.click();
+                        const blob = new Blob([csv], {
+                            type: "text/csv;charset=utf-8;"
                         });
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = "Expired_Facility_List.csv";
+                        link.click();
                     });
-                });
-            </script>
 
-            <style>
+                });
+
+            });
+        </script>
+
+       <style>
                 .small-card {
                     border-radius: 14px;
                     box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
@@ -276,67 +348,49 @@ $dist_id = $_SESSION['dist'];
 
                     <?php
                     /* =========================================================
-   STEP 1: TOTAL FACILITIES (FIXED COUNT)
-========================================================= */
-                    $sqlTotal = "
-SELECT COUNT(DISTINCT fac_id) AS total_facilities
-FROM state_dash_view
-WHERE fac_id <> 1 and dist_id=$dist_id
-";
-                    $resTotal = mysqli_query($con, $sqlTotal);
-                    $total_facilities = (int)mysqli_fetch_assoc($resTotal)['total_facilities'];
-
-
-                    /* =========================================================
-   STEP 2: FETCH LATEST ASSESSMENT PER FACILITY
-========================================================= */
+                            FETCH DATA WITH STATUS
+                            ========================================================= */
                     $sql = "
-SELECT v.*,
-    CASE
-        WHEN IFNULL(v.obt,0)=0 AND IFNULL(v.tot,0)=0 THEN 'Not Started'
-        WHEN IFNULL(v.obt,0) < IFNULL(v.tot,0) THEN 'In Progress'
-        WHEN IFNULL(v.obt,0) = IFNULL(v.tot,0) THEN 'Completed'
-        ELSE 'Unknown'
-    END AS status
-FROM state_dash_view v
-INNER JOIN (
-    SELECT fac_id, MAX(ass_period_id) AS latest_ass
-    FROM state_dash_view
-    WHERE fac_id <> 1
-    GROUP BY fac_id
-) latest
-ON v.fac_id = latest.fac_id
-AND v.ass_period_id = latest.latest_ass WHERE v.fac_id <> 1 
-AND v.dist_id = $dist_id;
-";
+                                        SELECT *,
+                                            CASE
+                                                WHEN IFNULL(obt,0)=0 AND IFNULL(tot,0)=0 THEN 'Not Started'
+                                                WHEN IFNULL(obt,0) < IFNULL(tot,0) THEN 'In Progress'
+                                                WHEN IFNULL(obt,0) = IFNULL(tot,0) THEN 'Completed'
+                                                ELSE 'Unknown'
+                                            END AS status
+                                        FROM state_dash_view
+                                        WHERE fac_id <> 1 and dist_id=$dist_id
+                                        ";
 
                     $res = mysqli_query($con, $sql);
 
-
                     /* =========================================================
-   STEP 3: INITIALIZE COUNTERS
-========================================================= */
+                            INITIALIZE COUNTERS
+                            ========================================================= */
                     $gt80 = $btw50_80 = $lt50 = 0;
                     $completed = $in_progress = $not_started = 0;
+
+                    $total_facilities = 0;
                     $total_completed_score = 0;
 
-
                     /* =========================================================
-   STEP 4: PROCESS LATEST ASSESSMENTS ONLY
-========================================================= */
+                    PROCESS DATA
+                    ========================================================= */
                     while ($row = mysqli_fetch_assoc($res)) {
 
                         $p = floatval($row['p1']);
+                        $total_facilities++;
 
+                        // Facility status counters
                         switch ($row['status']) {
-
                             case 'Completed':
                                 $completed++;
                                 $total_completed_score += $p;
 
+                                // Score buckets ONLY for completed
                                 if ($p > 80) {
                                     $gt80++;
-                                } elseif ($p >= 50) {
+                                } elseif ($p >= 50 && $p<80) {
                                     $btw50_80++;
                                 } else {
                                     $lt50++;
@@ -354,28 +408,16 @@ AND v.dist_id = $dist_id;
                     }
 
                     /* =========================================================
-   STEP 5: FIX NOT STARTED COUNT
-========================================================= */
-                    $not_started = $total_facilities - ($completed + $in_progress);
-
-
-                    /* =========================================================
-   STEP 6: AVERAGE SCORE (LATEST COMPLETED ONLY)
-========================================================= */
+                        AVERAGE SCORE (COMPLETED ONLY)
+                        ========================================================= */
                     $avg_p = $completed > 0 ? round($total_completed_score / $completed, 2) : 0;
                     ?>
-
-                    <!-- =========================================================
-     UI OUTPUT (UNCHANGED CARD DESIGN)
-========================================================= -->
-
                     <div class="row g-3">
-
-                        <!-- ================== ASSESSMENT STATUS ================== -->
                         <div class="col-lg-6 col-md-12">
+
                             <div class="card border-0 shadow-sm h-100">
                                 <div class="card-header bg-light fw-bold py-2">
-                                    📊 Assessment Status (Latest Assessment)
+                                    📊 Assessment Status
                                 </div>
 
                                 <div class="card-body py-2">
@@ -384,6 +426,7 @@ AND v.dist_id = $dist_id;
                                         <div class="col-4">
                                             <div class="card small-card bg-success text-white">
                                                 <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-award-fill"></i></div>
                                                     <div class="value"><?= $gt80 ?></div>
                                                     <div class="ratio">/ <?= $completed ?></div>
                                                     <div class="label">&gt; 80%</div>
@@ -394,6 +437,7 @@ AND v.dist_id = $dist_id;
                                         <div class="col-4">
                                             <div class="card small-card bg-warning text-dark">
                                                 <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-bar-chart-line-fill"></i></div>
                                                     <div class="value"><?= $btw50_80 ?></div>
                                                     <div class="ratio">/ <?= $completed ?></div>
                                                     <div class="label">50–80%</div>
@@ -404,6 +448,7 @@ AND v.dist_id = $dist_id;
                                         <div class="col-4">
                                             <div class="card small-card bg-danger text-white">
                                                 <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-exclamation-circle-fill"></i></div>
                                                     <div class="value"><?= $lt50 ?></div>
                                                     <div class="ratio">/ <?= $completed ?></div>
                                                     <div class="label">&lt; 50%</div>
@@ -414,13 +459,13 @@ AND v.dist_id = $dist_id;
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- ================== FACILITY PROGRESS ================== -->
+                        </div>
                         <div class="col-lg-6 col-md-12">
+
                             <div class="card border-0 shadow-sm h-100">
                                 <div class="card-header bg-light fw-bold py-2">
-                                    🏥 Facility Progress (Latest Assessment)
+                                    🏥 Facility Progress
                                 </div>
 
                                 <div class="card-body py-2">
@@ -429,6 +474,7 @@ AND v.dist_id = $dist_id;
                                         <div class="col-4">
                                             <div class="card small-card bg-success text-white">
                                                 <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-check-circle-fill"></i></div>
                                                     <div class="value"><?= $completed ?></div>
                                                     <div class="ratio">/ <?= $total_facilities ?></div>
                                                     <div class="label">Completed</div>
@@ -439,6 +485,7 @@ AND v.dist_id = $dist_id;
                                         <div class="col-4">
                                             <div class="card small-card bg-warning text-dark">
                                                 <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-arrow-repeat"></i></div>
                                                     <div class="value"><?= $in_progress ?></div>
                                                     <div class="ratio">/ <?= $total_facilities ?></div>
                                                     <div class="label">In Progress</div>
@@ -449,6 +496,7 @@ AND v.dist_id = $dist_id;
                                         <div class="col-4">
                                             <div class="card small-card bg-secondary text-white">
                                                 <div class="card-body py-2">
+                                                    <div class="icon"><i class="bi bi-hourglass-split"></i></div>
                                                     <div class="value"><?= $not_started ?></div>
                                                     <div class="ratio">/ <?= $total_facilities ?></div>
                                                     <div class="label">Not Started</div>
@@ -459,25 +507,15 @@ AND v.dist_id = $dist_id;
                                     </div>
                                 </div>
                             </div>
+
                         </div>
 
                     </div>
 
-
-
-                    <!-- Average Display -->
-                    <div class="text-end mt-2">
-
-                        <small class="text-muted fst-italic text-primary">
-                            Average compliance score across all assessments: <strong><?= $avg_p ?>%</strong>
-                        </small>
-                    </div>
                 </div>
+
             </div>
-
-
-            
-            <?php
+        <?php
         $dist_id = $_SESSION['dist'];
         $userid = $_SESSION['userid'];
         $call_count = "SELECT * FROM state_dash_view WHERE Dist_id=$dist_id and obt=tot";
@@ -681,7 +719,7 @@ AND v.dist_id = $dist_id;
                                     District Compliance Summary – Report
                                 </h4>
                                 <h4 style="font-size: 16px; margin-bottom: 15px; color: #333;">
-                                    District: <strong><span id="district-name-span">Varansi</span></strong>
+                                    District: <strong><span id="district-name-span">Loading...</span></strong>
                                 </h4>
                             </center>
                             <?php
