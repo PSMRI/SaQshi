@@ -1,8 +1,9 @@
 <?php
 include("assets/head/h.php");
+include("assets/conn/db.php");
 $dist_id = $_SESSION['dist'];
 
-$dist_id = $_SESSION['dist'];
+//$dist_id = $_SESSION['dist'];
 $result = mysqli_query($con, "SELECT Dist_name FROM dist_master WHERE Dist_id = $dist_id");
 $row = mysqli_fetch_assoc($result);
 $dist_name = $row['Dist_name'] ?? 'Patna';
@@ -1251,12 +1252,61 @@ WHERE fac_id NOT IN (1) and dist_id=$dist_id;";
                     </div>
                 </div>
             </div>
-            <button class="btn btn-success mb-3" onclick="window.location.href='assets/get/fetch_phc_kpi_divdash_data.php'">
+            <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <h5 class="card-header fw-bold text-primary">
+                                District's Vigilance Report
+                            </h5>
+
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr class="text-center">
+                                                <th>
+                                                    <a href="assets/get/fetch_outcome_kpi_dist.php" class="text-link">
+                                                        KPI (HWC) & Outcome Summary<br>
+                                                        <span class="text-muted small">(All Facility Types)</span>
+                                                    </a>
+                                                </th>
+                                                <th>
+                                                    <a href="assets/get/fetch_data_actionplan_dist.php" class="text-link">
+                                                        Action Plan Summary<br>
+                                                        <span class="text-muted small">(All Facility Types)</span>
+                                                    </a>
+                                                </th>
+                                                <th>
+                                                    <a href="assets/get/fetch_kpi_dist.php" class="text-link">
+                                                        KPI Summary<br>
+                                                        <span class="text-muted small">(DH,SDH, PHC, UPHC, CHC)</span>
+                                                    </a>
+                                                </th>
+                                                <th>
+                                                    <a href="assets/get/fetch_anexc_dist.php" class="text-link">
+                                                        Anexture C<br>
+                                                        <span class="text-muted small">(DH,SDH,CHC)</span>
+                                                    </a>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- intentionally empty -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            <!--button class="btn btn-success mb-3" onclick="window.location.href='assets/get/fetch_phc_kpi_divdash_data.php'">
                 Download KPI & Outcome Summary (Excel)
             </button>
             <button class="btn btn-success mb-3" onclick="window.location.href='assets/get/fetch_data_actionplan_div.php'">
                 DownloadAction Plan Completed/pending summary (Excel)
-            </button>
+            </button>-->
 
             <!-- Include DataTables JS and CSS -->
 

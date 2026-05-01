@@ -1,5 +1,6 @@
 <?php
 include("assets/head/h.php");
+include("assets/conn/db.php");
 ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
 ?>
 <div id="dashboard-content">
@@ -238,13 +239,12 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
 
                         $('#facTable').DataTable({
                             data: tableData.map(t => t.data),
-                            columns: [
-                                {
+                            columns: [{
                                     title: "Dist"
                                 },
                                 {
                                     title: "Block"
-                                },{
+                                }, {
                                     title: "Facility Name"
                                 },
                                 {
@@ -1154,54 +1154,54 @@ WHERE fac_id NOT IN (13061);";
 
 
                 <div class="row">
-    <div class="col-12">
-        <div class="card">
-            <h5 class="card-header fw-bold text-primary">
-                Vigilance Report
-            </h5>
+                    <div class="col-12">
+                        <div class="card">
+                            <h5 class="card-header fw-bold text-primary">
+                                Vigilance Report
+                            </h5>
 
-            <div class="card-body">
-    <div class="table-responsive">
-        <table class="table table-bordered align-middle mb-0">
-            <thead class="table-light">
-                <tr class="text-center">
-                    <th>
-                        <a href="assets/get/fetch_outcome_kpi.php" class="text-link">
-                            KPI (HWC) & Outcome Summary<br>
-                            <span class="text-muted small">(All Facility Types)</span>
-                        </a>
-                    </th>
-                    <th>
-                        <a href="assets/get/fetch_data_actionplan.php" class="text-link">
-                            Action Plan Summary<br>
-                            <span class="text-muted small">(All Facility Types)</span>
-                        </a>
-                    </th>
-                    <th>
-                        <a href="assets/get/fetch_kpi.php" class="text-link">
-                            KPI Summary<br>
-                            <span class="text-muted small">(DH,SDH, PHC, UPHC, CHC)</span>
-                        </a>
-                    </th>
-                    <th>
-                        <a href="assets/get/fetch_anexc.php" class="text-link">
-                          Anexture C<br>
-                            <span class="text-muted small">(DH,SDH,CHC)</span>
-                        </a>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- intentionally empty -->
-            </tbody>
-        </table>
-    </div>
-</div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr class="text-center">
+                                                <th>
+                                                    <a href="assets/get/fetch_outcome_kpi.php" class="text-link">
+                                                        KPI (HWC) & Outcome Summary<br>
+                                                        <span class="text-muted small">(All Facility Types)</span>
+                                                    </a>
+                                                </th>
+                                                <th>
+                                                    <a href="assets/get/fetch_data_actionplan.php" class="text-link">
+                                                        Action Plan Summary<br>
+                                                        <span class="text-muted small">(All Facility Types)</span>
+                                                    </a>
+                                                </th>
+                                                <th>
+                                                    <a href="assets/get/fetch_kpi.php" class="text-link">
+                                                        KPI Summary<br>
+                                                        <span class="text-muted small">(DH,SDH, PHC, UPHC, CHC)</span>
+                                                    </a>
+                                                </th>
+                                                <th>
+                                                    <a href="assets/get/fetch_anexc.php" class="text-link">
+                                                        Anexture C<br>
+                                                        <span class="text-muted small">(DH,SDH,CHC)</span>
+                                                    </a>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- intentionally empty -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
 
 
-        </div>
-    </div>
-</div>
+                        </div>
+                    </div>
+                </div>
 
 
 
