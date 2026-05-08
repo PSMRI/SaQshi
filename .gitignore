@@ -1,0 +1,19 @@
+# Environment file
+.env
+
+# Logs
+*.log
+
+# Backup files
+*.zip
+*.sql
+*.bak
+
+# VS Code
+.vscode/
+
+# Composer
+/vendor/
+
+# Node
+/node_modules/
