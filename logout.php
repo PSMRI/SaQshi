@@ -1,9 +1,7 @@
 <?php
 /**
  * =====================================================
- * SaQshi Secure Logout
- * logout.php
- * Production + Security Audit Ready
+ * SaQshi Secure Logout 
  * =====================================================
  */
 
