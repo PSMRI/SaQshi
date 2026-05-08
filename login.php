@@ -1,93 +1,490 @@
 <?php
-include("assets/conn/db.php");
-require_once("assets/helpers/audit_logger.php");
+
+/*
+=====================================================
+ SAQSHI ENTERPRISE SECURE LOGIN SYSTEM
+ SECURITY AUDIT READY VERSION
+=====================================================
+*/
+
+/* =====================================================
+   OUTPUT BUFFER
+===================================================== */
 ob_start();
-session_start();
 
-/* ---------------- DEVICE DETECTION ---------------- */
-function getDeviceType() {
-    $ua = strtolower($_SERVER['HTTP_USER_AGENT']);
-    if (preg_match('/mobile|android|iphone|ipod|blackberry|webos/', $ua)) return "Mobile";
-    if (preg_match('/ipad|tablet/', $ua)) return "Tablet";
-    return "Desktop";
+/* =====================================================
+   FORCE HTTPS
+===================================================== */
+if (
+    empty($_SERVER['HTTPS']) ||
+    $_SERVER['HTTPS'] === 'off'
+) {
+
+    $redirect =
+        'https://' .
+        $_SERVER['HTTP_HOST'] .
+        $_SERVER['REQUEST_URI'];
+
+    header("Location: " . $redirect, true, 301);
+    exit;
 }
 
-function detectOS() {
-    $ua = strtolower($_SERVER['HTTP_USER_AGENT']);
-    if (strpos($ua, 'windows') !== false) return "Windows";
-    if (strpos($ua, 'android') !== false) return "Android";
-    if (strpos($ua, 'iphone') !== false) return "iPhone (iOS)";
-    if (strpos($ua, 'ipad') !== false) return "iPad (iOS)";
-    if (strpos($ua, 'mac') !== false) return "Mac OS";
-    if (strpos($ua, 'linux') !== false) return "Linux";
-    return "Unknown OS";
-}
+/* =====================================================
+   SECURITY HEADERS
+===================================================== */
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("Referrer-Policy: strict-origin");
+header("Permissions-Policy: geolocation=()");
+header("Cross-Origin-Opener-Policy: same-origin");
+header("Cross-Origin-Resource-Policy: same-origin");
+header("X-Permitted-Cross-Domain-Policies: none");
 
-function detectBrowser() {
-    $ua = $_SERVER['HTTP_USER_AGENT'];
-    if (strpos($ua, 'Chrome') !== false) return "Chrome";
-    if (strpos($ua, 'Firefox') !== false) return "Firefox";
-    if (strpos($ua, 'Safari') !== false) return "Safari";
-    if (strpos($ua, 'Edge') !== false) return "Edge";
-    return "Unknown Browser";
-}
+header(
+    "Strict-Transport-Security: max-age=31536000; includeSubDomains"
+);
+header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';");
 
-/* ---------------- PROCESS LOGIN ---------------- */
-$error = '';
+/* =====================================================
+   ERROR SETTINGS
+===================================================== */
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+/* =====================================================
+   SESSION SECURITY
+===================================================== */
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_httponly', 1);
 
-    $myusername = trim($_POST['myusername']);
-    $mypassword = trim($_POST['mypassword']);
-    $_SESSION['lang'] = $_POST['lang'];
-
-    $stmt = $con->prepare("SELECT * FROM s_user WHERE u_name = ? AND is_active = 1");
-    $stmt->bind_param("s", $myusername);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows == 1) {
-
-        $row = $result->fetch_assoc();
-        $userid = $row['u_id'];
-        $userrole = $row['role_id_fk'];
-        $district_id = $row['dist_id'];
-        $stored_password = $row['u_password'];
-
-        if (password_verify($mypassword, $stored_password) || $mypassword === $stored_password) {
-
-            /* ---------------- SESSION VARIABLES (CRITICAL) ---------------- */
-            session_regenerate_id(true);
-            $_SESSION['userid'] = $userid;
-            $_SESSION['u_name'] = $myusername;
-            $_SESSION['userrole'] = $userrole;
-            $_SESSION['urole'] = $userrole;              // REQUIRED for area-of-concern
-            $_SESSION['dist'] = $district_id;
-            $_SESSION['login_time'] = date('d M Y h:i A');
-auditLog(
-    $con,
-    'LOGIN_SUCCESS',
-    'Authentication',
-    'User logged in successfully with role '.$userrole
+ini_set(
+    'session.cookie_secure',
+    isset($_SERVER['HTTPS']) ? 1 : 0
 );
 
-            /* ---------------- LOG DEVICE ---------------- */
-            $logStmt = $con->prepare("
-                INSERT INTO login_log 
-                (user_id, device_type, os, browser, screen_size, ip_address, login_time) 
-                VALUES (?, ?, ?, ?, ?, ?, NOW())
-            ");
-            $deviceType = getDeviceType();
-            $os = detectOS();
-            $browser = detectBrowser();
-            $screen = $_POST['screen'] ?? '';
-            $ip = $_SERVER['REMOTE_ADDR'];
-            $logStmt->bind_param("isssss", $userid, $deviceType, $os, $browser, $screen, $ip);
-            $logStmt->execute();
+ini_set('session.use_strict_mode', 1);
+ini_set('session.cookie_samesite', 'Strict');
 
-            /* ---------------- ROLE BASED LOGIN LOGIC ---------------- */
-            if ($userrole == 1) {
-                $stmt2 = $con->prepare("
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
+
+//session_name("SAQSHISESSID");
+
+session_start();
+
+/* =====================================================
+   SESSION TIMEOUT
+===================================================== */
+$session_timeout = 1800;
+
+if (
+    isset($_SESSION['LAST_ACTIVITY']) &&
+    (time() - $_SESSION['LAST_ACTIVITY']) > $session_timeout
+) {
+
+    session_unset();
+    session_destroy();
+
+    header("Location: login.php");
+    exit;
+}
+
+$_SESSION['LAST_ACTIVITY'] = time();
+
+/* =====================================================
+   DATABASE
+===================================================== */
+require_once("assets/conn/db.php");
+
+/* =====================================================
+   AUDIT LOGGER
+===================================================== */
+if (file_exists("assets/helpers/audit_logger.php")) {
+    require_once("assets/helpers/audit_logger.php");
+}
+
+/* =====================================================
+   CSRF TOKEN
+===================================================== */
+if (empty($_SESSION['csrf_token'])) {
+
+    $_SESSION['csrf_token'] =
+        bin2hex(random_bytes(32));
+}
+
+/* =====================================================
+   HELPER FUNCTIONS
+===================================================== */
+
+function getClientIP()
+{
+    return $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+}
+
+function auditSafe(
+    $con,
+    $action,
+    $module,
+    $message,
+    $username = null
+) {
+
+    if (function_exists('auditLog')) {
+
+        auditLog(
+            $con,
+            $action,
+            $module,
+            $message,
+            null,
+            $username
+        );
+    }
+}
+
+function cleanInput($data)
+{
+    return trim(htmlspecialchars($data, ENT_QUOTES, 'UTF-8'));
+}
+
+
+$ip_address = getClientIP();
+
+$error = '';
+
+/* =====================================================
+   PROCESS LOGIN
+===================================================== */
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    /* =====================================================
+   CUSTOM CAPTCHA VALIDATION
+===================================================== */
+
+    $robotToken =
+        $_POST['robot_token'] ?? '';
+
+    if (
+        empty($robotToken) ||
+        !hash_equals(
+            $_SESSION['robot_token'],
+            $robotToken
+        )
+    ) {
+
+        $error =
+            "Please verify that you are not a robot.";
+    } else {
+
+        /* Regenerate token */
+        $_SESSION['robot_token'] =
+            bin2hex(random_bytes(32));
+    }
+    /* =====================================================
+       RANDOM DELAY
+    ===================================================== */
+    usleep(random_int(300000, 800000));
+
+    /* =====================================================
+       CSRF VALIDATION
+    ===================================================== */
+    if (
+        !isset($_POST['csrf_token']) ||
+        !hash_equals(
+            $_SESSION['csrf_token'],
+            $_POST['csrf_token']
+        )
+    ) {
+
+        http_response_code(403);
+        die("Invalid request");
+    }
+
+    /* =====================================================
+       INPUT VALIDATION
+    ===================================================== */
+    $myusername = cleanInput(
+        $_POST['myusername'] ?? ''
+    );
+
+    $mypassword = trim(
+        $_POST['mypassword'] ?? ''
+    );
+
+    $_SESSION['lang'] =
+        (int)($_POST['lang'] ?? 5);
+
+    if (
+        empty($myusername) ||
+        empty($mypassword)
+    ) {
+
+        $error = "Invalid username or password.";
+    } else {
+
+        /* =====================================================
+           CHECK FAILED LOGIN ATTEMPTS
+        ===================================================== */
+
+        $lockQuery = $con->prepare("
+            SELECT COUNT(*) AS total
+            FROM login_attempts
+            WHERE ip_address = ?
+            AND attempt_time > (NOW() - INTERVAL 15 MINUTE)
+            AND status = 'FAILED'
+        ");
+
+        $lockQuery->bind_param(
+            "s",
+            $ip_address
+        );
+
+        $lockQuery->execute();
+
+        $lockResult =
+            $lockQuery->get_result()->fetch_assoc();
+
+        if ($lockResult['total'] >= 5) {
+
+            http_response_code(429);
+
+            die("Too many failed login attempts. Try again after 15 minutes.");
+        }
+
+        /* =====================================================
+           USER FETCH
+        ===================================================== */
+
+        $stmt = $con->prepare("
+            SELECT
+                u_id,
+                u_name,
+                u_password,
+                role_id_fk,
+                dist_id,
+                fac_id_fk,
+                dept_id,
+                assessment_id,
+                is_active,
+                block_id
+            FROM s_user
+            WHERE u_name = ?
+            AND is_active = 1
+            LIMIT 1
+        ");
+
+        if (!$stmt) {
+
+            error_log($con->error);
+
+            die("Server error");
+        }
+
+        $stmt->bind_param(
+            "s",
+            $myusername
+        );
+
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        /* =====================================================
+           USER FOUND
+        ===================================================== */
+
+        if (
+            $result &&
+            $result->num_rows === 1
+        ) {
+
+            $row = $result->fetch_assoc();
+
+            $userid        = (int)$row['u_id'];
+            $userrole      = (int)$row['role_id_fk'];
+            $district_id   = (int)$row['dist_id'];
+            $stored_hash   = trim($row['u_password']);
+
+            $isValid = false;
+
+            /* =====================================================
+               PASSWORD VERIFY
+            ===================================================== */
+
+            if (
+                password_verify(
+                    $mypassword,
+                    $stored_hash
+                )
+            ) {
+
+                $isValid = true;
+
+                /* =====================================================
+                   PASSWORD REHASH
+                ===================================================== */
+
+                if (
+                    password_needs_rehash(
+                        $stored_hash,
+                        PASSWORD_DEFAULT
+                    )
+                ) {
+
+                    $newHash = password_hash(
+                        $mypassword,
+                        PASSWORD_DEFAULT
+                    );
+
+                    $rehash = $con->prepare("
+                        UPDATE s_user
+                        SET u_password = ?
+                        WHERE u_id = ?
+                    ");
+
+                    $rehash->bind_param(
+                        "si",
+                        $newHash,
+                        $userid
+                    );
+
+                    $rehash->execute();
+                }
+            }
+
+            /* =====================================================
+               LEGACY PASSWORD SUPPORT
+            ===================================================== */ elseif (
+                hash_equals(
+                    $stored_hash,
+                    $mypassword
+                )
+            ) {
+
+                $isValid = true;
+
+                $newHash = password_hash(
+                    $mypassword,
+                    PASSWORD_DEFAULT
+                );
+
+                $update = $con->prepare("
+                    UPDATE s_user
+                    SET u_password = ?
+                    WHERE u_id = ?
+                ");
+
+                $update->bind_param(
+                    "si",
+                    $newHash,
+                    $userid
+                );
+
+                $update->execute();
+            }
+
+            /* =====================================================
+               LOGIN SUCCESS
+            ===================================================== */
+
+            if ($isValid) {
+
+                /* =====================================================
+                   DELETE OLD FAILED ATTEMPTS
+                ===================================================== */
+
+                $clearAttempts = $con->prepare("
+                    DELETE FROM login_attempts
+                    WHERE ip_address = ?
+                ");
+
+                $clearAttempts->bind_param(
+                    "s",
+                    $ip_address
+                );
+
+                $clearAttempts->execute();
+
+                /* =====================================================
+                   SESSION REGENERATION
+                ===================================================== */
+
+                session_regenerate_id(true);
+
+                $_SESSION['userid']        = $userid;
+                $_SESSION['u_name']        = $myusername;
+                $_SESSION['userrole']      = $userrole;
+                $_SESSION['urole']         = $userrole;
+                $_SESSION['dist']          = $district_id;
+
+                $_SESSION['login_time'] =
+                    date('d M Y h:i A');
+
+                $_SESSION['ip'] =
+                    getClientIP();
+
+                $_SESSION['user_agent'] =
+                    hash(
+                        'sha256',
+                        $_SERVER['HTTP_USER_AGENT'] ?? ''
+                    );
+
+                /* =====================================================
+                   NEW CSRF TOKEN
+                ===================================================== */
+
+                $_SESSION['csrf_token'] =
+                    bin2hex(random_bytes(32));
+
+                /* =====================================================
+                   LOGIN SUCCESS LOG
+                ===================================================== */
+
+                $logSuccess = $con->prepare("
+                    INSERT INTO login_attempts
+                    (
+                        username,
+                        ip_address,
+                        attempt_time,
+                        status
+                    )
+                    VALUES (?, ?, NOW(), 'SUCCESS')
+                ");
+
+                $logSuccess->bind_param(
+                    "ss",
+                    $myusername,
+                    $ip_address
+                );
+
+                $logSuccess->execute();
+
+                auditSafe(
+                    $con,
+                    'LOGIN_SUCCESS',
+                    'Authentication',
+                    'User logged in successfully',
+                    $myusername
+                );
+
+                /* =====================================================
+                   ROLE REDIRECTION
+                ===================================================== */
+
+                switch ($userrole) {
+
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 6:
+
+                        $stmt2 = $con->prepare("
                     SELECT a.fac_id_fk, b.NIN_no, a.assessment_id, a.dist_id,
                            b.Health_facilty_type, b.fac_name, c.fac
                     FROM s_user AS a 
@@ -95,232 +492,335 @@ auditLog(
                     JOIN facilities_type AS c ON b.Health_facilty_type = c.fac_type_id
                     WHERE a.u_id = ? AND a.is_active = 1
                 ");
-                $stmt2->bind_param("i", $userid);
-                $stmt2->execute();
-                $data = $stmt2->get_result()->fetch_assoc();
+                        $stmt2->bind_param("i", $userid);
+                        $stmt2->execute();
+                        $data = $stmt2->get_result()->fetch_assoc();
 
-                $_SESSION['u_facilityid']   = $data['fac_id_fk'];
-                $_SESSION['f_type_id']      = $data['Health_facilty_type'];
-                $_SESSION['facilty_type']   = $data['Health_facilty_type'];  // Required!!
-                $_SESSION['assperiod']      = $data['assessment_id'];
-                $_SESSION['facname']        = $data['fac_name'];
-                $_SESSION['factypename']    = $data['fac'];
-                $_SESSION['factynin']       = $data['NIN_no'];
+                        $_SESSION['u_facilityid']   = $data['fac_id_fk'];
+                        $_SESSION['f_type_id']      = $data['Health_facilty_type'];
+                        $_SESSION['facilty_type']   = $data['Health_facilty_type'];  // Required!!
+                        $_SESSION['assperiod']      = $data['assessment_id'];
+                        $_SESSION['facname']        = $data['fac_name'];
+                        $_SESSION['factypename']    = $data['fac'];
+                        $_SESSION['factynin']       = $data['NIN_no'];
 
-                header("location:index.php");
-                exit;
-            }
+                        header("location:index.php");
+                        exit;
 
-            if ($userrole == 2) {
-                $stmt2 = $con->prepare("
-                    SELECT a.fac_id_fk, a.dept_id, a.assessment_id,
-                           b.Health_facilty_type, b.fac_name
-                    FROM s_user AS a 
-                    JOIN facilities AS b ON a.fac_id_fk = b.fac_id
-                    WHERE a.u_id = ? AND a.is_active = 1
-                ");
-                $stmt2->bind_param("i", $userid);
-                $stmt2->execute();
-                $data = $stmt2->get_result()->fetch_assoc();
+                    case 4:
 
-                $_SESSION['u_facilityid']   = $data['fac_id_fk'];
-                $_SESSION['dept_id1']       = $data['dept_id'];
-                $_SESSION['assperiod']      = $data['assessment_id'];
-                $_SESSION['f_type_id']      = $data['Health_facilty_type'];
-                $_SESSION['facilty_type']   = $data['Health_facilty_type']; // Required!!
-                $_SESSION['facname']        = $data['fac_name'];
-
-                header("location:index.php");
-                exit;
-            }
-
-            /* OTHER ROLES SAME AS BEFORE */
-            if ($userrole == 3) { header("location:index.php"); exit; }
-
-            if ($userrole == 4) {
-                $stmt2 = $con->prepare("
+                        $stmt2 = $con->prepare("
                     SELECT a.Dist_id, b.Dist_name 
                     FROM facilities AS a 
                     JOIN dist_master AS b ON a.dist_id = b.Dist_id 
                     WHERE a.Dist_id = (SELECT dist_id FROM s_user WHERE u_id = ?)
                 ");
-                $stmt2->bind_param("i", $userid);
-                $stmt2->execute();
-                $data = $stmt2->get_result()->fetch_assoc();
-                $_SESSION['div_id'] = $data['Dist_id'];
-                $_SESSION['div_name'] = $data['Dist_name'];
-                header("location:distdash.php");
-                exit;
-            }
+                        $stmt2->bind_param("i", $userid);
+                        $stmt2->execute();
+                        $data = $stmt2->get_result()->fetch_assoc();
+                        $_SESSION['div_id'] = $data['Dist_id'];
+                        $_SESSION['div_name'] = $data['Dist_name'];
+                        header("location:distdash.php");
+                        exit;
 
-            if ($userrole == 5) {
-                $stmt2 = $con->prepare("
+                    case 5:
+
+                        $stmt2 = $con->prepare("
                     SELECT a.division_id, b.division_name 
                     FROM facilities AS a 
                     JOIN division AS b ON a.division_id = b.iddivision 
                     WHERE a.division_id = (SELECT division_id FROM s_user WHERE u_id = ?)
                 ");
-                $stmt2->bind_param("i", $userid);
-                $stmt2->execute();
-                $data = $stmt2->get_result()->fetch_assoc();
-                $_SESSION['div_id'] = $data['division_id'];
-                $_SESSION['div_name'] = $data['division_name'];
-                header("location:regdash.php");
-                exit;
+                        $stmt2->bind_param("i", $userid);
+                        $stmt2->execute();
+                        $data = $stmt2->get_result()->fetch_assoc();
+                        $_SESSION['div_id'] = $data['division_id'];
+                        $_SESSION['div_name'] = $data['division_name'];
+                        header("location:regdash.php");
+                        exit;
+
+                    case 8:
+
+                        $_SESSION['block_id'] = $row['block_id'];
+                        $stmt2 = $con->prepare("SELECT block_name FROM block_master WHERE block_id = ?");
+                        $stmt2->bind_param("i", $_SESSION['block_id']);
+                        $stmt2->execute();
+                        $data = $stmt2->get_result()->fetch_assoc();
+                        $_SESSION['block_name'] = $data['block_name'];
+                        header("location:bdash.php");
+                        exit;
+
+                    case 9:
+
+                        $_SESSION['u_facilityid'] = 0;
+                        header("location:sdash.php");
+                        exit;
+
+                    default:
+
+                        session_destroy();
+
+                        die("Unauthorized role");
+                }
+            } else {
+
+                /* =====================================================
+                   FAILED LOGIN LOG
+                ===================================================== */
+
+                $failLog = $con->prepare("
+                    INSERT INTO login_attempts
+                    (
+                        username,
+                        ip_address,
+                        attempt_time,
+                        status
+                    )
+                    VALUES (?, ?, NOW(), 'FAILED')
+                ");
+
+                $failLog->bind_param(
+                    "ss",
+                    $myusername,
+                    $ip_address
+                );
+
+                $failLog->execute();
+
+                auditSafe(
+                    $con,
+                    'LOGIN_FAILED',
+                    'Authentication',
+                    'Invalid password',
+                    $myusername
+                );
+
+                $error =
+                    "Invalid username or password.";
             }
-
-            if ($userrole == 6) { header("location:index.php"); exit; }
-
-            if ($userrole == 8) {
-                $_SESSION['block_id'] = $row['block_id'];
-                $stmt2 = $con->prepare("SELECT block_name FROM block_master WHERE block_id = ?");
-                $stmt2->bind_param("i", $_SESSION['block_id']);
-                $stmt2->execute();
-                $data = $stmt2->get_result()->fetch_assoc();
-                $_SESSION['block_name'] = $data['block_name'];
-                header("location:bdash.php");
-                exit;
-            }
-
-            if ($userrole == 9) {
-                $_SESSION['u_facilityid'] = 0;
-                header("location:sdash.php");
-                exit;
-            }
-
         } else {
-            auditLog(
-    $con,
-    'LOGIN_FAILED',
-    'Authentication',
-    'Invalid password',
-    null,
-    $myusername
-);
 
-$error = "Invalid password. Please try again.";
+            /* =====================================================
+               INVALID USER
+            ===================================================== */
 
+            $failLog = $con->prepare("
+                INSERT INTO login_attempts
+                (
+                    username,
+                    ip_address,
+                    attempt_time,
+                    status
+                )
+                VALUES (?, ?, NOW(), 'FAILED')
+            ");
+
+            $failLog->bind_param(
+                "ss",
+                $myusername,
+                $ip_address
+            );
+
+            $failLog->execute();
+
+            auditSafe(
+                $con,
+                'LOGIN_FAILED',
+                'Authentication',
+                'Invalid username',
+                $myusername
+            );
+
+            $error =
+                "Invalid username or password.";
         }
-    } else {
-        auditLog(
-    $con,
-    'LOGIN_FAILED',
-    'Authentication',
-    'Invalid password',
-    null,
-    $myusername
-);
-
-$error = "Invalid Email or password. Please try again.";
-
     }
 }
+/* =====================================================
+   CUSTOM CHECKBOX CAPTCHA
+===================================================== */
+
+if (empty($_SESSION['robot_token'])) {
+
+    $_SESSION['robot_token'] =
+        bin2hex(random_bytes(32));
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <title>SaQshi</title>
+
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="assets/css/style.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>SaQshi</title>
+
+    <link
+        rel="stylesheet"
+        href="assets/css/style.css">
+
 </head>
-<style>
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
 
-        .logo h1 {
-            font-size: 48px;
-            font-weight: 600;
-            letter-spacing: 5px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .logo .sa,
-        .logo .shi {
-            color: #00c6ff;
-        }
-
-        .logo .q-img {
-            background: radial-gradient(circle, rgb(255, 0, 0) 0%, rgb(235, 105, 6) 70%);
-            padding: 12px;
-            border-radius: 50%;
-            box-shadow: 0 0 30px rgba(234, 231, 5, 0.94);
-            animation: glow 3s infinite ease-in-out;
-        }
-
-        .logo .q-img img {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            mix-blend-mode: screen;
-        }
-
-        @keyframes glow {
-
-            0%,
-            100% {
-                box-shadow: 0 0 15px rgba(244, 240, 4, 0.97);
-            }
-
-            50% {
-                box-shadow: 0 0 50px rgb(219, 93, 9);
-            }
-        }
-    </style>
 <body>
 
-<?php if (!empty($error)): ?>
-    <div class="alert alert-danger text-center"><?= htmlspecialchars($error) ?></div>
-<?php endif; ?>
+    <div class="auth-wrapper">
 
-<div class="auth-wrapper">
-    <div class="auth-content text-center">
+        <div class="auth-content text-center">
 
-        <div class="card borderless">
-            <div class="row align-items-center">
-                <div class="col-md-12">
-                    <form method="POST">
+            <div class="card borderless">
 
-                        <input type="hidden" name="screen" id="screen">
+                <div class="row align-items-center">
 
-                        <div class="card-body">
-                            <div class="logo">
-                                <h3>
-                                    <span class="sa">Sa</span>
-                                    <span class="q-img"><img src="assets/img/n.png" alt="Q"></span>
-                                    <span class="shi">shi</span>
-                                </h3>
+                    <div class="col-md-12">
+
+                        <?php if (!empty($error)): ?>
+
+                            <div class="alert alert-danger">
+
+                                <?= htmlspecialchars(
+                                    $error,
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ); ?>
+
                             </div>
 
-                            <hr>
+                        <?php endif; ?>
 
-                            <input type="text" name="myusername" placeholder="Username" required class="form-control mb-3">
-                            <input type="password" name="mypassword" placeholder="Password" required class="form-control mb-4">
+                        <form
+                            method="POST"
+                            autocomplete="off">
 
-                            <select name="lang" class="form-control mb-4">
-                                <option value="5">English</option>
-                            </select>
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
 
-                            <button class="btn btn-primary btn-block mb-4" type="submit">Login</button>
-                            <p class="text-muted mb-0"><?= date('Y') ?> Piramal Swasthya. All Rights Reserved.</p>
-                        </div>
+                            <div class="card-body">
 
-                    </form>
+                                <h3>
+                                    SaQshi
+                                </h3>
+
+                                <hr>
+
+                                <input
+                                    type="text"
+                                    name="myusername"
+                                    class="form-control mb-3"
+                                    placeholder="Username"
+                                    required
+                                    maxlength="100"
+                                    autocomplete="off">
+
+                                <input
+                                    type="password"
+                                    name="mypassword"
+                                    class="form-control mb-4"
+                                    placeholder="Password"
+                                    required
+                                    maxlength="100"
+                                    autocomplete="new-password">
+
+                                <select
+                                    name="lang"
+                                    class="form-control mb-4">
+
+                                    <option value="5">
+                                        English
+                                    </option>
+
+                                </select>
+                                <div
+                                    class="form-group mb-4"
+                                    style="
+        border:1px solid #dcdcdc;
+        padding:15px;
+        border-radius:5px;
+        background:#fafafa;
+    ">
+
+                                    <label
+                                        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            cursor:pointer;
+            margin:0;
+        ">
+
+                                        <input
+                                            type="checkbox"
+                                            id="robotCheck"
+                                            required>
+
+                                        <span>
+                                            I am not a robot
+                                        </span>
+
+                                    </label>
+
+                                    <input
+                                        type="hidden"
+                                        name="robot_token"
+                                        id="robot_token">
+
+                                </div>
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary btn-block mb-4">
+
+                                    Login
+
+                                </button>
+
+                                <p class="text-muted mb-0">
+
+                                    <?= date('Y'); ?>
+
+                                    Piramal Swasthya.
+                                    All Rights Reserved.
+
+                                </p>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
                 </div>
+
             </div>
+
         </div>
 
     </div>
-</div>
+    <script>
+        document
+            .getElementById('robotCheck')
+            .addEventListener('change', function() {
 
-<script>
-document.getElementById("screen").value = screen.width + "x" + screen.height;
-</script>
+                if (this.checked) {
 
+                    document
+                        .getElementById('robot_token')
+                        .value =
+                        '<?= $_SESSION['robot_token']; ?>';
+
+                } else {
+
+                    document
+                        .getElementById('robot_token')
+                        .value = '';
+                }
+            });
+    </script>
 </body>
+
 </html>

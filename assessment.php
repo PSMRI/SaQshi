@@ -10,6 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['department_id'])) {
 }
 
 include("assets/head/h.php");
+//include("assets/conn/db.php");
 $showDeptModal = empty($_SESSION['dept_id1']) || $_SESSION['dept_id1'] == 0;
 $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
 /* -----------------------------------------
