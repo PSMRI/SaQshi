@@ -84,6 +84,12 @@ $dept_name = $_SESSION['dept_name1'] ?? 0;  // For showing in header
 
       <div class="card-body py-3">
         <form method="post" action="">
+              <input
+        type="hidden"
+        name="csrf_token"
+        value="<?= e($_SESSION['csrf_token']); ?>"
+    >
+
           <div class="row g-3 mb-2">
             <div class="col-md-6">
               <label class="form-label fw-semibold text-primary small">Name of Assessor*</label>
@@ -151,6 +157,8 @@ $dept_name = $_SESSION['dept_name1'] ?? 0;  // For showing in header
 <div id="departmentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="departmentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <form method="post">
+
+
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="departmentModalLabel">Select Department</h5>

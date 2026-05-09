@@ -1,49 +1,21 @@
 <?php
 /**
  * =====================================================
- * SaQshi Secure Session Management
+ * SaQshi Secure Session Manager
  * session.php
  * Production + Security Audit Ready
  * =====================================================
  */
 
-require_once __DIR__ . '/db.php';
-
 /* =====================================================
-   SECURITY HEADERS
+   PREVENT MULTIPLE LOAD
 ===================================================== */
 
-header("X-Frame-Options: DENY");
+if (defined('SAQSHI_SESSION_LOADED')) {
+    return;
+}
 
-header("X-Content-Type-Options: nosniff");
-
-header("Referrer-Policy: strict-origin");
-
-header("Permissions-Policy: geolocation=()");
-
-header("Cross-Origin-Opener-Policy: same-origin");
-
-header("Cross-Origin-Resource-Policy: same-origin");
-
-header("X-Permitted-Cross-Domain-Policies: none");
-
-/*
-=====================================================
- PRACTICAL CSP FOR SAQSHI
-=====================================================
-*/
-
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self';");
-
-/* =====================================================
-   DISABLE CACHE
-===================================================== */
-
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-
-header("Pragma: no-cache");
-
-header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
+define('SAQSHI_SESSION_LOADED', true);
 
 /* =====================================================
    SESSION SECURITY SETTINGS
@@ -53,30 +25,37 @@ ini_set('session.use_only_cookies', 1);
 
 ini_set('session.cookie_httponly', 1);
 
-ini_set(
-    'session.cookie_secure',
-    isset($_SERVER['HTTPS']) ? 1 : 0
+$isHttps =
+(
+    !empty($_SERVER['HTTPS']) &&
+    $_SERVER['HTTPS'] !== 'off'
+)
+||
+(
+    ($_SERVER['SERVER_PORT'] ?? 80) == 443
 );
 
 ini_set('session.use_strict_mode', 1);
 
-ini_set('session.cookie_samesite', 'Lax');
+ini_set(
+    'session.cookie_samesite',
+    'Strict'
+);
 
 /* =====================================================
-   SESSION COOKIE PARAMS
+   SESSION COOKIE CONFIG
 ===================================================== */
 
 session_set_cookie_params([
     'lifetime' => 0,
-    'path'     => '/',
-    'secure'   => isset($_SERVER['HTTPS']),
+    'path' => '/',
+    'secure' => isset($_SERVER['HTTPS']),
     'httponly' => true,
-    'samesite' => 'Lax'
+    'samesite' => 'Strict'
 ]);
 
 /* =====================================================
-   IMPORTANT:
-   MUST MATCH login.php
+   SESSION NAME
 ===================================================== */
 
 //session_name("SAQSHISESSID");
@@ -85,23 +64,52 @@ session_set_cookie_params([
    REDIS SESSION STORAGE
 ===================================================== */
 
-ini_set('session.save_handler', 'redis');
+ini_set(
+    'session.save_handler',
+    'redis'
+);
 
 ini_set(
     'session.save_path',
     'tcp://127.0.0.1:6379?database=2&prefix=saqshi_sess_&timeout=2&read_timeout=2'
 );
+ini_set(
+    'session.gc_maxlifetime',
+    1800
+);
 
 /* =====================================================
-   START SESSION SAFELY
+   START SESSION
 ===================================================== */
 
-if (!@session_start()) {
+if (
+    session_status() === PHP_SESSION_NONE
+) {
 
-    ini_set('session.save_handler', 'files');
+    if (!@session_start()) {
 
-    session_start();
+        /*
+        =====================================================
+        FALLBACK TO FILE SESSION
+        =====================================================
+        */
+
+        ini_set(
+            'session.save_handler',
+            'files'
+        );
+
+        session_start();
+    }
 }
+
+/* =====================================================
+   DATABASE
+===================================================== */
+
+require_once(
+    __DIR__ . '/db.php'
+);
 
 /* =====================================================
    AUTH CHECK
@@ -116,7 +124,9 @@ if (
 
     session_destroy();
 
-    header("Location: login.php");
+    header(
+        "Location: login.php"
+    );
 
     exit;
 }
@@ -130,7 +140,8 @@ $SESSION_TIMEOUT = 1800;
 if (
     isset($_SESSION['LAST_ACTIVITY']) &&
     (
-        time() - $_SESSION['LAST_ACTIVITY']
+        time() -
+        $_SESSION['LAST_ACTIVITY']
     ) > $SESSION_TIMEOUT
 ) {
 
@@ -138,7 +149,9 @@ if (
 
     session_destroy();
 
-    header("Location: login.php");
+    header(
+        "Location: login.php?timeout=1"
+    );
 
     exit;
 }
@@ -146,25 +159,22 @@ if (
 $_SESSION['LAST_ACTIVITY'] = time();
 
 /* =====================================================
-   SESSION FINGERPRINT VALIDATION
+   SESSION FINGERPRINT
 ===================================================== */
 
-/*
-   Prevents:
-   - Session Hijacking
-   - Cookie Theft
-*/
-
 $currentIP =
-    $_SERVER['REMOTE_ADDR'] ?? '';
+    $_SERVER['REMOTE_ADDR']
+    ?? '';
 
-$currentUA = hash(
-    'sha256',
-    $_SERVER['HTTP_USER_AGENT'] ?? ''
-);
+$currentUA =
+    hash(
+        'sha256',
+        $_SERVER['HTTP_USER_AGENT']
+        ?? ''
+    );
 
 /* =====================================================
-   VALIDATE USER IP
+   VALIDATE IP
 ===================================================== */
 
 if (
@@ -176,7 +186,9 @@ if (
 
     session_destroy();
 
-    header("Location: login.php");
+    header(
+        "Location: login.php?security=ip"
+    );
 
     exit;
 }
@@ -187,20 +199,23 @@ if (
 
 if (
     !empty($_SESSION['user_agent']) &&
-    $_SESSION['user_agent'] !== $currentUA
+    $_SESSION['user_agent']
+    !== $currentUA
 ) {
 
     session_unset();
 
     session_destroy();
 
-    header("Location: login.php");
+    header(
+        "Location: login.php?security=ua"
+    );
 
     exit;
 }
 
 /* =====================================================
-   VERIFY USER EXISTS IN DATABASE
+   VERIFY USER EXISTS
 ===================================================== */
 
 $sql = "
@@ -233,7 +248,9 @@ if (!$stmt) {
 
     session_destroy();
 
-    header("Location: login.php");
+    header(
+        "Location: login.php"
+    );
 
     exit;
 }
@@ -253,22 +270,26 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 /* =====================================================
-   INVALID USER / SESSION TAMPERING
+   INVALID SESSION USER
 ===================================================== */
 
-if ($result->num_rows !== 1) {
+if (
+    $result->num_rows !== 1
+) {
 
     session_unset();
 
     session_destroy();
 
-    header("Location: login.php");
+    header(
+        "Location: login.php"
+    );
 
     exit;
 }
 
 /* =====================================================
-   VALID AUTHENTICATED USER
+   VALID USER
 ===================================================== */
 
 $userData =
@@ -289,23 +310,15 @@ $stmt->close();
    PERIODIC SESSION REGENERATION
 ===================================================== */
 
-/*
-   Prevents session fixation
-*/
-
 if (
     empty($_SESSION['session_regenerated'])
 ) {
 
     session_regenerate_id(true);
 
-    $_SESSION['session_regenerated'] =
-        time();
+    $_SESSION['session_regenerated']
+        = time();
 }
-
-/*
-   Regenerate every 15 minutes
-*/
 
 elseif (
     (
@@ -316,43 +329,11 @@ elseif (
 
     session_regenerate_id(true);
 
-    $_SESSION['session_regenerated'] =
-        time();
+    $_SESSION['session_regenerated']
+        = time();
 }
 
 /* =====================================================
-   OPTIONAL:
-   ROLE AUTHORIZATION HELPER
+   SESSION READY
 ===================================================== */
-
-function requireRole($roles = [])
-{
-    if (
-        empty($_SESSION['userrole']) ||
-        !in_array(
-            $_SESSION['userrole'],
-            $roles
-        )
-    ) {
-
-        http_response_code(403);
-
-        exit("Unauthorized Access");
-    }
-}
-
-/* =====================================================
-   OPTIONAL:
-   SAFE REDIRECT HELPER
-===================================================== */
-
-function safeRedirect($url)
-{
-    header("Location: " . $url);
-
-    exit;
-}
-
-/* =====================================================
-   SESSION VALID BEYOND THIS POINT
-===================================================== */
+?>

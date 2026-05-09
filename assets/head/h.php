@@ -1,15 +1,14 @@
-
 <?php
 /* =========================================================
    GLOBAL ERROR & LOG CONFIG (SaQshi)
 ========================================================= */
 
 // --- Error visibility ---
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
+ini_set('display_errors', 0);
 
-// --- Logging ---
-ini_set('log_errors', '1');
+ini_set('display_startup_errors', 0);
+
+ini_set('log_errors', 1);
 ini_set('error_log', 'C:/logs/php_errors.log');
 
 // --- Error levels ---
@@ -18,30 +17,66 @@ error_reporting(E_ALL & ~E_DEPRECATED);
 
 // --- Catch fatal errors (500-safe) ---
 register_shutdown_function(function () {
-    $error = error_get_last();
-    if ($error !== null) {
-        error_log("FATAL ERROR:\n" . print_r($error, true));
-    }
+	$error = error_get_last();
+	if ($error !== null) {
+		error_log("FATAL ERROR:\n" . print_r($error, true));
+	}
 });
 
 // --- Catch uncaught exceptions ---
 set_exception_handler(function ($e) {
-    error_log("UNCAUGHT EXCEPTION: " . $e->getMessage());
-    error_log($e->getTraceAsString());
+	error_log("UNCAUGHT EXCEPTION: " . $e->getMessage());
+	error_log($e->getTraceAsString());
 
-    if (!headers_sent()) {
-        http_response_code(500);
-    }
-    exit;
+	if (!headers_sent()) {
+		http_response_code(500);
+	}
+	exit;
 });
+?>
+
+<?php
+
+/**
+ * =====================================================
+ * Global Header Include
+ * h.php
+ * =====================================================
+ */
+
+/* =====================================================
+   SESSION + AUTH
+===================================================== */
+
+require_once(
+	__DIR__ . "/../../assets/conn/session.php"
+);
+
+/* =====================================================
+   SECURITY LAYER
+===================================================== */
+
+require_once(
+	__DIR__ . "/../../assets/security/security.php"
+);
+
+/* =====================================================
+   AUDIT LOGGER
+===================================================== */
+
+if (
+	file_exists(
+		__DIR__ . "/../../assets/helpers/audit_logger.php"
+	)
+) {
+
+	require_once(
+		__DIR__ . "/../../assets/helpers/audit_logger.php"
+	);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
-	
-<?php include(__DIR__ . "/../../assets/conn/db.php");
-include(__DIR__ . "/../../assets/conn/session.php");
-include(__DIR__ . "/../../assets/helpers/audit_logger.php");
-?>
 
 <head>
 	<title>SAQSHI</title>
@@ -51,6 +86,7 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 	<meta name="description" content="" />
 	<meta name="keywords" content="">
 	<meta name="author" content="Phoenixcoded" />
+	
 	<!-- Favicon icon -->
 	<link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 	<script src="assets/js/plugins/min.js"></script>
@@ -181,7 +217,7 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 									<li><a href="anxc.php">Anexure C for LaQshya</a></li>
 
 								<?php
-								}?>
+								} ?>
 							</ul>
 						</li>
 
@@ -225,20 +261,20 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 
 					<?php } elseif ($user_role == 4) { ?>
 						<li class="nav-item pcoded-hasmenu">
-					<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Dashboard</span></a>
-					<ul class="pcoded-submenu">
+							<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Dashboard</span></a>
+							<ul class="pcoded-submenu">
 
 
-						<li><a href="distdash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">NQAS</span></a></li>
-						<li><a href="distmusdash.php"> <span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">MusQan</span></a></li>
-						<li><a href="distlaxydash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">LaQshya</span></a></li>
+								<li><a href="distdash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">NQAS</span></a></li>
+								<li><a href="distmusdash.php"> <span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">MusQan</span></a></li>
+								<li><a href="distlaxydash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">LaQshya</span></a></li>
 
 
 
-					</ul>
+							</ul>
 
-				</li>
-						
+						</li>
+
 						<li class="nav-item pcoded-menu-caption">
 							<label>Resources</label>
 						</li>
@@ -410,14 +446,14 @@ include(__DIR__ . "/../../assets/helpers/audit_logger.php");
 			<ul class="navbar-nav ml-auto">
 				<li>
 					<?php
-$facility_id = (int)($_SESSION['u_facilityid'] ?? 0);
+					$facility_id = (int)($_SESSION['u_facilityid'] ?? 0);
 
-/* ============================================================
+					/* ============================================================
    FETCH LATEST 5 UNREAD ADMIN NOTIFICATIONS
    (DIRECT + BROADCAST)
 ============================================================ */
 
-$notif_query = "
+					$notif_query = "
     (
         -- Direct admin → facility
         SELECT message_text, message_date
@@ -444,13 +480,13 @@ $notif_query = "
     LIMIT 5
 ";
 
-$notif_result = mysqli_query($con, $notif_query);
+					$notif_result = mysqli_query($con, $notif_query);
 
-/* ============================================================
+					/* ============================================================
    BADGE COUNT (TOTAL UNREAD)
 ============================================================ */
 
-$count_query = "
+					$count_query = "
     SELECT
     (
         -- Direct admin messages
@@ -475,10 +511,10 @@ $count_query = "
     ) AS cnt
 ";
 
-$count_result = mysqli_query($con, $count_query);
-$count_row    = mysqli_fetch_assoc($count_result);
-$notif_count  = (int)$count_row['cnt'];
-?>
+					$count_result = mysqli_query($con, $count_query);
+					$count_row    = mysqli_fetch_assoc($count_result);
+					$notif_count  = (int)$count_row['cnt'];
+					?>
 
 
 					<div class="dropdown">

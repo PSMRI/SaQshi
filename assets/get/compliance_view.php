@@ -60,19 +60,26 @@ $pbar = ($progress < 34) ? "bg-danger" : (($progress < 67) ? "bg-warning" : "bg-
 ?>
 
 <style>
-.falling-emoji {
-    position: fixed;
-    top: -20px;
-    font-size: 40px;
-    animation: fall 2.2s linear forwards;
-    z-index: 5000;
-    pointer-events: none;
-}
+    .falling-emoji {
+        position: fixed;
+        top: -20px;
+        font-size: 40px;
+        animation: fall 2.2s linear forwards;
+        z-index: 5000;
+        pointer-events: none;
+    }
 
-@keyframes fall {
-    from { transform: translateY(0); opacity: 1; }
-    to   { transform: translateY(100vh); opacity: 0; }
-}
+    @keyframes fall {
+        from {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateY(100vh);
+            opacity: 0;
+        }
+    }
 </style>
 
 <div class="card shadow-lg border-0 mb-4" style="border-left: 4px solid #0d6efd;">
@@ -90,7 +97,7 @@ $pbar = ($progress < 34) ? "bg-danger" : (($progress < 67) ? "bg-warning" : "bg-
 
             <div class="progress" style="height: 12px;">
                 <div class="progress-bar progress-bar-striped progress-bar-animated <?= $pbar ?>"
-                     style="width: <?= $progress ?>%;">
+                    style="width: <?= $progress ?>%;">
                 </div>
             </div>
         </div>
@@ -171,30 +178,30 @@ $pbar = ($progress < 34) ? "bg-danger" : (($progress < 67) ? "bg-warning" : "bg-
 
             <input type="hidden" name="csqa_id" value="<?= $csqa_id ?>">
 
-           <div class="d-flex gap-3 justify-content-center my-3">
+            <div class="d-flex gap-3 justify-content-center my-3">
 
-    <!-- 0 -->
-    <label class="card text-center bg-danger text-white p-2 shadow-sm"
-           onclick="dropEmoji(0)" style="width:90px; cursor:pointer;">
-        <input type="radio" name="f" value="0" <?= ($exists === 0) ? "checked" : "" ?>>
-        <div class="fw-bold">0</div>
-    </label>
+                <!-- 0 -->
+                <label class="card text-center bg-danger text-white p-2 shadow-sm"
+                    onclick="dropEmoji(0)" style="width:90px; cursor:pointer;">
+                    <input type="radio" name="f" value="0" <?= ($exists === 0) ? "checked" : "" ?>>
+                    <div class="fw-bold">0</div>
+                </label>
 
-    <!-- 1 -->
-    <label class="card text-center bg-warning text-white p-2 shadow-sm"
-           onclick="dropEmoji(1)" style="width:90px; cursor:pointer;">
-        <input type="radio" name="f" value="1" <?= ($exists === 1) ? "checked" : "" ?>>
-        <div class="fw-bold">1</div>
-    </label>
+                <!-- 1 -->
+                <label class="card text-center bg-warning text-white p-2 shadow-sm"
+                    onclick="dropEmoji(1)" style="width:90px; cursor:pointer;">
+                    <input type="radio" name="f" value="1" <?= ($exists === 1) ? "checked" : "" ?>>
+                    <div class="fw-bold">1</div>
+                </label>
 
-    <!-- 2 -->
-    <label class="card text-center bg-success text-white p-2 shadow-sm"
-           onclick="dropEmoji(2)" style="width:90px; cursor:pointer;">
-        <input type="radio" name="f" value="2" <?= ($exists === 2) ? "checked" : "" ?>>
-        <div class="fw-bold">2</div>
-    </label>
+                <!-- 2 -->
+                <label class="card text-center bg-success text-white p-2 shadow-sm"
+                    onclick="dropEmoji(2)" style="width:90px; cursor:pointer;">
+                    <input type="radio" name="f" value="2" <?= ($exists === 2) ? "checked" : "" ?>>
+                    <div class="fw-bold">2</div>
+                </label>
 
-</div>
+            </div>
 
 
             <!-- MESSAGE -->
@@ -230,17 +237,21 @@ $pbar = ($progress < 34) ? "bg-danger" : (($progress < 67) ? "bg-warning" : "bg-
 </div>
 
 <script>
-function dropEmoji(val) {
-    const map = { 0: "😞", 1: "🙂", 2: "🎉" };
+    function dropEmoji(val) {
+        const map = {
+            0: "😞",
+            1: "🙂",
+            2: "🎉"
+        };
 
-    const emoji = document.createElement("div");
-    emoji.className = "falling-emoji";
-    emoji.innerText = map[val];
+        const emoji = document.createElement("div");
+        emoji.className = "falling-emoji";
+        emoji.innerText = map[val];
 
-    emoji.style.left = (Math.random() * 80 + 10) + "vw";
+        emoji.style.left = (Math.random() * 80 + 10) + "vw";
 
-    document.body.appendChild(emoji);
+        document.body.appendChild(emoji);
 
-    setTimeout(() => emoji.remove(), 2200);
-}
+        setTimeout(() => emoji.remove(), 2200);
+    }
 </script>
