@@ -10,6 +10,11 @@
         <div class="card">
             <div class="card-body">
                 <form method="post">
+                             <input
+        type="hidden"
+        name="csrf_token"
+        value="<?= e($_SESSION['csrf_token']); ?>"
+    >
                     <div class="row align-items-end">
                         <div class="col-auto">
                             <label for="date1" class="form-label">Select Month</label>
