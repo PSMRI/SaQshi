@@ -1,19 +1,13 @@
 <?php
 include("assets/head/h.php");
 include("assets/conn/db.php");
-$dhTotal = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS cnt FROM facilities WHERE Health_facilty_type = 2"))['cnt'];
-$sdhTotal = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS cnt FROM facilities WHERE Health_facilty_type = 10"))['cnt'];
+$dhTotal = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) AS cnt FROM facilities WHERE Health_facilty_type = 8"))['cnt'];
+
 
 $dhMusqanCount = mysqli_fetch_assoc(mysqli_query($con, "
     SELECT COUNT(DISTINCT facid) AS cnt 
     FROM department_wise_state_dash 
-    WHERE fac_dept_id_fk IN (5,6,7,23) AND Health_facilty_type = 2
-"))['cnt'];
-
-$sdhMusqanCount = mysqli_fetch_assoc(mysqli_query($con, "
-    SELECT COUNT(DISTINCT facid) AS cnt 
-    FROM department_wise_state_dash 
-    WHERE fac_dept_id_fk IN (5,6,7,23) AND Health_facilty_type = 10
+    WHERE fac_dept_id_fk IN (42) AND Health_facilty_type = 8
 "))['cnt'];
 
 $query = "
@@ -34,8 +28,8 @@ $query = "
         SUM(total_marks) AS total_marks,
         ROUND(AVG(percentage), 2) AS avg_percentage
     FROM department_wise_state_dash
-    WHERE fac_dept_id_fk IN (5,6,7,23)
-      AND Health_facilty_type IN (2, 10)
+    WHERE fac_dept_id_fk IN (42)
+      AND Health_facilty_type IN (8)
     GROUP BY facid, ass_name, Health_facilty_type
 ";
 $result = mysqli_query($con, $query);
@@ -43,8 +37,7 @@ $dhData = [];
 $sdhData = [];
 
 while ($row = mysqli_fetch_assoc($result)) {
-    if ($row['Health_facilty_type'] == 2) $dhData[] = $row;
-    elseif ($row['Health_facilty_type'] == 10) $sdhData[] = $row;
+    if ($row['Health_facilty_type'] == 8) $dhData[] = $row;    
 }
 ?>
 
@@ -53,24 +46,15 @@ while ($row = mysqli_fetch_assoc($result)) {
         <div class="pcoded-content">
        
         <div class="row">
-            <div class="col-md-6">
+            <div class="col">
                 <div class="card text-white bg-primary" style="cursor:pointer;" onclick="showReport('dh')">
                     <div class="card-body">
-                        <h5 class="card-title">District Hospitals (DH)</h5>
-                        <p>MusQan: <strong><?= $dhMusqanCount ?></strong> / <strong><?= $dhTotal ?></strong></p>
+                        <h5 class="card-title">AAM Sub centers</h5>
+                        <p>Kayakalp: <strong><?= $dhMusqanCount ?></strong> / <strong><?= $dhTotal ?></strong></p>
                         <p>Click to view compliance report.</p>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card text-white bg-success" style="cursor:pointer;" onclick="showReport('sdh')">
-                    <div class="card-body">
-                        <h5 class="card-title">Sub-Divisional Hospitals (SDH)</h5>
-                        <p>MusQan: <strong><?= $sdhMusqanCount ?></strong> / <strong><?= $sdhTotal ?></strong></p>
-                        <p>Click to view compliance report.</p>
-                    </div>
-                </div>
-            </div>
+            </div>          
         </div>
 
         <div class="row mt-3" id="report-section" style="display:none;">
@@ -78,7 +62,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 id="report-title" class="text-primary">MusQan Report</h5>
+                            <h5 id="report-title" class="text-primary">Kayakalp Report</h5>
                             <button class="btn btn-sm btn-outline-secondary" onclick="downloadExcel()">⬇ Export to Excel</button>
                         </div>
                         <div class="table-responsive">
@@ -109,22 +93,14 @@ while ($row = mysqli_fetch_assoc($result)) {
         </div>
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="card mt-4">
                     <div class="card-body">
-                        <h5 class="card-title">DH Facility-wise Compliance</h5>
+                        <h5 class="card-title">AAM Facility-wise Compliance</h5>
                         <canvas id="dhChart"></canvas>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card mt-4">
-                    <div class="card-body">
-                        <h5 class="card-title">SDH Facility-wise Compliance</h5>
-                        <canvas id="sdhChart"></canvas>
-                    </div>
-                </div>
-            </div>
+            </div>         
         </div>
 
     </div>
@@ -145,7 +121,7 @@ let currentData = [];
 
 function showReport(type) {
     currentData = type === 'dh' ? dhData : sdhData;
-    const title = type === 'dh' ? "District Hospital (DH) Report" : "Sub-Divisional Hospital (SDH) Report";
+    const title = type === 'dh' ? "AAM Sub centers Report" : "Sub-Divisional Hospital (SDH) Report";
 
     if ($.fn.DataTable.isDataTable('#report-table')) {
         $('#report-table').DataTable().clear().destroy();
@@ -187,7 +163,7 @@ function showReport(type) {
 }
 
 function downloadExcel() {
-    if (!currentData.length) return alert("No data to export. Please select DH or SDH.");
+    if (!currentData.length) return alert("No data to export.");
     const headers = [
         "Facility ID", "District", "Block", "Facility", "Assessment",
         "Zero", "One", "Two", "Non-Compliant", "Total Checks",
@@ -201,7 +177,7 @@ function downloadExcel() {
     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "MusQan Report");
-    XLSX.writeFile(workbook, "MusQan_Report.xlsx");
+    XLSX.writeFile(workbook, "Kayakalp_Report.xlsx");
 }
 
 function getBarColors(values) {

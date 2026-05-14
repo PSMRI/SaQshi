@@ -227,7 +227,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 						<li><a href="sdash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">NQAS</span></a></li>
 						<li><a href="musdash.php"> <span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">MusQan</span></a></li>
 						<li><a href="laxydash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">LaQshya</span></a></li>
-
+<li><a href="kayadash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Kayakalp</span></a></li>
 
 
 					</ul>
