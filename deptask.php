@@ -76,7 +76,11 @@ if (!empty($_SESSION['assperiod'])) {
                         ?>
 
                         <form method="post" action="assets/get/create_assessment.php">
-
+<input
+        type="hidden"
+        name="csrf_token"
+        value="<?= e($_SESSION['csrf_token']); ?>"
+    >
                             <div class="row g-2 align-items-end">
 
                                 <!-- Name -->
@@ -146,7 +150,11 @@ if (!empty($_SESSION['assperiod'])) {
 
                         <form method="POST" action="">
                             <label class="fw-bold small">Switch Assessment Cycle</label>
-
+<input
+        type="hidden"
+        name="csrf_token"
+        value="<?= e($_SESSION['csrf_token']); ?>"
+    >
                             <select class="form-control form-control-sm mb-2" id="assis" name="assis" required>
                                 <option value="">-- Select --</option>
                                 <?php
@@ -450,6 +458,11 @@ $ac->close();
                                     </span>
                                 <?php else: ?>
                                     <form method="POST" class="d-inline">
+                                        <input
+        type="hidden"
+        name="csrf_token"
+        value="<?= e($_SESSION['csrf_token']); ?>"
+    >
                                         <input type="hidden" name="disable_department_id" value="<?= $deptId ?>">
                                         <button class="btn btn-sm btn-danger">Disable</button>
                                     </form>
@@ -463,6 +476,11 @@ $ac->close();
                                     </button>
                                 <?php else: ?>
                                     <form method="POST" class="d-inline">
+                                        <input
+        type="hidden"
+        name="csrf_token"
+        value="<?= e($_SESSION['csrf_token']); ?>"
+    >
                                         <input type="hidden" name="activate_department_id" value="<?= $deptId ?>">
                                         <button class="btn btn-sm btn-primary">Activate</button>
                                     </form>

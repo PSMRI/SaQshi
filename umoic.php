@@ -43,6 +43,7 @@ function clean_sp_buffers($con) {
     FILTER FORM (FIXED ACTION)
 =========================== -->
 <form method="post" action="<?= $_SERVER['PHP_SELF']; ?>">
+    <?= csrf(); ?>
     <div class="form-group row align-items-end">
 
         <div class="col-auto">
@@ -242,6 +243,7 @@ $(document).ready(function () {
 <div id="departmentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="departmentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <form method="post">
+            <?= csrf(); ?>
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="departmentModalLabel">

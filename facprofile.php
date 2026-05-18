@@ -447,7 +447,7 @@ unset($_SESSION['active_tab']); // clear flag
                 ======================= -->
                 <div id="editMode" style="display:none;">
                   <form method="POST">
-
+<?= csrf(); ?>
                     <input type="hidden" name="fac_id" value="<?= $fac_id ?>">
 
                     <div class="form-row">
@@ -557,7 +557,7 @@ unset($_SESSION['active_tab']); // clear flag
               <div class="card-body">
 
                 <form method="POST">
-
+<?= csrf(); ?>
                   <div class="form-row">
 
                     <div class="form-group col-md-4">

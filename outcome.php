@@ -34,6 +34,7 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
         <div class="card">
             <div class="card-body">
                 <form method="post">
+                    <?= csrf(); ?>
                     <div class="row align-items-end">
                         <div class="col-auto">
                             <label class="form-label">Select Month</label>
@@ -99,7 +100,7 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
             $total = mysqli_num_rows($q3);
 
             echo "<form method='post'>";
-
+            echo csrf();
             while ($row = mysqli_fetch_array($q3)) {
 
                 $q++;
@@ -108,7 +109,7 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
                 $existDen = $existingData[$row['id_out_hwc']]['deno_val'] ?? '';
                 $existRes = $existingData[$row['id_out_hwc']]['values_in'] ?? '';
 
-                  $readonly = ($row['deno'] === 'N/A') ? 'readonly' : '';
+                $readonly = ($row['deno'] === 'N/A') ? 'readonly' : '';
                 $isLast = ($q == $total);
 
                 echo "
@@ -282,6 +283,7 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
 <div id="departmentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="departmentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <form method="post">
+
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="departmentModalLabel">Select Department</h5>
@@ -393,38 +395,38 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
     <?php endif; ?>
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    // Target ONLY the outcome form (the one with postsubmit3 button)
-    const outcomeForm = document.querySelector("form[action='']") || 
-                        document.querySelectorAll("form")[1];
+        // Target ONLY the outcome form (the one with postsubmit3 button)
+        const outcomeForm = document.querySelector("form[action='']") ||
+            document.querySelectorAll("form")[1];
 
-    if (!outcomeForm) return;
+        if (!outcomeForm) return;
 
-    outcomeForm.addEventListener("keydown", function (e) {
+        outcomeForm.addEventListener("keydown", function(e) {
 
-        if (e.key === "Enter") {
+            if (e.key === "Enter") {
 
-            const activeElement = document.activeElement;
+                const activeElement = document.activeElement;
 
-            // Prevent submit
-            e.preventDefault();
+                // Prevent submit
+                e.preventDefault();
 
-            // Find current card
-            const currentCard = activeElement.closest(".card");
-            if (!currentCard) return;
+                // Find current card
+                const currentCard = activeElement.closest(".card");
+                if (!currentCard) return;
 
-            // Find next button inside that card
-            const nextBtn = currentCard.querySelector(".btn-success");
+                // Find next button inside that card
+                const nextBtn = currentCard.querySelector(".btn-success");
 
-            if (nextBtn) {
-                nextBtn.click();
+                if (nextBtn) {
+                    nextBtn.click();
+                }
             }
-        }
+
+        });
 
     });
-
-});
 </script>
 
 

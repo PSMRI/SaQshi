@@ -16,6 +16,7 @@ include("assets/head/h.php");
         <div class="card">
           <div class="card-body">
             <form enctype="multipart/form-data" method="post" action="#">
+              <?= csrf(); ?>
               <?php
               $date_value = isset($_POST['date1']) ? $_POST['date1'] : (isset($_SESSION['new_date1']) ? $_SESSION['new_date1'] : '');
               $selected_dept = isset($_POST['Facility_Department']) ? $_POST['Facility_Department'] : (isset($_SESSION['dept_values']) ? $_SESSION['dept_values'] : '');
@@ -86,6 +87,7 @@ include("assets/head/h.php");
 
           if ($result->num_rows > 0) {
             echo "<form method='post' action='#' id='kpiForm'>";
+          echo csrf();
             $counter = 1;
             $totalKPIs = $result->num_rows;
             while ($row = $result->fetch_assoc()) {

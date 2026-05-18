@@ -3,7 +3,7 @@
  * =====================================================
  * SaQshi Security Layer
  * security.php
- * Production + Security Audit Ready
+ * Production
  * =====================================================
  */
 
@@ -92,7 +92,22 @@ if (
         bin2hex(random_bytes(32));
 }
 }
+/* =====================================================
+   CSRF HELPER
+===================================================== */
 
+if (!function_exists('csrf')) {
+
+    function csrf()
+    {
+        return '
+        <input type="hidden"
+               name="csrf_token"
+               value="' .
+               $_SESSION['csrf_token'] .
+               '">';
+    }
+}
 /* =====================================================
    CSRF VALIDATION
 ===================================================== */

@@ -87,6 +87,7 @@ if (isset($_POST['submit1'])) {
 
     <!-- Action Form -->
     <form method="post" action="#" class="actionForm">
+      <?= csrf(); ?>
         <input type="hidden" name="csqa_id1" value="<?= $_SESSION['q1']; ?>">
         <input type="hidden" name="csqa_id"  value="<?= $row['ass_id']; ?>">
 
@@ -288,6 +289,7 @@ if (isset($_POST['submit1'])) {
 
         <!-- Action Plan Form -->
       <form method="post" action="#" class="actionForm">
+        <?= csrf(); ?>
           <input type="hidden" name="csqa_id1" value="<?php echo $_SESSION['q1']; ?>">
           <input type="hidden" name="csqa_id" value="<?php echo $row['ass_id']; ?>">
 

@@ -84,11 +84,8 @@ $dept_name = $_SESSION['dept_name1'] ?? 0;  // For showing in header
 
       <div class="card-body py-3">
         <form method="post" action="">
-              <input
-        type="hidden"
-        name="csrf_token"
-        value="<?= e($_SESSION['csrf_token']); ?>"
-    >
+              <?= csrf(); ?>
+    
 
           <div class="row g-3 mb-2">
             <div class="col-md-6">

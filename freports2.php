@@ -15,6 +15,7 @@ include("assets/head/h.php");
     <div class="card">
       <div class="card-body">
         <form method="post" action="#">
+          <?= csrf(); ?>
           <div class="row g-3 align-items-end">
             <!-- Report Type Dropdown -->
             <div class="col-auto">

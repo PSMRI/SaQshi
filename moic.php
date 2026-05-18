@@ -25,6 +25,7 @@ $dept_name = $_SESSION['dept_name1'] ?? '0';  // For showing in header
     <div class="card shadow-sm">
       <div class="card-body py-3">
         <form method="post" action="#">
+           <?= csrf(); ?>
           <div class="row g-3 align-items-end">
             <div class="col-md-4">
               <label class="form-label text-primary fw-semibold">Select Assessment Cycle</label>
@@ -109,6 +110,7 @@ $(document).ready(function() {
 <div id="departmentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="departmentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <form method="post">
+           
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="departmentModalLabel">

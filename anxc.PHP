@@ -15,6 +15,7 @@ $facid = $_SESSION['u_facilityid'] ?? null;
     <div class="card mb-4">
       <div class="card-body">
         <form method="post" action="">
+          <?= csrf(); ?>
           <div class="row align-items-end g-2">
             <div class="col-auto">
               <label for="date1" class="form-label">Select Month</label>
@@ -51,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit1'])) {
 
         if ($indicators->num_rows > 0) {
             echo "<form method='post' id='anexcForm'>";
+            echo csrf();
             echo "<input type='hidden' name='final_submit' value='1'>";
             echo "<input type='hidden' name='month' value='$month'>";
             $counter = 1;
