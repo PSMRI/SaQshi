@@ -10,7 +10,7 @@ header("Content-Type: application/vnd.ms-excel");
 header("Content-Disposition: attachment; filename=\"NonCompliant_Details_{$facility}_{$standard}.xls\"");
 
 $query = "SELECT * 
-          FROM gap_analysis 
+          FROM gap_analysis_updated 
           WHERE compliance = 0
             AND facilities_type = ? 
             AND concern_name = ?";          
@@ -27,7 +27,10 @@ echo "<tr>
         <th>Standard</th>
         <th>Reference ID</th>
         <th>Measurable Element</th>
+        <th> Checkpoint </th>
         <th>Compliance</th>
+        <th>List of Facilities </th>
+        <th>Count</th>
       </tr>";
 
 while ($row = $result->fetch_assoc()) {
@@ -37,7 +40,10 @@ while ($row = $result->fetch_assoc()) {
             <td>{$row['c_subtype_Reference_No_fk']}</td>
             <td>{$row['csqa_reference_id']}</td>
             <td>{$row['Measurable_Element']}</td>
+             <td>{$row['Checkpoint']}</td>
             <td>{$row['compliance']}</td>
+            <td>{$row['facility_names']}</td>
+            <td>{$row['compliance_count']}</td>
           </tr>";
 }
 echo "</table>";

@@ -8,17 +8,29 @@ error_reporting(E_ALL);
 $zoneFilter = $_POST['zone'] ?? '';
 $results = [];
 
-$query = "SELECT 
+$query = "SELECT
+
     compliance_count AS facility_count,
+
     compliance,
+
+    csqa_id_fk,
+
     concern_name,
+
     area_of_con_subtypedeatils,
+
     c_subtype_Reference_No_fk AS standard,
+
     csqa_reference_id,
+
     Measurable_Element,
+Checkpoint,
     facilities_type
-FROM gap_analysis
-WHERE compliance IN (0)" ?? 0;
+
+FROM gap_analysis_updated
+
+WHERE compliance = 0";
 
 $res = $con->query($query);
 

@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $file_name = $_POST['file_name'];
     $facility_type = $_POST['facility_type'];
-
+$facility_filetype=$_POST['file_type'];
     $new_name = time() . "_" . basename($_FILES['file']['name']);
     $target = $upload_dir . $new_name;
 
@@ -80,8 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $stmt = $con->prepare("INSERT INTO files (file_name,file_path,facility_type) VALUES (?,?,?)");
-    $stmt->bind_param("sss", $file_name, $target, $facility_type);
+    $stmt = $con->prepare("INSERT INTO files (file_name,file_path,facility_type,file_type) VALUES (?,?,?,?)");
+    $stmt->bind_param("ssss", $file_name, $target, $facility_type,$facility_filetype);
 
     if (!$stmt->execute()) {
         echo "error:File upload failed";
@@ -173,24 +173,37 @@ include("assets/head/h.php");
                     <div class="col-md-3">
                         <input type="text" name="file_name" class="form-control" placeholder="File Name" required>
                     </div>
+ <div class="col-md-2">
 
+                        <select name="file_type" class="form-control" required>
+                            <option value="">Select File Type</option>
+                            <option value="Letter">Letter</option>
+                            <option value="Forms">Forms</option>
+                            <option value="Documents">Documents</option>
+                        </select>
+                    </div>
                     <div class="col-md-2">
                         <select name="facility_type" class="form-control">
+                            <option value="">Applicable For</option>
                             <option>HWC</option>
                             <option>PHC</option>
                             <option>CHC</option>
                             <option>DH</option>
                             <option>LaQshya</option>
                             <option>MusQan</option>
+                            <option>National</option>
+                            <option>State</option>
+                            <option>Regional</option>
+                            <option>District & Block</option>
                             <option>Miscellaneous</option>
                         </select>
                     </div>
-
-                    <div class="col-md-4">
+                   
+                    <div class="col-md-3">
                         <input type="file" name="file" class="form-control" required>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <button class="btn btn-success w-100">Upload</button>
                     </div>
 
@@ -226,7 +239,7 @@ include("assets/head/h.php");
                     <thead class="table-primary">
                         <tr>
                             <th>Name</th>
-                            <th>Facility</th>
+                            <th>File Types</th>
                             <th>Download</th>
                             <th>Delete</th>
                             <th>Downloads</th>
@@ -238,7 +251,7 @@ include("assets/head/h.php");
                         <?php while ($row = $listRes->fetch_assoc()): ?>
                             <tr>
                                 <td><?= $row['file_name'] ?></td>
-                                <td><?= $row['facility_type'] ?></td>
+                                <td><?= $row['file_type'] ?></td>
 
                                 <td>
                                     <a href="?download_id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-primary">⬇</a>

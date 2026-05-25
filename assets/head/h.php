@@ -235,7 +235,7 @@ if (
 							<label>Resources</label>
 						</li>
 						<li class="nav-item">
-							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
+							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Documents & Letters</span></a>
 						</li>
 						<li class="nav-item">
 							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
@@ -279,7 +279,7 @@ if (
 							<label>Resources</label>
 						</li>
 						<li class="nav-item">
-							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
+							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Docs & Letters </span></a>
 						</li>
 						<li class="nav-item">
 							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
@@ -296,7 +296,7 @@ if (
 					<label>Resources</label>
 				</li>
 				<li class="nav-item">
-					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
+					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Docs & Letters </span></a>
 				</li>
 				<li class="nav-item">
 					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
@@ -312,9 +312,9 @@ if (
 
 
 						<li><a href="sdash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">NQAS</span></a></li>
-						<li><a href="musdash.php"> <span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">MusQan</span></a></li>
-						<li><a href="laxydash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">LaQshya</span></a></li>
-
+						<li><a href="sdashcount.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">NQAS Current Month</span></a></li>
+						
+						
 
 
 					</ul>
@@ -370,7 +370,7 @@ if (
 					<label>Resources</label>
 				</li>
 				<li class="nav-item">
-					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
+					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Docs & Letters </span></a>
 				</li>
 				<li class="nav-item">
 					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
@@ -378,6 +378,12 @@ if (
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
 				</li>
+				<li class="nav-item pcoded-menu-caption">
+					<label>Archive</label>
+				</li>
+<li><a href="musdash.php"> <span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">MusQan</span></a></li>
+						<li><a href="laxydash.php"><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">LaQshya</span></a></li>
+
 				</ul>
 			<?php } elseif ($user_role == 8) { ?>
 				<li class="nav-item">
@@ -387,7 +393,7 @@ if (
 					<label>Resources</label>
 				</li>
 				<li class="nav-item">
-					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms & Docs</span></a>
+					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Docs & Letters </span></a>
 				</li>
 				<li class="nav-item">
 					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>

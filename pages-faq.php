@@ -211,7 +211,7 @@ $total_pages = max(1, (int)ceil($total_records / $limit));
    ------------------------------------------------------- */
 if ($selectedFacility === 'All') {
     if ($q !== '') {
-        $lsql = "SELECT id, file_name, facility_type, file_path, uploaded_at, download_count
+        $lsql = "SELECT id, file_name, facility_type, file_type,file_path, uploaded_at, download_count
                  FROM files
                  WHERE (file_name LIKE ? OR file_path LIKE ?)
                  ORDER BY uploaded_at DESC
@@ -219,7 +219,7 @@ if ($selectedFacility === 'All') {
         $listStmt = $con->prepare($lsql);
         $listStmt->bind_param("ssii", $like, $like, $limit, $offset);
     } else {
-        $lsql = "SELECT id, file_name, facility_type, file_path, uploaded_at, download_count
+        $lsql = "SELECT id, file_name, facility_type, file_type,file_path, uploaded_at, download_count
                  FROM files
                  ORDER BY uploaded_at DESC
                  LIMIT ? OFFSET ?";
@@ -228,7 +228,7 @@ if ($selectedFacility === 'All') {
     }
 } else {
     if ($q !== '') {
-        $lsql = "SELECT id, file_name, facility_type, file_path, uploaded_at, download_count
+        $lsql = "SELECT id, file_name, facility_type,file_type, file_path, uploaded_at, download_count
                  FROM files
                  WHERE facility_type = ?
                    AND (file_name LIKE ? OR file_path LIKE ?)
@@ -237,7 +237,7 @@ if ($selectedFacility === 'All') {
         $listStmt = $con->prepare($lsql);
         $listStmt->bind_param("sssii", $selectedFacility, $like, $like, $limit, $offset);
     } else {
-        $lsql = "SELECT id, file_name, facility_type, file_path, uploaded_at, download_count
+        $lsql = "SELECT id, file_name, facility_type,file_type, file_path, uploaded_at, download_count
                  FROM files
                  WHERE facility_type = ?
                  ORDER BY uploaded_at DESC
@@ -325,7 +325,7 @@ function keep_q($q) {
                         <thead class="table-primary">
                         <tr>
                             <th style="width:42%;">Name</th>
-                            <th style="width:22%;">Facility</th>
+                            <th style="width:22%;">File Type</th>
                             <th style="width:12%;">Download</th>
                             <th style="width:8%;">Downloads</th>
                             <th style="width:16%;">Uploaded At</th>
@@ -349,7 +349,7 @@ function keep_q($q) {
                                         echo $displayName ?: '(unnamed)';
                                         ?>
                                     </td>
-                                    <td><?= htmlspecialchars($row['facility_type']) ?></td>
+                                    <td><?= e($row['file_type']) ?></td>
                                     <td class="text-center">
                                         <a href="?download_id=<?= (int)$row['id'] ?>"
                                            class="btn btn-sm btn-outline-primary"

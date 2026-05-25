@@ -16,7 +16,7 @@ FROM (
             PARTITION BY facilities_type 
             ORDER BY COUNT(*) DESC
         ) AS rnk
-    FROM gap_analysis
+    FROM gap_analysis_updated
     WHERE compliance = 0
     GROUP BY facilities_type, concern_name, c_subtype_Reference_No_fk
 ) ranked
@@ -38,7 +38,7 @@ FROM (
         concern_name,
         COUNT(*) AS non_compliant_count,
         RANK() OVER (PARTITION BY facilities_type ORDER BY COUNT(*) DESC) AS rnk
-    FROM gap_analysis
+    FROM gap_analysis_updated
     WHERE compliance = 0
     GROUP BY facilities_type, concern_name
 ) ranked

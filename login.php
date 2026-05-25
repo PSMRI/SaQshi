@@ -553,7 +553,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     case 9:
 
                         $_SESSION['u_facilityid'] = 0;
-                        header("location:sdash.php");
+                        header("location:sdashcount.php");
                         exit;
 
                     default:

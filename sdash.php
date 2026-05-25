@@ -67,12 +67,12 @@ ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
                         }
                     </style>
 
-                    <strong class="expired-warning">
+                    <!---strong class="expired-warning">
                         <span class="icon">⚠️</span>
                         Expired Certifications
                         <span id="expired-count">0</span> facilities —
                         <a href="#" id="download-expired" class="text-decoration-underline fw-bold">Download List</a>
-                    </strong>
+                    </strong -->
 
 
                 </div>

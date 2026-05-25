@@ -135,16 +135,13 @@ if (
    SAFE OUTPUT FUNCTION
 ===================================================== */
 
-if (!function_exists('e')) {
-
-    function e($string)
-    {
-        return htmlspecialchars(
-            (string)$string,
-            ENT_QUOTES,
-            'UTF-8'
-        );
-    }
+function e($string)
+{
+    return htmlspecialchars(
+        (string)($string ?? ''),
+        ENT_QUOTES,
+        'UTF-8'
+    );
 }
 
 /* =====================================================

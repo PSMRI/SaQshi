@@ -68,7 +68,7 @@
     <div class="card-body">
 
         <form method="post" action="#" id="actionForm">
-
+<?= csrf(); ?>
             <div class="row g-4 mb-3">
 
                 <!-- Action Taken -->
