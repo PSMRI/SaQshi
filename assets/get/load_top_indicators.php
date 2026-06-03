@@ -22,7 +22,7 @@ if ($dept_id && $fac_type_id) {
 
     // Main query with pagination
     $query = "
-        SELECT csqa_id_fk, csqa_reference_id,Measurable_Element, c_subtype_Reference_No_fk,concern_name, area_of_con_subtypedeatils, compliance_percent
+        SELECT csqa_id_fk, csqa_reference_id,Measurable_Element, c_subtype_Reference_No_fk,concern_name, area_of_con_subtypedeatils, Checkpoint,compliance_percent,zero_compliance_facilities
         FROM department_indicators_gap
         WHERE fac_type_id = ? AND fac_dept_id_fk = ?
         ORDER BY csqa_id_fk ASC
@@ -60,7 +60,8 @@ echo "<span class='fw-bold'>{$zoneLabels[$zoneKey]['label']}</span>";
 echo "<button class='btn btn-light btn-sm' onclick=\"downloadZoneExcel('$zoneKey')\">Download Excel</button>";
 echo "</div>";
 
-        echo "<div class='card-body p-2'>";
+        echo "<div class='card-body p-3'>";
+        echo "<div class='table-responsive'>";
         echo "<table class='table table-bordered table-hover small'>";
         echo "<thead class='table-light'><tr>
                 <th>#</th>
@@ -69,7 +70,9 @@ echo "</div>";
                 <th>Mea. Element</th>
                 <th>Concern</th>
                 <th>Details</th>
+                <th>Checkpoint</th>
                 <th>Comp%</th>
+                 <th>Facilities</th>
             </tr></thead><tbody>";
 
         $count = 1;
@@ -82,7 +85,9 @@ echo "</div>";
                     <td>" . htmlspecialchars($row['Measurable_Element']) . "</td>
                     <td>" . htmlspecialchars($row['concern_name']) . "</td>
                     <td>" . htmlspecialchars($row['area_of_con_subtypedeatils']) . "</td>
+                     <td>" . htmlspecialchars($row['Checkpoint']) . "</td>
                     <td>" . floatval($row['compliance_percent']) . "%</td>
+                     <td>" . htmlspecialchars($row['zero_compliance_facilities']) . "</td>
                 </tr>";
             $count++;
         }

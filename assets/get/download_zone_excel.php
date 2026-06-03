@@ -13,7 +13,7 @@ if (!$dept_id || !$fac_type_id || !in_array($zone, ['green', 'yellow', 'red'])) 
 
 $query = "
     SELECT csqa_reference_id, Measurable_Element, c_subtype_Reference_No_fk,
-           concern_name, area_of_con_subtypedeatils, compliance_percent
+           concern_name, area_of_con_subtypedeatils, compliance_percent,zero_compliance_facilities
     FROM department_indicators_gap
     WHERE fac_type_id = ? AND fac_dept_id_fk = ?
 ";
@@ -37,12 +37,12 @@ while ($row = $result->fetch_assoc()) {
 header("Content-Type: application/vnd.ms-excel");
 header("Content-Disposition: attachment; filename=\"{$zone}_zone_compliance.xls\"");
 
-echo "CSQA Ref ID\tSubType Ref\tMeasurable Element\tConcern\tDetails\tCompliance (%)\n";
+echo "CSQA Ref ID\tSubType Ref\tMeasurable Element\tConcern\tDetails\tCompliance (%)\tFacilities\n";
 
 foreach ($filtered as $row) {
     echo "{$row['csqa_reference_id']}\t{$row['c_subtype_Reference_No_fk']}\t";
     echo "{$row['Measurable_Element']}\t{$row['concern_name']}\t";
-    echo "{$row['area_of_con_subtypedeatils']}\t{$row['compliance_percent']}\n";
+    echo "{$row['area_of_con_subtypedeatils']}\t{$row['compliance_percent']}\t{$row['zero_compliance_facilities']}\n";
 }
 exit;
 ?>
