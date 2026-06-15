@@ -111,3 +111,12 @@ VIEW `gap_analysis_updated` AS
     WHERE
         (`c`.`ass_compliance` IN (0 , 1))
     GROUP BY `c`.`ass_compliance` , `c`.`csqa_id_fk` , `d`.`c_subtype_Reference_No_fk` , `d`.`csqa_reference_id` , `d`.`Measurable_Element` , `a`.`concern_name` , `e`.`area_of_con_subtypedeatils` , `f`.`facilities_type`
+
+
+    CREATE TABLE login_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100),
+    ip_address VARCHAR(45),
+    attempt_time DATETIME,
+    status VARCHAR(20)
+);

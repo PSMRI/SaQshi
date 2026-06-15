@@ -41,24 +41,44 @@ header(
 
 header(
     "Content-Security-Policy: " .
+
     "default-src 'self'; " .
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' " .
-    "https://cdnjs.cloudflare.com " .
-    "https://cdn.jsdelivr.net " .
-    "https://code.jquery.com; " .
-    "style-src 'self' 'unsafe-inline' " .
-    "https://cdn.jsdelivr.net " .
-    "https://fonts.googleapis.com; " .
-    "font-src 'self' " .
-    "https://cdn.jsdelivr.net " .
-    "https://fonts.gstatic.com data:; " .
-    "img-src 'self' data: blob:; " .
-    "connect-src 'self'; " .
+
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'
+    https://cdnjs.cloudflare.com
+    https://cdn.jsdelivr.net
+    https://code.jquery.com
+    https://unpkg.com; " .
+
+    "style-src 'self' 'unsafe-inline'
+    https://cdn.jsdelivr.net
+    https://fonts.googleapis.com
+    https://unpkg.com; " .
+
+    "font-src 'self'
+    https://fonts.gstatic.com
+    https://cdn.jsdelivr.net
+    data:; " .
+
+    "img-src 'self'
+    data:
+    blob:
+    https://maps.gstatic.com
+    https://*.tile.openstreetmap.org
+    https://tile.openstreetmap.org
+    https://unpkg.com; " .
+
+    "connect-src 'self'
+    https://maps.gstatic.com
+    https://*.tile.openstreetmap.org
+    https://tile.openstreetmap.org; " .
+
     "frame-ancestors 'none'; " .
+
     "object-src 'none'; " .
+
     "base-uri 'self';"
 );
-
 header(
     "Cache-Control: no-store, no-cache, must-revalidate, max-age=0"
 );
