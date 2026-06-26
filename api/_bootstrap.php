@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 /* ------------------------------------------------
    DATABASE CONNECTION
 ------------------------------------------------ */
-$dbPath = dirname(__DIR__, 1) . "/assets/conn/db.php";
+$dbPath = dirname(__DIR__, 1) . "/../../../assets/conn/db.php";
 if (!file_exists($dbPath)) {
     http_response_code(500);
     echo json_encode([

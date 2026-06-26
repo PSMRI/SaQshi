@@ -1,0 +1,364 @@
+/*!
+ * ==========================================================
+ * SQ-UI Typography v1.0
+ * ----------------------------------------------------------
+ * Project : SaQshi Open Source
+ * Purpose : Typography System
+ * Standard: HTML5 + WCAG 2.2 AA
+ * License : Apache-2.0
+ * ==========================================================
+ */
+
+/* ==========================================================
+   Body
+========================================================== */
+
+body{
+
+    font-family:var(--sq-font-family-sans);
+
+    font-size:var(--sq-font-size-md);
+
+    font-weight:var(--sq-font-weight-regular);
+
+    line-height:var(--sq-line-height-normal);
+
+    color:var(--sq-text-primary);
+
+    background:var(--sq-bg-body);
+
+}
+
+/* ==========================================================
+   Headings
+========================================================== */
+
+h1,
+.sq-h1{
+
+    font-size:var(--sq-font-size-4xl);
+
+    font-weight:var(--sq-font-weight-bold);
+
+    line-height:1.2;
+
+    margin-bottom:var(--sq-space-4);
+
+}
+
+h2,
+.sq-h2{
+
+    font-size:var(--sq-font-size-3xl);
+
+    font-weight:var(--sq-font-weight-bold);
+
+    line-height:1.25;
+
+    margin-bottom:var(--sq-space-4);
+
+}
+
+h3,
+.sq-h3{
+
+    font-size:var(--sq-font-size-2xl);
+
+    font-weight:var(--sq-font-weight-semibold);
+
+    margin-bottom:var(--sq-space-3);
+
+}
+
+h4,
+.sq-h4{
+
+    font-size:var(--sq-font-size-xl);
+
+    font-weight:var(--sq-font-weight-semibold);
+
+    margin-bottom:var(--sq-space-3);
+
+}
+
+h5,
+.sq-h5{
+
+    font-size:var(--sq-font-size-lg);
+
+    font-weight:var(--sq-font-weight-semibold);
+
+}
+
+h6,
+.sq-h6{
+
+    font-size:var(--sq-font-size-md);
+
+    font-weight:var(--sq-font-weight-semibold);
+
+}
+
+/* ==========================================================
+   Paragraph
+========================================================== */
+
+p{
+
+    margin-bottom:var(--sq-space-4);
+
+}
+
+/* ==========================================================
+   Text Helpers
+========================================================== */
+
+.sq-text-xs{
+
+    font-size:var(--sq-font-size-xs);
+
+}
+
+.sq-text-sm{
+
+    font-size:var(--sq-font-size-sm);
+
+}
+
+.sq-text-md{
+
+    font-size:var(--sq-font-size-md);
+
+}
+
+.sq-text-lg{
+
+    font-size:var(--sq-font-size-lg);
+
+}
+
+.sq-text-xl{
+
+    font-size:var(--sq-font-size-xl);
+
+}
+
+.sq-text-2xl{
+
+    font-size:var(--sq-font-size-2xl);
+
+}
+
+/* ==========================================================
+   Font Weight
+========================================================== */
+
+.sq-fw-regular{
+
+    font-weight:var(--sq-font-weight-regular);
+
+}
+
+.sq-fw-medium{
+
+    font-weight:var(--sq-font-weight-medium);
+
+}
+
+.sq-fw-semibold{
+
+    font-weight:var(--sq-font-weight-semibold);
+
+}
+
+.sq-fw-bold{
+
+    font-weight:var(--sq-font-weight-bold);
+
+}
+
+.sq-fw-extrabold{
+
+    font-weight:var(--sq-font-weight-extrabold);
+
+}
+
+/* ==========================================================
+   Text Color
+========================================================== */
+
+.sq-text-primary{
+
+    color:var(--sq-text-primary);
+
+}
+
+.sq-text-secondary{
+
+    color:var(--sq-text-secondary);
+
+}
+
+.sq-text-muted{
+
+    color:var(--sq-text-muted);
+
+}
+
+.sq-text-success{
+
+    color:var(--sq-color-success);
+
+}
+
+.sq-text-warning{
+
+    color:var(--sq-color-warning);
+
+}
+
+.sq-text-danger{
+
+    color:var(--sq-color-danger);
+
+}
+
+.sq-text-info{
+
+    color:var(--sq-color-info);
+
+}
+
+/* ==========================================================
+   Text Alignment
+========================================================== */
+
+.sq-text-left{
+
+    text-align:left;
+
+}
+
+.sq-text-center{
+
+    text-align:center;
+
+}
+
+.sq-text-right{
+
+    text-align:right;
+
+}
+
+.sq-text-justify{
+
+    text-align:justify;
+
+}
+
+/* ==========================================================
+   Transform
+========================================================== */
+
+.sq-uppercase{
+
+    text-transform:uppercase;
+
+}
+
+.sq-lowercase{
+
+    text-transform:lowercase;
+
+}
+
+.sq-capitalize{
+
+    text-transform:capitalize;
+
+}
+
+/* ==========================================================
+   White Space
+========================================================== */
+
+.sq-nowrap{
+
+    white-space:nowrap;
+
+}
+
+.sq-break-word{
+
+    word-break:break-word;
+
+}
+
+/* ==========================================================
+   Links
+========================================================== */
+
+a{
+
+    color:var(--sq-color-primary);
+
+    transition:var(--sq-transition-fast);
+
+}
+
+a:hover{
+
+    color:var(--sq-color-primary-hover);
+
+}
+
+/* ==========================================================
+   Selection
+========================================================== */
+
+::selection{
+
+    background:var(--sq-color-primary);
+
+    color:#ffffff;
+
+}
+
+/* ==========================================================
+   Print
+========================================================== */
+
+@media print{
+
+    body{
+
+        color:#000;
+
+        background:#fff;
+
+    }
+
+}
+
+/* ==========================================================
+   Responsive
+========================================================== */
+
+@media(max-width:768px){
+
+    h1,
+    .sq-h1{
+
+        font-size:2rem;
+
+    }
+
+    h2,
+    .sq-h2{
+
+        font-size:1.6rem;
+
+    }
+
+}

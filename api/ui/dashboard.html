@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SaQshi Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <style>
+        body { background: #f5f7fb; }
+        .topbar {
+            background: #0d6efd;
+            color: #fff;
+            padding: 12px 20px;
+        }
+        .card { border-radius: 12px; margin-bottom: 16px; }
+        .checkpoint {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: #fff;
+        }
+        .small-label {
+            font-size: 13px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="topbar d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">SaQshi Assessment Dashboard</h5>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+</div>
+
+<div class="container-fluid p-4">
+
+    <div id="alertBox" class="alert d-none"></div>
+
+    <div class="row">
+
+        <div class="col-md-4">
+
+            <div class="card">
+                <div class="card-header fw-bold">Logged-in User</div>
+                <div class="card-body">
+                    <div id="userInfo">Loading...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header fw-bold">Assigned Facility</div>
+                <div class="card-body">
+                    <div id="facilityInfo">Loading...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header fw-bold">Assessment Setup</div>
+                <div class="card-body">
+
+                    <label class="form-label">Framework</label>
+                    <input
+                        type="text"
+                        id="framework"
+                        class="form-control mb-2"
+                        value="saqshi-nqas">
+
+                    <label class="form-label">Assessment Period</label>
+                    <input
+                        type="number"
+                        id="assPeriod"
+                        class="form-control mb-2"
+                        value="1">
+
+                    <label class="form-label">Instance No</label>
+                    <input
+                        type="number"
+                        id="instanceNo"
+                        class="form-control mb-3"
+                        value="1">
+
+                    <button
+                        class="btn btn-primary w-100"
+                        onclick="startCycle()">
+                        Start / Get Cycle
+                    </button>
+
+                    <div class="mt-2 small-label">
+                        Cycle ID: <span id="cycleIdText">Not started</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-8">
+
+            <div class="card">
+                <div class="card-header fw-bold">Department Activation</div>
+                <div class="card-body">
+                    <button
+                        class="btn btn-outline-primary btn-sm mb-3"
+                        onclick="loadDepartments()">
+                        Load Departments
+                    </button>
+
+                    <div id="departmentsBox"></div>
+
+                    <button
+                        class="btn btn-success mt-3"
+                        onclick="saveDepartmentStatus()">
+                        Save Department Status
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header fw-bold">Checklist Filters</div>
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-3">
+                            <label class="form-label">Department</label>
+                            <select
+                                id="deptSelect"
+                                class="form-select"
+                                onchange="loadConcerns()">
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Concern</label>
+                            <select
+                                id="concernSelect"
+                                class="form-select"
+                                onchange="loadSubtypes()">
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Subtype</label>
+                            <select
+                                id="subtypeSelect"
+                                class="form-select"
+                                onchange="loadAssessmentMethods()">
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Method</label>
+                            <select
+                                id="methodSelect"
+                                class="form-select">
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="btn btn-primary mt-3"
+                        onclick="loadCheckpoints()">
+                        Load Checklist
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header fw-bold">Checklist</div>
+                <div class="card-body">
+                    <div id="checkpointsBox">
+                        Select filters and load checklist.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="assets/js/api.js"></script>
+
+<script>
+let CURRENT_USER = null;
+let CURRENT_FACILITY = null;
+let CURRENT_DEPARTMENTS = [];
+let CURRENT_CYCLE_ID = null;
+
+function showAlert(message, type = "success") {
+    const box = document.getElementById("alertBox");
+    box.className = `alert alert-${type}`;
+    box.textContent = message;
+    box.classList.remove("d-none");
+
+    setTimeout(() => {
+        box.classList.add("d-none");
+    }, 3500);
+}
+
+function getFramework() {
+    return document.getElementById("framework").value.trim();
+}
+
+function getAssPeriod() {
+    return parseInt(document.getElementById("assPeriod").value || "0");
+}
+
+async function initDashboard() {
+    try {
+        await loadMe();
+        await loadMyFacility();
+        await loadDepartments();
+    } catch (e) {
+        showAlert(e.message, "danger");
+    }
+}
+
+async function loadMe() {
+    const res = await SaqshiAPI.get("/auth/v1/me.php");
+
+    CURRENT_USER = res.data.user;
+
+    document.getElementById("userInfo").innerHTML = `
+        <b>${CURRENT_USER.full_name || CURRENT_USER.u_name}</b><br>
+        Username: ${CURRENT_USER.u_name}<br>
+        Role ID: ${CURRENT_USER.role_id}<br>
+        Facility ID: ${CURRENT_USER.fac_id}
+    `;
+}
+
+async function loadMyFacility() {
+    const res = await SaqshiAPI.get("/framework/v1/my_facility.php");
+
+    CURRENT_FACILITY = res.data;
+
+    document.getElementById("facilityInfo").innerHTML = `
+        <b>${CURRENT_FACILITY.fac_name}</b><br>
+        Facility Type: ${CURRENT_FACILITY.facilities_type}
+        (${CURRENT_FACILITY.fac_type_id})<br>
+        Block: ${CURRENT_FACILITY.block_name}<br>
+        District: ${CURRENT_FACILITY.dist_name}
+    `;
+}
+
+async function loadDepartments() {
+    const framework = getFramework();
+
+    const res = await SaqshiAPI.get(
+        `/framework/v1/my_departments.php?framework=${framework}`
+    );
+
+    CURRENT_DEPARTMENTS = res.data.departments || [];
+
+    const box = document.getElementById("departmentsBox");
+    const select = document.getElementById("deptSelect");
+
+    box.innerHTML = "";
+    select.innerHTML = `<option value="">Select</option>`;
+
+    CURRENT_DEPARTMENTS.forEach(d => {
+        box.innerHTML += `
+            <div class="form-check">
+                <input
+                    class="form-check-input dept-check"
+                    type="checkbox"
+                    value="${d.fac_dept_id}"
+                    id="dept_${d.fac_dept_id}"
+                    checked>
+
+                <label
+                    class="form-check-label"
+                    for="dept_${d.fac_dept_id}">
+                    ${d.dept_name}
+                    <span class="small-label">
+                        (${d.concern_count || 0} concerns)
+                    </span>
+                </label>
+            </div>
+        `;
+
+        select.innerHTML += `
+            <option value="${d.fac_dept_id}">
+                ${d.dept_name}
+            </option>
+        `;
+    });
+}
+
+async function saveDepartmentStatus() {
+    const departments = [];
+
+    document
+        .querySelectorAll(".dept-check")
+        .forEach(chk => {
+            departments.push({
+                dept_id: parseInt(chk.value),
+                is_active: chk.checked ? 1 : 0
+            });
+        });
+
+    const payload = {
+        ass_period: getAssPeriod(),
+        departments: departments
+    };
+
+    const res = await SaqshiAPI.post(
+        "/assessment/v1/department-status/save.php",
+        payload
+    );
+
+    showAlert(res.message || "Department status saved");
+}
+
+async function startCycle() {
+    const departments = [];
+
+    document
+        .querySelectorAll(".dept-check")
+        .forEach(chk => {
+            departments.push({
+                dept_id: parseInt(chk.value),
+                is_active: chk.checked ? 1 : 0
+            });
+        });
+
+    const payload = {
+        framework_code: getFramework(),
+        ass_period: getAssPeriod(),
+        instance_no: parseInt(document.getElementById("instanceNo").value || "1"),
+        departments: departments
+    };
+
+    const res = await SaqshiAPI.post(
+        "/assessment/v1/start_cycle.php",
+        payload
+    );
+
+    CURRENT_CYCLE_ID = res.data.cycle.cycle_id;
+
+    document.getElementById("cycleIdText").innerText =
+        CURRENT_CYCLE_ID;
+
+    showAlert("Assessment cycle ready");
+}
+
+async function loadConcerns() {
+    const deptId = document.getElementById("deptSelect").value;
+
+    resetSelect("concernSelect");
+    resetSelect("subtypeSelect");
+    resetSelect("methodSelect");
+
+    if (!deptId) return;
+
+    const res = await SaqshiAPI.get(
+        `/framework/v1/concerns.php?framework=${getFramework()}&dept_id=${deptId}`
+    );
+
+    const select = document.getElementById("concernSelect");
+    select.innerHTML = `<option value="">Select</option>`;
+
+    (res.data.concerns || []).forEach(c => {
+        select.innerHTML += `
+            <option value="${c.concern_id}">
+                ${c.concern_name} - ${c.concern_des}
+            </option>
+        `;
+    });
+}
+
+async function loadSubtypes() {
+    const deptId = document.getElementById("deptSelect").value;
+    const concernId = document.getElementById("concernSelect").value;
+
+    resetSelect("subtypeSelect");
+    resetSelect("methodSelect");
+
+    if (!deptId || !concernId) return;
+
+    const res = await SaqshiAPI.get(
+        `/framework/v1/subtypes.php?framework=${getFramework()}&dept_id=${deptId}&concern_id=${concernId}`
+    );
+
+    const select = document.getElementById("subtypeSelect");
+    select.innerHTML = `<option value="">Select</option>`;
+
+    (res.data.subtypes || []).forEach(s => {
+        select.innerHTML += `
+            <option value="${s.c_subtype_id}">
+                ${s.Reference_No} - ${s.area_of_con_subtypedeatils}
+            </option>
+        `;
+    });
+}
+
+async function loadAssessmentMethods() {
+    const deptId = document.getElementById("deptSelect").value;
+    const concernId = document.getElementById("concernSelect").value;
+    const subtypeId = document.getElementById("subtypeSelect").value;
+
+    resetSelect("methodSelect");
+
+    if (!deptId || !concernId || !subtypeId) return;
+
+    const res = await SaqshiAPI.get(
+        `/framework/v1/assessment_methods.php?framework=${getFramework()}&dept_id=${deptId}&concern_id=${concernId}&subtype_id=${subtypeId}`
+    );
+
+    const select = document.getElementById("methodSelect");
+    select.innerHTML = `<option value="">Select</option>`;
+
+    (res.data.assessment_methods || []).forEach(m => {
+        select.innerHTML += `
+            <option value="${m.code}">
+                ${m.code} - ${m.name}
+            </option>
+        `;
+    });
+}
+
+async function loadCheckpoints() {
+    const deptId = document.getElementById("deptSelect").value;
+    const concernId = document.getElementById("concernSelect").value;
+    const subtypeId = document.getElementById("subtypeSelect").value;
+    const method = document.getElementById("methodSelect").value;
+
+    if (!deptId || !concernId || !subtypeId || !method) {
+        showAlert("Please select all checklist filters", "warning");
+        return;
+    }
+
+    const params = new URLSearchParams({
+        framework: getFramework(),
+        ass_period: getAssPeriod(),
+        dept_id: deptId,
+        concern_id: concernId,
+        subtype_id: subtypeId,
+        assessment_method: method
+    });
+
+    const res = await SaqshiAPI.get(
+        `/framework/v1/checkpoints.php?${params.toString()}`
+    );
+
+    console.log("CHECKPOINT RESPONSE:", res);
+
+    renderCheckpoints(res.data.checkpoints || []);
+}
+
+function renderCheckpoints(checkpoints) {
+    const box = document.getElementById("checkpointsBox");
+
+    if (!checkpoints.length) {
+        box.innerHTML = `<div class="alert alert-warning">No checkpoints found</div>`;
+        return;
+    }
+
+    box.innerHTML = "";
+
+    checkpoints.forEach(cp => {
+        let optionsHtml = "";
+
+        const options =
+            cp.response && cp.response.options
+                ? cp.response.options
+                : [];
+
+        options.forEach(opt => {
+            optionsHtml += `
+                <label class="me-3">
+                    <input
+                        type="radio"
+                        name="cp_${cp.csqa_id}"
+                        value="${opt.value}">
+                    ${opt.label}
+                </label>
+            `;
+        });
+
+        box.innerHTML += `
+            <div class="checkpoint">
+                <div class="small-label">
+                    ${cp.csqa_reference_id || ""}
+                </div>
+
+                <b>Measurable Element:</b>
+                <div>${cp.Measurable_Element || ""}</div>
+
+                <b>Checkpoint:</b>
+                <div>${cp.Checkpoint || ""}</div>
+
+                <div class="mt-2">
+                    ${optionsHtml}
+                </div>
+
+                <div class="mt-2">
+                    <label class="form-label">Remarks</label>
+                    <textarea
+                        class="form-control"
+                        id="remarks_${cp.csqa_id}"
+                        rows="2"></textarea>
+                </div>
+
+                <button
+                    class="btn btn-sm btn-success mt-2"
+                    onclick="saveResponse('${cp.csqa_id}')">
+                    Save Response
+                </button>
+            </div>
+        `;
+    });
+}
+
+async function saveResponse(csqaId) {
+    if (!CURRENT_CYCLE_ID) {
+        showAlert("Please start assessment cycle first", "warning");
+        return;
+    }
+
+    const deptId = document.getElementById("deptSelect").value;
+
+    if (!deptId) {
+        showAlert("Please select department", "warning");
+        return;
+    }
+
+    const selected =
+        document.querySelector(`input[name="cp_${csqaId}"]:checked`);
+
+    if (!selected) {
+        showAlert("Please select response", "warning");
+        return;
+    }
+
+  const payload = {
+    framework_code: getFramework(),
+    cycle_id: CURRENT_CYCLE_ID,
+    dept_id: parseInt(deptId),
+    checkpoint_id: parseInt(csqaId),
+    response_value: selected.value,
+    remarks: document.getElementById(`remarks_${csqaId}`).value
+};
+
+    const res = await SaqshiAPI.post(
+        "/assessment/v1/save-response.php",
+        payload
+    );
+
+    showAlert(res.message || "Response saved");
+}
+
+async function logout() {
+    try {
+        await SaqshiAPI.post("/auth/v1/logout.php", {});
+    } catch (e) {}
+
+    SaqshiAPI.clearSession();
+    window.location.href = "login.html";
+}
+
+function resetSelect(id) {
+    document.getElementById(id).innerHTML =
+        `<option value="">Select</option>`;
+}
+
+initDashboard();
+</script>
+
+</body>
+</html>

@@ -17,7 +17,7 @@ class AssessmentService
     }
 
     /* =====================================================
-       1️⃣ SAVE / UPDATE ASSESSMENT RESPONSE
+       1️ SAVE / UPDATE ASSESSMENT RESPONSE
     ===================================================== */
     public function saveResponse(array $data): array
     {
@@ -128,7 +128,7 @@ class AssessmentService
 
 
     /* =====================================================
-       2️⃣ RESUME ASSESSMENT (NEXT PENDING CHECKPOINT)
+       2️ RESUME ASSESSMENT (NEXT PENDING CHECKPOINT)
     ===================================================== */
     public function resumeAssessment(int $facId, int $deptId, int $assPeriod): array
 {
@@ -170,7 +170,7 @@ class AssessmentService
 
 
     /* =====================================================
-   3️⃣ GET ASSESSMENT PROGRESS
+   3️ GET ASSESSMENT PROGRESS
 ===================================================== */
 public function getProgress(int $facId, int $assPeriod): array
 {
@@ -216,7 +216,7 @@ public function getProgress(int $facId, int $assPeriod): array
     /*==================================*/
 
     /* =====================================================
-   4️⃣ SUBTYPE-WISE PROGRESS (AREA OF CONCERN)
+   4️ SUBTYPE-WISE PROGRESS (AREA OF CONCERN)
 ===================================================== */
 public function getSubtypeProgress(
     int $facId,
@@ -298,7 +298,7 @@ public function getSubtypeProgress(
         ];
     }
     /* =====================================================
-   5️⃣ MARK ASSESSMENT COMPLETE
+   5️ MARK ASSESSMENT COMPLETE
 ===================================================== */
 public function completeAssessment(
     int $facId,

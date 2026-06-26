@@ -1,0 +1,299 @@
+<?php
+
+/**
+ * Auth.php
+ * -------------------------------------------------------
+ * Centralized authentication service for SaQshi.
+ *
+ * Uses:
+ * - s_user table
+ * - u_role table
+ * - login_attempts table
+ * - SessionManager
+ *
+ * login_attempts columns:
+ * id, username, ip_address, attempt_time, status
+ * -------------------------------------------------------
+ */
+
+require_once __DIR__ . '/SessionManager.php';
+
+class Auth
+{
+    private mysqli $db;
+
+    private const MAX_FAILED_ATTEMPTS = 5;
+    private const LOCK_MINUTES = 15;
+
+    public function __construct(mysqli $db)
+    {
+        $this->db = $db;
+    }
+
+    public function login(string $username, string $password): array
+{
+    $username = trim($username);
+    $password = trim($password);
+
+    if ($username === '' || $password === '') {
+        return $this->error('Username and password are required');
+    }
+
+    $user = $this->findUser($username);
+
+    if (!$user) {
+        return $this->error('DEBUG: User not found for username [' . $username . ']');
+    }
+
+    if ((int)($user['is_active'] ?? 0) !== 1) {
+        return $this->error('DEBUG: User inactive. is_active=[' . ($user['is_active'] ?? 'NULL') . ']');
+    }
+
+ $dbPassword = (string)$user['u_password'];
+$inputPassword = (string)$password;
+
+if (trim($dbPassword) !== trim($inputPassword)) {
+    return $this->error(
+        'DEBUG: Password mismatch. DB=[' . bin2hex($dbPassword) . '] INPUT=[' . bin2hex($inputPassword) . ']'
+    );
+}
+
+    unset($user['u_password']);
+
+    SessionManager::login($user);
+
+    return $this->success('Login successful', [
+        'user' => SessionManager::user()
+    ]);
+}
+
+    public function logout(): array
+    {
+        SessionManager::logout();
+
+        return $this->success('Logout successful');
+    }
+
+    public function me(): array
+    {
+        if (!SessionManager::isLoggedIn()) {
+            return $this->error('Unauthorized');
+        }
+
+        return $this->success('User fetched successfully', [
+            'user' => SessionManager::user()
+        ]);
+    }
+
+    private function findUser(string $username): ?array
+    {
+        $sql = "
+            SELECT
+                u.u_id,
+                u.u_name,
+                u.u_password,
+                u.fac_id_fk,
+                u.role_id_fk,
+                u.is_active,
+                u.dept_id,
+                u.f_name,
+                u.m_name,
+                u.l_name,
+                u.mob_no,
+                u.mail_id,
+                u.user_type,
+                u.assessment_id,
+                u.dist_id,
+                u.block_id,
+                u.division_id,
+                r.role_name
+            FROM s_user u
+            LEFT JOIN u_role r
+                ON r.role_id = u.role_id_fk
+            WHERE
+                u.u_name = ?                
+            LIMIT 1
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        if (!$stmt) {
+            throw new Exception(
+                'User query prepare failed: ' . $this->db->error
+            );
+        }
+
+        $stmt->bind_param(
+            's',
+            $username
+           
+        );
+
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if (!$result || $result->num_rows === 0) {
+            return null;
+        }
+
+        return $result->fetch_assoc();
+    }
+
+ private function verifyPassword(string $plainPassword, string $storedPassword): bool
+{
+    $plainPassword  = trim((string)$plainPassword);
+    $storedPassword = trim((string)$storedPassword);
+
+    $plainPassword  = preg_replace('/[[:^print:]]/', '', $plainPassword);
+    $storedPassword = preg_replace('/[[:^print:]]/', '', $storedPassword);
+
+    if ($storedPassword === '') {
+        return false;
+    }
+
+    if (password_get_info($storedPassword)['algo'] !== 0) {
+        return password_verify($plainPassword, $storedPassword);
+    }
+
+    return strcmp($storedPassword, $plainPassword) === 0;
+}
+
+    private function isLocked(string $username): bool
+    {
+        if (!$this->loginAttemptTableExists()) {
+            return false;
+        }
+
+        $sql = "
+            SELECT COUNT(*) AS failed_count
+            FROM login_attempts
+            WHERE username = ?
+              AND status = 'FAILED'
+              AND attempt_time >= DATE_SUB(NOW(), INTERVAL ? MINUTE)
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        if (!$stmt) {
+            return false;
+        }
+
+        $lockMinutes = self::LOCK_MINUTES;
+
+        $stmt->bind_param(
+            'si',
+            $username,
+            $lockMinutes
+        );
+
+        $stmt->execute();
+
+        $row = $stmt->get_result()->fetch_assoc();
+
+        return ((int)($row['failed_count'] ?? 0)) >= self::MAX_FAILED_ATTEMPTS;
+    }
+
+    private function recordAttempt(string $username, string $status): void
+    {
+        if (!$this->loginAttemptTableExists()) {
+            return;
+        }
+
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+
+        $status = strtoupper($status);
+
+        $sql = "
+            INSERT INTO login_attempts
+                (
+                    username,
+                    ip_address,
+                    attempt_time,
+                    status
+                )
+            VALUES
+                (
+                    ?,
+                    ?,
+                    NOW(),
+                    ?
+                )
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        if (!$stmt) {
+            return;
+        }
+
+        $stmt->bind_param(
+            'sss',
+            $username,
+            $ip,
+            $status
+        );
+
+        $stmt->execute();
+    }
+
+    private function clearOldFailedAttempts(string $username): void
+    {
+        if (!$this->loginAttemptTableExists()) {
+            return;
+        }
+
+        $sql = "
+            DELETE FROM login_attempts
+            WHERE username = ?
+              AND status = 'FAILED'
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        if (!$stmt) {
+            return;
+        }
+
+        $stmt->bind_param('s', $username);
+        $stmt->execute();
+    }
+
+    private function loginAttemptTableExists(): bool
+    {
+        $result = $this->db->query(
+            "SHOW TABLES LIKE 'login_attempts'"
+        );
+
+        return $result && $result->num_rows > 0;
+    }
+
+    public static function hashPassword(string $password): string
+    {
+        return password_hash(
+            $password,
+            PASSWORD_BCRYPT,
+            [
+                'cost' => 12
+            ]
+        );
+    }
+
+    private function success(string $message, array $data = []): array
+    {
+        return [
+            'status' => 'success',
+            'message' => $message,
+            'data' => $data
+        ];
+    }
+
+    private function error(string $message): array
+    {
+        return [
+            'status' => 'error',
+            'message' => $message,
+            'data' => null
+        ];
+    }
+}

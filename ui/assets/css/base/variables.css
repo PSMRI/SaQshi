@@ -1,0 +1,368 @@
+/*!
+ * ==========================================================
+ * SQ-UI Variables CSS v1.0
+ * ----------------------------------------------------------
+ * Project : SaQshi Open Source
+ * Purpose : Design tokens for colors, spacing, typography,
+ *           borders, shadows, z-index, layout, animation,
+ *           accessibility and themes.
+ * Standard: CSS Custom Properties + WCAG 2.2 AA
+ * License : Apache-2.0
+ * ==========================================================
+ */
+
+:root {
+    /* ======================================================
+       Brand Colors
+    ====================================================== */
+
+    --sq-color-primary-50: #eff6ff;
+    --sq-color-primary-100: #dbeafe;
+    --sq-color-primary-200: #bfdbfe;
+    --sq-color-primary-300: #93c5fd;
+    --sq-color-primary-400: #60a5fa;
+    --sq-color-primary-500: #3b82f6;
+    --sq-color-primary-600: #2563eb;
+    --sq-color-primary-700: #1d4ed8;
+    --sq-color-primary-800: #1e40af;
+    --sq-color-primary-900: #1e3a8a;
+
+    --sq-color-primary: var(--sq-color-primary-600);
+    --sq-color-primary-hover: var(--sq-color-primary-700);
+    --sq-color-primary-active: var(--sq-color-primary-800);
+    --sq-color-primary-soft: var(--sq-color-primary-50);
+
+    /* ======================================================
+       Semantic Colors
+    ====================================================== */
+
+    --sq-color-success-50: #f0fdf4;
+    --sq-color-success-100: #dcfce7;
+    --sq-color-success-500: #22c55e;
+    --sq-color-success-600: #16a34a;
+    --sq-color-success-700: #15803d;
+
+    --sq-color-warning-50: #fffbeb;
+    --sq-color-warning-100: #fef3c7;
+    --sq-color-warning-500: #f59e0b;
+    --sq-color-warning-600: #d97706;
+    --sq-color-warning-700: #b45309;
+
+    --sq-color-danger-50: #fef2f2;
+    --sq-color-danger-100: #fee2e2;
+    --sq-color-danger-500: #ef4444;
+    --sq-color-danger-600: #dc2626;
+    --sq-color-danger-700: #b91c1c;
+
+    --sq-color-info-50: #ecfeff;
+    --sq-color-info-100: #cffafe;
+    --sq-color-info-500: #06b6d4;
+    --sq-color-info-600: #0891b2;
+    --sq-color-info-700: #0e7490;
+
+    --sq-color-success: var(--sq-color-success-600);
+    --sq-color-warning: var(--sq-color-warning-500);
+    --sq-color-danger: var(--sq-color-danger-600);
+    --sq-color-info: var(--sq-color-info-600);
+
+    /* ======================================================
+       Neutral Colors
+    ====================================================== */
+
+    --sq-color-white: #ffffff;
+    --sq-color-black: #000000;
+
+    --sq-color-gray-50: #f8fafc;
+    --sq-color-gray-100: #f1f5f9;
+    --sq-color-gray-200: #e2e8f0;
+    --sq-color-gray-300: #cbd5e1;
+    --sq-color-gray-400: #94a3b8;
+    --sq-color-gray-500: #64748b;
+    --sq-color-gray-600: #475569;
+    --sq-color-gray-700: #334155;
+    --sq-color-gray-800: #1e293b;
+    --sq-color-gray-900: #0f172a;
+
+    /* ======================================================
+       Text Colors
+    ====================================================== */
+
+    --sq-text-primary: var(--sq-color-gray-900);
+    --sq-text-secondary: var(--sq-color-gray-700);
+    --sq-text-muted: var(--sq-color-gray-500);
+    --sq-text-disabled: var(--sq-color-gray-400);
+    --sq-text-inverse: var(--sq-color-white);
+    --sq-text-link: var(--sq-color-primary);
+
+    /* ======================================================
+       Background Colors
+    ====================================================== */
+
+    --sq-bg-body: #f4f7fb;
+    --sq-bg-surface: var(--sq-color-white);
+    --sq-bg-muted: var(--sq-color-gray-50);
+    --sq-bg-sidebar: var(--sq-color-gray-900);
+    --sq-bg-sidebar-hover: var(--sq-color-gray-800);
+    --sq-bg-overlay: rgba(15, 23, 42, 0.55);
+
+    /* ======================================================
+       Border Colors
+    ====================================================== */
+
+    --sq-border-light: var(--sq-color-gray-100);
+    --sq-border: var(--sq-color-gray-200);
+    --sq-border-strong: var(--sq-color-gray-300);
+    --sq-border-focus: var(--sq-color-primary);
+
+    /* ======================================================
+       Typography
+    ====================================================== */
+
+    --sq-font-family-sans:
+        "Inter",
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    --sq-font-family-mono:
+        Consolas,
+        "Liberation Mono",
+        "Courier New",
+        monospace;
+
+    --sq-font-size-xs: 0.75rem;
+    --sq-font-size-sm: 0.875rem;
+    --sq-font-size-md: 1rem;
+    --sq-font-size-lg: 1.125rem;
+    --sq-font-size-xl: 1.25rem;
+    --sq-font-size-2xl: 1.5rem;
+    --sq-font-size-3xl: 1.875rem;
+    --sq-font-size-4xl: 2.25rem;
+
+    --sq-line-height-tight: 1.25;
+    --sq-line-height-normal: 1.5;
+    --sq-line-height-relaxed: 1.75;
+
+    --sq-font-weight-regular: 400;
+    --sq-font-weight-medium: 500;
+    --sq-font-weight-semibold: 600;
+    --sq-font-weight-bold: 700;
+    --sq-font-weight-extrabold: 800;
+
+    /* ======================================================
+       Spacing Scale
+    ====================================================== */
+
+    --sq-space-0: 0;
+    --sq-space-1: 0.25rem;
+    --sq-space-2: 0.5rem;
+    --sq-space-3: 0.75rem;
+    --sq-space-4: 1rem;
+    --sq-space-5: 1.25rem;
+    --sq-space-6: 1.5rem;
+    --sq-space-8: 2rem;
+    --sq-space-10: 2.5rem;
+    --sq-space-12: 3rem;
+    --sq-space-16: 4rem;
+    --sq-space-20: 5rem;
+    --sq-space-24: 6rem;
+
+    /* ======================================================
+       Border Radius
+    ====================================================== */
+
+    --sq-radius-none: 0;
+    --sq-radius-sm: 0.375rem;
+    --sq-radius-md: 0.5rem;
+    --sq-radius-lg: 0.75rem;
+    --sq-radius-xl: 1rem;
+    --sq-radius-2xl: 1.25rem;
+    --sq-radius-pill: 9999px;
+    --sq-radius-circle: 50%;
+
+    --sq-radius-default: var(--sq-radius-lg);
+
+    /* ======================================================
+       Shadows
+    ====================================================== */
+
+    --sq-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --sq-shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.08);
+    --sq-shadow-md: 0 4px 14px rgba(15, 23, 42, 0.10);
+    --sq-shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.14);
+    --sq-shadow-xl: 0 20px 45px rgba(15, 23, 42, 0.18);
+
+    --sq-shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.28);
+
+    /* ======================================================
+       Layout
+    ====================================================== */
+
+    --sq-sidebar-width: 16.25rem;
+    --sq-topbar-height: 4.25rem;
+    --sq-container-max-width: 1440px;
+
+    --sq-content-padding: var(--sq-space-5);
+    --sq-card-padding: var(--sq-space-5);
+
+    /* ======================================================
+       Forms
+    ====================================================== */
+
+    --sq-input-height: 2.75rem;
+    --sq-input-padding-x: var(--sq-space-4);
+    --sq-input-padding-y: var(--sq-space-3);
+    --sq-input-radius: var(--sq-radius-md);
+    --sq-input-border: var(--sq-border);
+    --sq-input-bg: var(--sq-color-white);
+    --sq-input-text: var(--sq-text-primary);
+    --sq-input-placeholder: var(--sq-text-muted);
+
+    /* ======================================================
+       Buttons
+    ====================================================== */
+
+    --sq-button-height-sm: 2rem;
+    --sq-button-height-md: 2.5rem;
+    --sq-button-height-lg: 3rem;
+
+    --sq-button-padding-x-sm: var(--sq-space-3);
+    --sq-button-padding-x-md: var(--sq-space-4);
+    --sq-button-padding-x-lg: var(--sq-space-6);
+
+    --sq-button-radius: var(--sq-radius-md);
+
+    /* ======================================================
+       Tables
+    ====================================================== */
+
+    --sq-table-header-bg: var(--sq-color-gray-50);
+    --sq-table-row-hover: var(--sq-color-gray-50);
+    --sq-table-border: var(--sq-border);
+
+    /* ======================================================
+       Z-Index
+    ====================================================== */
+
+    --sq-z-dropdown: 1000;
+    --sq-z-sticky: 1020;
+    --sq-z-fixed: 1030;
+    --sq-z-modal-backdrop: 1040;
+    --sq-z-modal: 1050;
+    --sq-z-popover: 1060;
+    --sq-z-tooltip: 1070;
+    --sq-z-toast: 1080;
+    --sq-z-loader: 1090;
+
+    /* ======================================================
+       Transitions
+    ====================================================== */
+
+    --sq-transition-fast: 120ms ease-in-out;
+    --sq-transition-normal: 200ms ease-in-out;
+    --sq-transition-slow: 300ms ease-in-out;
+
+    /* ======================================================
+       Breakpoints
+    ====================================================== */
+
+    --sq-breakpoint-xs: 360px;
+    --sq-breakpoint-sm: 576px;
+    --sq-breakpoint-md: 768px;
+    --sq-breakpoint-lg: 992px;
+    --sq-breakpoint-xl: 1200px;
+    --sq-breakpoint-2xl: 1400px;
+
+    /* ======================================================
+       Accessibility
+    ====================================================== */
+
+    --sq-focus-ring-color: rgba(37, 99, 235, 0.45);
+    --sq-focus-ring-width: 3px;
+    --sq-focus-ring-offset: 2px;
+
+    /* ======================================================
+       Chat Variables
+    ====================================================== */
+
+    --sq-chat-width: 360px;
+    --sq-chat-height: 520px;
+    --sq-chat-radius: var(--sq-radius-xl);
+    --sq-chat-bg: var(--sq-bg-surface);
+    --sq-chat-header-bg: var(--sq-color-primary);
+    --sq-chat-header-text: var(--sq-color-white);
+    --sq-chat-user-bg: var(--sq-color-primary);
+    --sq-chat-user-text: var(--sq-color-white);
+    --sq-chat-bot-bg: var(--sq-color-gray-100);
+    --sq-chat-bot-text: var(--sq-text-primary);
+}
+
+/* ==========================================================
+   Dark Theme
+========================================================== */
+
+[data-theme="dark"] {
+    --sq-bg-body: #0f172a;
+    --sq-bg-surface: #1e293b;
+    --sq-bg-muted: #334155;
+
+    --sq-text-primary: #f8fafc;
+    --sq-text-secondary: #e2e8f0;
+    --sq-text-muted: #94a3b8;
+    --sq-text-disabled: #64748b;
+
+    --sq-border-light: #334155;
+    --sq-border: #475569;
+    --sq-border-strong: #64748b;
+
+    --sq-bg-sidebar: #020617;
+    --sq-bg-sidebar-hover: #1e293b;
+
+    --sq-input-bg: #0f172a;
+    --sq-input-text: #f8fafc;
+    --sq-input-border: #475569;
+
+    --sq-table-header-bg: #334155;
+    --sq-table-row-hover: #334155;
+
+    --sq-chat-bg: #1e293b;
+    --sq-chat-bot-bg: #334155;
+    --sq-chat-bot-text: #f8fafc;
+}
+
+/* ==========================================================
+   High Contrast Theme
+========================================================== */
+
+[data-theme="high-contrast"] {
+    --sq-color-primary: #0033cc;
+    --sq-color-primary-hover: #002699;
+    --sq-bg-body: #ffffff;
+    --sq-bg-surface: #ffffff;
+    --sq-text-primary: #000000;
+    --sq-text-secondary: #000000;
+    --sq-text-muted: #333333;
+    --sq-border: #000000;
+    --sq-border-strong: #000000;
+    --sq-focus-ring-color: #ffbf00;
+}
+
+/* ==========================================================
+   Print Theme
+========================================================== */
+
+@media print {
+    :root {
+        --sq-bg-body: #ffffff;
+        --sq-bg-surface: #ffffff;
+        --sq-text-primary: #000000;
+        --sq-text-secondary: #000000;
+        --sq-border: #000000;
+        --sq-shadow-xs: none;
+        --sq-shadow-sm: none;
+        --sq-shadow-md: none;
+        --sq-shadow-lg: none;
+        --sq-shadow-xl: none;
+    }
+}

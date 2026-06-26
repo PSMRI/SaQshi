@@ -1,0 +1,19 @@
+[data-theme="dark"]{
+
+    --sq-bg-body:#0f172a;
+
+    --sq-bg-surface:#1e293b;
+
+    --sq-bg-muted:#334155;
+
+    --sq-text-primary:#f8fafc;
+
+    --sq-text-secondary:#cbd5e1;
+
+    --sq-text-muted:#94a3b8;
+
+    --sq-border:#334155;
+
+    --sq-shadow-color:rgba(0,0,0,.45);
+
+}
