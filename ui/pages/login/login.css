@@ -1,0 +1,434 @@
+/*!
+ * ==========================================================
+ * SaQshi Login Page v1.0
+ * ----------------------------------------------------------
+ * Project   : SaQshi Open Source
+ * Module    : Login
+ * File      : login.css
+ * License   : Apache-2.0
+ * ==========================================================
+ *
+ * Login page specific styles only.
+ * Shared styles belong in the Design System.
+ * ==========================================================
+*/
+
+/* ==========================================================
+   Page
+========================================================== */
+
+.sq-login-page{
+
+    min-height:100vh;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:2rem;
+
+    background:
+        linear-gradient(135deg,#0f172a 0%,#1e40af 100%);
+
+}
+
+/* ==========================================================
+   Container
+========================================================== */
+
+.sq-login-container{
+
+    width:100%;
+
+    max-width:1200px;
+
+    display:grid;
+
+    grid-template-columns:1fr 420px;
+
+    background:#ffffff;
+
+    border-radius:24px;
+
+    overflow:hidden;
+
+    box-shadow:0 30px 80px rgba(0,0,0,.25);
+
+}
+
+/* ==========================================================
+   Left Side
+========================================================== */
+
+.sq-login-brand{
+
+    padding:4rem;
+
+    color:#ffffff;
+
+    background:
+        linear-gradient(160deg,#2563eb,#0f172a);
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+}
+
+.sq-login-logo{
+
+    width:90px;
+
+    margin-bottom:2rem;
+
+}
+
+.sq-login-brand h1{
+
+    margin:0;
+
+    font-size:3rem;
+
+    font-weight:700;
+
+}
+
+.sq-login-brand p{
+
+    margin:1rem 0 2rem;
+
+    font-size:1.1rem;
+
+    opacity:.9;
+
+    line-height:1.7;
+
+}
+
+.sq-login-features{
+
+    list-style:none;
+
+    margin:0;
+
+    padding:0;
+
+}
+
+.sq-login-features li{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:.75rem;
+
+    padding:.8rem 0;
+
+    font-size:1rem;
+
+}
+
+.sq-login-features i{
+
+    color:#4ade80;
+
+}
+
+/* ==========================================================
+   Login Card
+========================================================== */
+
+.sq-login-card{
+
+    background:#ffffff;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:2.5rem;
+
+}
+
+.sq-login-card .sq-card{
+
+    width:100%;
+
+    border:none;
+
+    box-shadow:none;
+
+}
+
+.sq-card-header{
+
+    text-align:center;
+
+    margin-bottom:2rem;
+
+}
+
+.sq-card-header h2{
+
+    margin:0;
+
+    font-size:2rem;
+
+    color:var(--sq-text-primary);
+
+}
+
+.sq-card-header p{
+
+    margin-top:.75rem;
+
+    color:var(--sq-text-secondary);
+
+}
+
+/* ==========================================================
+   Form
+========================================================== */
+
+.sq-form-group{
+
+    margin-bottom:1.5rem;
+
+}
+
+.sq-form-group label{
+
+    display:block;
+
+    margin-bottom:.5rem;
+
+    font-weight:600;
+
+    color:var(--sq-text-primary);
+
+}
+
+.sq-form-control{
+
+    width:100%;
+
+}
+
+/* ==========================================================
+   Password
+========================================================== */
+
+.sq-password-group{
+
+    position:relative;
+
+}
+
+.sq-password-group .sq-form-control{
+
+    padding-right:3rem;
+
+}
+
+.sq-password-toggle{
+
+    position:absolute;
+
+    right:.75rem;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    border:none;
+
+    background:none;
+
+    cursor:pointer;
+
+    color:var(--sq-text-muted);
+
+    font-size:1rem;
+
+}
+
+.sq-password-toggle:hover{
+
+    color:var(--sq-color-primary);
+
+}
+
+/* ==========================================================
+   Remember Me
+========================================================== */
+
+.sq-login-options{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:1.5rem;
+
+    font-size:.9rem;
+
+}
+
+.sq-checkbox{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:.5rem;
+
+}
+
+.sq-login-options a{
+
+    color:var(--sq-color-primary);
+
+    text-decoration:none;
+
+}
+
+.sq-login-options a:hover{
+
+    text-decoration:underline;
+
+}
+
+/* ==========================================================
+   Button
+========================================================== */
+
+.sq-btn-block{
+
+    width:100%;
+
+}
+
+/* ==========================================================
+   Footer
+========================================================== */
+
+.sq-card-footer{
+
+    text-align:center;
+
+    margin-top:2rem;
+
+    color:var(--sq-text-muted);
+
+}
+
+/* ==========================================================
+   Animation
+========================================================== */
+
+.sq-login-card{
+
+    animation:loginFade .45s ease;
+
+}
+
+@keyframes loginFade{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}
+
+/* ==========================================================
+   Responsive
+========================================================== */
+
+@media(max-width:992px){
+
+    .sq-login-container{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .sq-login-brand{
+
+        display:none;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .sq-login-page{
+
+        padding:1rem;
+
+    }
+
+    .sq-login-card{
+
+        padding:1.5rem;
+
+    }
+
+    .sq-card-header h2{
+
+        font-size:1.6rem;
+
+    }
+
+}
+
+/* ==========================================================
+   Dark Theme
+========================================================== */
+
+[data-theme="dark"] .sq-login-card{
+
+    background:var(--sq-bg-surface);
+
+}
+
+[data-theme="dark"] .sq-login-container{
+
+    background:var(--sq-bg-surface);
+
+}
+
+/* ==========================================================
+   Print
+========================================================== */
+
+@media print{
+
+    .sq-login-brand{
+
+        display:none;
+
+    }
+
+}

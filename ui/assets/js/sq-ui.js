@@ -12,8 +12,8 @@
 (function (window, document) {
     "use strict";
 
-    const SQ = {};
-
+   // const SQ = {};
+const SQ = window.SQ || {};
     /* ======================================================
        Query Helpers
     ====================================================== */
@@ -214,39 +214,63 @@
     ====================================================== */
 
     SQ.loader = {
-        show: function (message = "Loading...") {
-            let loader = SQ.$("#sq-page-loader");
+    show: function (message = "Loading...") {
+        const componentLoader = document.getElementById("sq-loader");
 
-            if (!loader) {
-                loader = document.createElement("div");
-                loader.id = "sq-page-loader";
-                loader.style.position = "fixed";
-                loader.style.inset = "0";
-                loader.style.background = "rgba(15,23,42,0.45)";
-                loader.style.zIndex = "1090";
-                loader.style.display = "flex";
-                loader.style.alignItems = "center";
-                loader.style.justifyContent = "center";
-                loader.innerHTML = `
-                    <div class="sq-card sq-p-5 sq-text-center">
-                        <div class="sq-btn-spinner" aria-hidden="true"></div>
-                        <div class="sq-mt-3">${SQ.escape(message)}</div>
-                    </div>
-                `;
-                document.body.appendChild(loader);
+        if (componentLoader) {
+            componentLoader.classList.add("active");
+            componentLoader.setAttribute("aria-hidden", "false");
+
+            const msg = document.getElementById("sq-loader-message");
+            if (msg) {
+                msg.textContent = message;
             }
 
-            loader.style.display = "flex";
-        },
-
-        hide: function () {
-            const loader = SQ.$("#sq-page-loader");
-
-            if (loader) {
-                loader.style.display = "none";
-            }
+            return;
         }
-    };
+
+        let loader = SQ.$("#sq-page-loader");
+
+        if (!loader) {
+            loader = document.createElement("div");
+            loader.id = "sq-page-loader";
+            loader.style.position = "fixed";
+            loader.style.inset = "0";
+            loader.style.background = "rgba(15,23,42,0.45)";
+            loader.style.zIndex = "99999";
+            loader.style.display = "flex";
+            loader.style.alignItems = "center";
+            loader.style.justifyContent = "center";
+
+            loader.innerHTML = `
+                <div class="sq-card sq-p-5 sq-text-center">
+                    <div class="sq-mt-3">${SQ.escape(message)}</div>
+                </div>
+            `;
+
+            document.body.appendChild(loader);
+        }
+
+        loader.style.display = "flex";
+    },
+
+    hide: function () {
+        const oldLoader = SQ.$("#sq-page-loader");
+
+        if (oldLoader) {
+            oldLoader.remove();
+        }
+
+        const componentLoader = SQ.$("#sq-loader");
+
+        if (componentLoader) {
+            componentLoader.classList.remove("active", "success", "error");
+            componentLoader.setAttribute("aria-hidden", "true");
+        }
+
+        document.body.style.overflow = "";
+    }
+};
 
     /* ======================================================
        Modal

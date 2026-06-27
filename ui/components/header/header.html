@@ -1,0 +1,226 @@
+<!--
+==========================================================
+SQ Header Component
+----------------------------------------------------------
+Project : SaQshi Open Source
+Component : Application Header
+License : Apache-2.0
+
+Loaded automatically by:
+
+<div data-component="header"></div>
+
+==========================================================
+-->
+
+<header class="sq-header" role="banner">
+
+    <!-- Left Section -->
+
+    <div class="sq-header-left">
+
+        <button
+    type="button"
+    class="sq-header-toggle"
+    id="sq-sidebar-toggle"
+    data-sq-sidebar-toggle
+    aria-label="Toggle Sidebar">
+    <i class="bi bi-list"></i>
+</button>
+
+        <!-- Logo -->
+
+        <a
+            href="/ui/dashboard.html"
+            class="sq-header-logo">
+
+            <img
+                src="/ui/assets/images/logo.svg"
+                alt="SaQshi Logo"
+                class="sq-logo">
+
+            <div class="sq-header-brand">
+
+                <div
+                    class="sq-header-title"
+                    id="sq-app-name">
+
+                    SaQshi
+
+                </div>
+
+                <div
+                    class="sq-header-version"
+                    id="sq-app-version">
+
+                    Version 1.0
+
+                </div>
+
+            </div>
+
+        </a>
+
+    </div>
+
+    <!-- Center -->
+
+    <div class="sq-header-center">
+
+        <form
+            class="sq-header-search"
+            role="search">
+
+            <i class="bi bi-search"></i>
+
+            <input
+                type="search"
+                placeholder="Search assessment, facility, user..."
+                aria-label="Global Search">
+
+        </form>
+
+    </div>
+
+    <!-- Right -->
+
+    <div class="sq-header-right">
+
+        <!-- AI Assistant -->
+
+        <button
+            type="button"
+            class="sq-icon-button"
+            id="sq-ai-button"
+            title="AI Assistant">
+
+            <i class="bi bi-robot"></i>
+
+        </button>
+
+        <!-- Notification -->
+
+        <button
+            type="button"
+            class="sq-icon-button"
+            title="Notifications">
+
+            <i class="bi bi-bell"></i>
+
+            <span
+                class="sq-badge sq-badge-danger"
+                id="sq-notification-count">
+
+                0
+
+            </span>
+
+        </button>
+
+        <!-- Theme -->
+
+        <button
+            type="button"
+            class="sq-icon-button"
+            data-sq-theme-toggle
+            title="Toggle Theme">
+
+            <i class="bi bi-moon-stars"></i>
+
+        </button>
+
+        <!-- Language -->
+
+        <select
+            class="sq-header-language"
+            aria-label="Language">
+
+            <option value="en">
+
+                English
+
+            </option>
+
+            <option value="hi">
+
+                हिन्दी
+
+            </option>
+
+        </select>
+
+        <!-- User -->
+
+        <div
+            class="sq-user-menu">
+
+            <button
+                class="sq-user-button"
+                data-sq-dropdown="#sq-user-dropdown">
+
+                <img
+                    src="/ui/assets/images/avatar.png"
+                    alt="User"
+                    class="sq-user-avatar">
+
+                <div class="sq-user-details">
+
+                    <div
+                        data-sq-user-name>
+
+                        User
+
+                    </div>
+
+                    <small
+                        data-sq-user-role>
+
+                        Role
+
+                    </small>
+
+                </div>
+
+                <i class="bi bi-chevron-down"></i>
+
+            </button>
+
+            <div
+                class="sq-dropdown-menu"
+                id="sq-user-dropdown">
+
+                <a href="/ui/profile/profile.html">
+
+                    <i class="bi bi-person"></i>
+
+                    My Profile
+
+                </a>
+
+                <a href="/ui/profile/change-password.html">
+
+                    <i class="bi bi-key"></i>
+
+                    Change Password
+
+                </a>
+
+                <hr>
+
+                <a
+                    href="#"
+                    data-sq-logout>
+
+                    <i class="bi bi-box-arrow-right"></i>
+
+                    Logout
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>

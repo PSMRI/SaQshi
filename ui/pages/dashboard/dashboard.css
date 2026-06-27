@@ -1,0 +1,463 @@
+/*!
+ * ==========================================================
+ * SQ Dashboard Page v1.0
+ * ----------------------------------------------------------
+ * Project   : SaQshi Open Source
+ * Module    : Dashboard
+ * File      : dashboard.css
+ * License   : Apache-2.0
+ * ==========================================================
+ *
+ * Dashboard Page Styles
+ *
+ * This file contains ONLY dashboard specific styles.
+ *
+ * Do NOT put reusable component styles here.
+ *
+ * Components belong in:
+ *      assets/css/components/
+ *
+ * ==========================================================
+ */
+
+/* ==========================================================
+   Main Content
+========================================================== */
+
+.sq-content{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:1.5rem;
+
+}
+
+/* ==========================================================
+   Page Header
+========================================================== */
+
+.sq-page-header{
+
+    display:flex;
+
+    align-items:flex-start;
+
+    justify-content:space-between;
+
+    gap:1rem;
+
+    margin-bottom:1.5rem;
+
+    flex-wrap:wrap;
+
+}
+
+.sq-page-title{
+
+    margin:0;
+
+    font-size:2rem;
+
+    font-weight:700;
+
+    color:var(--sq-text-primary);
+
+}
+
+.sq-page-description{
+
+    margin-top:.35rem;
+
+    color:var(--sq-text-secondary);
+
+    font-size:.95rem;
+
+}
+
+.sq-page-actions{
+
+    display:flex;
+
+    gap:.75rem;
+
+    flex-wrap:wrap;
+
+}
+
+/* ==========================================================
+   Metric Cards
+========================================================== */
+
+.sq-metric-card{
+
+    position:relative;
+
+    background:var(--sq-bg-surface);
+
+    border:1px solid var(--sq-border);
+
+    border-radius:16px;
+
+    padding:1.5rem;
+
+    transition:.25s ease;
+
+    overflow:hidden;
+
+}
+
+.sq-metric-card:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:var(--sq-shadow-lg);
+
+}
+
+.sq-metric-card-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+}
+
+.sq-metric-title{
+
+    font-size:.90rem;
+
+    color:var(--sq-text-muted);
+
+    margin-bottom:.5rem;
+
+}
+
+.sq-metric-value{
+
+    font-size:2rem;
+
+    font-weight:700;
+
+    color:var(--sq-text-primary);
+
+    line-height:1;
+
+}
+
+.sq-metric-icon{
+
+    width:56px;
+
+    height:56px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:1.5rem;
+
+    background:rgba(0,0,0,.04);
+
+}
+
+.sq-metric-footer{
+
+    margin-top:1.25rem;
+
+    font-size:.85rem;
+
+    color:var(--sq-text-secondary);
+
+}
+
+/* ==========================================================
+   Metric Colors
+========================================================== */
+
+.sq-metric-primary{
+
+    border-top:4px solid var(--sq-color-primary);
+
+}
+
+.sq-metric-primary .sq-metric-icon{
+
+    color:var(--sq-color-primary);
+
+}
+
+.sq-metric-success{
+
+    border-top:4px solid var(--sq-color-success);
+
+}
+
+.sq-metric-success .sq-metric-icon{
+
+    color:var(--sq-color-success);
+
+}
+
+.sq-metric-warning{
+
+    border-top:4px solid var(--sq-color-warning);
+
+}
+
+.sq-metric-warning .sq-metric-icon{
+
+    color:var(--sq-color-warning);
+
+}
+
+.sq-metric-danger{
+
+    border-top:4px solid var(--sq-color-danger);
+
+}
+
+.sq-metric-danger .sq-metric-icon{
+
+    color:var(--sq-color-danger);
+
+}
+
+/* ==========================================================
+   Progress
+========================================================== */
+
+.sq-progress-label{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:.75rem;
+
+}
+
+.sq-progress-title{
+
+    font-weight:600;
+
+    color:var(--sq-text-primary);
+
+}
+
+.sq-progress-value{
+
+    font-weight:700;
+
+    color:var(--sq-color-primary);
+
+}
+
+/* ==========================================================
+   Empty State
+========================================================== */
+
+.sq-empty-message{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-height:180px;
+
+    color:var(--sq-text-muted);
+
+    text-align:center;
+
+    font-size:.95rem;
+
+}
+
+/* ==========================================================
+   Table
+========================================================== */
+
+#recent-assessment-list td{
+
+    vertical-align:middle;
+
+}
+
+.sq-status-badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-width:110px;
+
+}
+
+/* ==========================================================
+   Card Improvements
+========================================================== */
+
+.sq-card{
+
+    transition:.25s;
+
+}
+
+.sq-card:hover{
+
+    box-shadow:var(--sq-shadow-md);
+
+}
+
+/* ==========================================================
+   Animation
+========================================================== */
+
+.sq-metric-card,
+
+.sq-card{
+
+    animation:sqFadeUp .35s ease;
+
+}
+
+@keyframes sqFadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(12px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}
+
+/* ==========================================================
+   Responsive
+========================================================== */
+
+@media(max-width:1200px){
+
+    .sq-page-header{
+
+        flex-direction:column;
+
+    }
+
+}
+
+@media(max-width:992px){
+
+    .sq-metric-value{
+
+        font-size:1.75rem;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .sq-page-title{
+
+        font-size:1.5rem;
+
+    }
+
+    .sq-page-actions{
+
+        width:100%;
+
+    }
+
+    .sq-page-actions .sq-btn{
+
+        flex:1;
+
+    }
+
+    .sq-metric-card{
+
+        padding:1.2rem;
+
+    }
+
+}
+
+@media(max-width:576px){
+
+    .sq-metric-card-header{
+
+        flex-direction:column;
+
+        gap:1rem;
+
+    }
+
+    .sq-metric-icon{
+
+        width:48px;
+
+        height:48px;
+
+    }
+
+}
+
+/* ==========================================================
+   Dark Theme
+========================================================== */
+
+[data-theme="dark"] .sq-metric-card{
+
+    background:var(--sq-bg-surface);
+
+}
+
+[data-theme="dark"] .sq-card{
+
+    background:var(--sq-bg-surface);
+
+}
+
+/* ==========================================================
+   Print
+========================================================== */
+
+@media print{
+
+    .sq-page-actions{
+
+        display:none;
+
+    }
+
+    .sq-metric-card{
+
+        break-inside:avoid;
+
+    }
+
+}

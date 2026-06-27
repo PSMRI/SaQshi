@@ -1,0 +1,608 @@
+/*!
+ * ==========================================================
+ * SQ Header Component v1.0
+ * ----------------------------------------------------------
+ * Project   : SaQshi Open Source
+ * Component : Application Header
+ * File      : header.css
+ * License   : Apache-2.0
+ * ==========================================================
+ *
+ * Used By
+ * ----------------------------------------------------------
+ * Dashboard
+ * Assessment
+ * Reports
+ * Administration
+ * Profile
+ * Help
+ *
+ * Features
+ * ----------------------------------------------------------
+ * ✔ Responsive
+ * ✔ Sticky Header
+ * ✔ Government UI
+ * ✔ Dark Theme
+ * ✔ WCAG 2.2 AA
+ * ✔ Keyboard Accessible
+ * ✔ Mobile Ready
+ * ==========================================================
+*/
+
+
+/* ==========================================================
+   Header
+========================================================== */
+
+.sq-header{
+
+    position:sticky;
+
+    top:0;
+
+    left:0;
+
+    z-index:1000;
+
+    height:72px;
+
+    background:var(--sq-bg-surface);
+
+    border-bottom:1px solid var(--sq-border);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 1.5rem;
+
+    box-shadow:var(--sq-shadow-sm);
+
+}
+
+
+/* ==========================================================
+   Left
+========================================================== */
+
+.sq-header-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:1rem;
+
+}
+
+
+.sq-header-toggle{
+
+    width:44px;
+
+    height:44px;
+
+    border:none;
+
+    background:transparent;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+    font-size:1.3rem;
+
+}
+
+.sq-header-toggle:hover{
+
+    background:var(--sq-bg-muted);
+
+}
+
+.sq-header-toggle:focus-visible{
+
+    outline:3px solid var(--sq-color-primary);
+
+}
+
+
+/* ==========================================================
+   Logo
+========================================================== */
+
+.sq-header-logo{
+
+    display:flex;
+
+    align-items:center;
+
+    text-decoration:none;
+
+    color:inherit;
+
+    gap:.85rem;
+
+}
+
+.sq-logo{
+
+    width:44px;
+
+    height:44px;
+
+    object-fit:contain;
+
+}
+
+
+.sq-header-brand{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+.sq-header-title{
+
+    font-size:1.15rem;
+
+    font-weight:700;
+
+    color:var(--sq-text-primary);
+
+}
+
+
+.sq-header-version{
+
+    font-size:.72rem;
+
+    color:var(--sq-text-muted);
+
+}
+
+
+/* ==========================================================
+   Search
+========================================================== */
+
+.sq-header-center{
+
+    flex:1;
+
+    display:flex;
+
+    justify-content:center;
+
+    padding:0 2rem;
+
+}
+
+.sq-header-search{
+
+    position:relative;
+
+    width:100%;
+
+    max-width:550px;
+
+}
+
+.sq-header-search i{
+
+    position:absolute;
+
+    left:15px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    color:var(--sq-text-muted);
+
+}
+
+.sq-header-search input{
+
+    width:100%;
+
+    height:44px;
+
+    padding-left:42px;
+
+    padding-right:16px;
+
+    border:1px solid var(--sq-border);
+
+    border-radius:999px;
+
+    background:var(--sq-bg-body);
+
+    color:var(--sq-text-primary);
+
+    transition:.2s;
+
+}
+
+.sq-header-search input:focus{
+
+    border-color:var(--sq-color-primary);
+
+    background:var(--sq-bg-surface);
+
+}
+
+
+/* ==========================================================
+   Right
+========================================================== */
+
+.sq-header-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:.75rem;
+
+}
+
+
+/* ==========================================================
+   Icon Buttons
+========================================================== */
+
+.sq-icon-button{
+
+    position:relative;
+
+    width:42px;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:transparent;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+    font-size:1.1rem;
+
+    color:var(--sq-text-secondary);
+
+}
+
+.sq-icon-button:hover{
+
+    background:var(--sq-bg-muted);
+
+    color:var(--sq-color-primary);
+
+}
+
+.sq-icon-button:focus-visible{
+
+    outline:3px solid var(--sq-color-primary);
+
+}
+
+
+/* ==========================================================
+   Notification Badge
+========================================================== */
+
+.sq-icon-button .sq-badge{
+
+    position:absolute;
+
+    top:4px;
+
+    right:4px;
+
+}
+
+
+/* ==========================================================
+   Language
+========================================================== */
+
+.sq-header-language{
+
+    height:40px;
+
+    min-width:110px;
+
+}
+
+
+/* ==========================================================
+   User Menu
+========================================================== */
+
+.sq-user-menu{
+
+    position:relative;
+
+}
+
+
+.sq-user-button{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:.75rem;
+
+    border:none;
+
+    background:transparent;
+
+    cursor:pointer;
+
+    padding:.45rem .7rem;
+
+    border-radius:12px;
+
+    transition:.2s;
+
+}
+
+.sq-user-button:hover{
+
+    background:var(--sq-bg-muted);
+
+}
+
+.sq-user-avatar{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    border:2px solid var(--sq-border);
+
+}
+
+.sq-user-details{
+
+    display:flex;
+
+    flex-direction:column;
+
+    text-align:left;
+
+}
+
+.sq-user-details div{
+
+    font-weight:600;
+
+    color:var(--sq-text-primary);
+
+}
+
+.sq-user-details small{
+
+    color:var(--sq-text-muted);
+
+}
+
+
+/* ==========================================================
+   Dropdown
+========================================================== */
+
+.sq-dropdown-menu{
+
+    position:absolute;
+
+    right:0;
+
+    top:calc(100% + .5rem);
+
+    min-width:240px;
+
+    background:var(--sq-bg-surface);
+
+    border:1px solid var(--sq-border);
+
+    border-radius:14px;
+
+    box-shadow:var(--sq-shadow-lg);
+
+    display:none;
+
+    overflow:hidden;
+
+}
+
+.sq-dropdown-menu.is-open{
+
+    display:block;
+
+    animation:sqDropdown .2s ease;
+
+}
+
+@keyframes sqDropdown{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(-10px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}
+
+.sq-dropdown-menu a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:.75rem;
+
+    padding:.9rem 1rem;
+
+    color:var(--sq-text-primary);
+
+    text-decoration:none;
+
+    transition:.2s;
+
+}
+
+.sq-dropdown-menu a:hover{
+
+    background:var(--sq-bg-muted);
+
+}
+
+.sq-dropdown-menu hr{
+
+    border:none;
+
+    border-top:1px solid var(--sq-border);
+
+}
+
+
+/* ==========================================================
+   Mobile
+========================================================== */
+
+@media (max-width:992px){
+
+    .sq-header{
+
+        padding:0 1rem;
+
+    }
+
+    .sq-header-center{
+
+        display:none;
+
+    }
+
+    .sq-user-details{
+
+        display:none;
+
+    }
+
+    .sq-header-language{
+
+        display:none;
+
+    }
+
+}
+
+@media (max-width:768px){
+
+    .sq-header{
+
+        height:64px;
+
+    }
+
+    .sq-header-title{
+
+        font-size:1rem;
+
+    }
+
+    .sq-header-version{
+
+        display:none;
+
+    }
+
+    .sq-logo{
+
+        width:36px;
+
+        height:36px;
+
+    }
+
+}
+
+@media (max-width:480px){
+
+    .sq-header-right{
+
+        gap:.35rem;
+
+    }
+
+    .sq-icon-button{
+
+        width:38px;
+
+        height:38px;
+
+    }
+
+}
+
+
+/* ==========================================================
+   Dark Theme
+========================================================== */
+
+[data-theme="dark"] .sq-header{
+
+    background:var(--sq-bg-surface);
+
+    border-color:var(--sq-border);
+
+}
+
+[data-theme="dark"] .sq-dropdown-menu{
+
+    background:var(--sq-bg-surface);
+
+}
+
+
+/* ==========================================================
+   Print
+========================================================== */
+
+@media print{
+
+    .sq-header{
+
+        display:none !important;
+
+    }
+
+}

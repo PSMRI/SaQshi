@@ -1,0 +1,160 @@
+<!--
+==========================================================
+SaQshi Dashboard Layout
+----------------------------------------------------------
+Project  : SaQshi Open Source
+Layout   : Dashboard
+File     : layouts/dashboard.html
+License  : Apache-2.0
+==========================================================
+
+PURPOSE
+
+Master application layout.
+
+This layout is shared by every authenticated page.
+
+Dashboard
+Assessment
+Reports
+Admin
+Profile
+Facility
+Department
+Help
+
+The actual page HTML is injected into:
+
+#sq-page-content
+
+==========================================================
+-->
+
+<div class="sq-layout">
+
+    <!-- ==========================================
+         Global Components
+    =========================================== -->
+
+    <div data-component="loader"></div>
+
+    <div data-component="notification"></div>
+
+    <div data-component="modal"></div>
+
+    <div data-component="confirm-dialog"></div>
+
+    <!-- ==========================================
+         Header
+    =========================================== -->
+
+    <header
+        class="sq-layout-header">
+
+        <div data-component="header"></div>
+
+    </header>
+
+    <!-- ==========================================
+         Application Body
+    =========================================== -->
+
+    <div class="sq-layout-body">
+
+        <!-- Sidebar -->
+
+        <aside
+            class="sq-layout-sidebar">
+
+            <div data-component="sidebar"></div>
+
+        </aside>
+
+        <!-- Main -->
+
+        <main
+            class="sq-layout-main">
+
+            <!-- ===============================
+                 Breadcrumb
+            ================================ -->
+
+            <div
+                class="sq-layout-breadcrumb">
+
+                <div data-component="breadcrumb"></div>
+
+            </div>
+
+            <!-- ===============================
+                 Dynamic Page Header
+            ================================ -->
+
+            <section
+                id="sq-page-header"
+                class="sq-page-header">
+
+                <div>
+
+                    <h1
+                        id="sq-page-title"
+                        class="sq-page-title">
+
+                        Dashboard
+
+                    </h1>
+
+                    <p
+                        id="sq-page-subtitle"
+                        class="sq-page-subtitle">
+
+                    </p>
+
+                </div>
+
+                <div
+                    id="sq-page-actions"
+                    class="sq-page-actions">
+
+                    <!-- Dynamic Buttons -->
+
+                </div>
+
+            </section>
+
+            <!-- ===============================
+                 Dynamic Page Content
+            ================================ -->
+
+            <section
+                id="sq-page-content"
+                class="sq-page-content">
+
+                <!--
+
+                    Router injects
+
+                    ui/pages/*/*.html
+
+                    here.
+
+                -->
+
+            </section>
+
+            <!-- ===============================
+                 Footer
+            ================================ -->
+
+            <footer
+                class="sq-layout-footer">
+
+                <div data-component="footer"></div>
+
+            </footer>
+
+        </main>
+
+    </div>
+
+</div>
