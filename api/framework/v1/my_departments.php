@@ -119,13 +119,31 @@ try {
 
     $departmentList = [];
 
-    foreach ($departments as $department) {
-        $departmentList[] = [
-            'fac_dept_id'   => (int)($department['fac_dept_id'] ?? 0),
-            'dept_name'     => $department['dept_name'] ?? '',
-            'concern_count' => count($department['concerns'] ?? [])
-        ];
-    }
+foreach ($departments as $department) {
+
+    $deptId = (int)(
+        $department['dept_id']
+        ?? $department['fac_dept_id']
+        ?? $department['id']
+        ?? 0
+    );
+
+    $deptName =
+        $department['dept_name']
+        ?? $department['department_name']
+        ?? $department['fac_dept_name']
+        ?? $department['name']
+        ?? 'Department';
+
+    $departmentList[] = [
+        'dept_id'       => $deptId,
+        'fac_dept_id'   => $deptId,
+        'dept_name'     => $deptName,
+        'department_name' => $deptName,
+        'concern_count' => count($department['concerns'] ?? [])
+    ];
+}
+    
 
     Response::success(
         'Departments fetched successfully',

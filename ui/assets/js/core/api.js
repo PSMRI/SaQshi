@@ -1,6 +1,6 @@
 /*!
  * ==========================================================
- * SQ-UI API Client v1.0
+ * SQ-UI API Client v2.0
  * ----------------------------------------------------------
  * Project   : SaQshi Open Source
  * Component : Central API Client
@@ -12,28 +12,49 @@
 (function (window) {
     "use strict";
 
-    if (!window.SQ) {
-        window.SQ = {};
-    }
+    window.SQ = window.SQ || {};
 
     const SQ = window.SQ;
 
     const API = {
         baseUrl: "/api",
+        csrfEndpoint: "/auth/v1/csrf.php",
         timeout: 30000,
         csrfKey: "sq_csrf_token",
         debug: true
     };
 
+    function normalizeEndpoint(endpoint) {
+        let value = String(endpoint || "");
+
+        if (value.startsWith("http")) {
+            return value;
+        }
+
+        value = value.replace(/^\/+/, "");
+
+        if (value.startsWith("api/")) {
+            value = value.substring(4);
+        }
+
+        return "/" + value;
+    }
+
     function buildUrl(endpoint, params = {}) {
-        let url = endpoint.startsWith("http")
-            ? endpoint
-            : API.baseUrl + endpoint;
+        const cleanEndpoint = normalizeEndpoint(endpoint);
+
+        let url = cleanEndpoint.startsWith("http")
+            ? cleanEndpoint
+            : API.baseUrl + cleanEndpoint;
 
         const query = new URLSearchParams();
 
-        Object.keys(params).forEach(function (key) {
-            if (params[key] !== null && params[key] !== undefined && params[key] !== "") {
+        Object.keys(params || {}).forEach(function (key) {
+            if (
+                params[key] !== null &&
+                params[key] !== undefined &&
+                params[key] !== ""
+            ) {
                 query.append(key, params[key]);
             }
         });
@@ -57,6 +78,10 @@
         }
     }
 
+    function clearCsrfToken() {
+        localStorage.removeItem(API.csrfKey);
+    }
+
     function clearSession() {
         localStorage.removeItem(API.csrfKey);
         localStorage.removeItem("sq_user");
@@ -74,12 +99,25 @@
 
         const csrf = getCsrfToken();
 
-        if (csrf) {
-            headers["X-CSRF-TOKEN"] = csrf;
-            headers["X-CSRF-Token"] = csrf;
-        }
+      if (csrf) {
+    headers["X-CSRF-TOKEN"] = String(csrf).trim();
+}
 
         return Object.assign(headers, extraHeaders);
+    }
+
+    function isWriteMethod(method) {
+        return ["POST", "PUT", "PATCH", "DELETE"].includes(String(method).toUpperCase());
+    }
+
+    function extractCsrfToken(result) {
+        return (
+            result?.csrf_token ||
+            result?.data?.csrf_token ||
+            result?.token ||
+            result?.data?.token ||
+            ""
+        );
     }
 
     async function parseResponse(response) {
@@ -99,7 +137,59 @@
         };
     }
 
-    async function request(method, endpoint, data = null, options = {}) {
+    async function ensureCsrfToken(forceRefresh = false) {
+        if (!forceRefresh && getCsrfToken()) {
+            return getCsrfToken();
+        }
+
+        if (forceRefresh) {
+            clearCsrfToken();
+        }
+
+        const response = await fetch(buildUrl(API.csrfEndpoint), {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "Accept": "application/json"
+            }
+        });
+
+        const result = await parseResponse(response);
+
+        if (!response.ok) {
+            throw result;
+        }
+
+        const token = extractCsrfToken(result);
+
+        if (!token) {
+            throw {
+                status: "error",
+                message: "CSRF token not received from server.",
+                data: result,
+                errors: null
+            };
+        }
+
+        setCsrfToken(token);
+
+        return token;
+    }
+
+    function isInvalidCsrfError(error) {
+        const message = String(error?.message || "").toLowerCase();
+
+        return (
+            message.includes("csrf") &&
+            (
+                message.includes("invalid") ||
+                message.includes("expired") ||
+                message.includes("missing")
+            )
+        );
+    }
+
+    async function doFetch(method, endpoint, data, options, retrying = false) {
         const controller = new AbortController();
         const timeout = options.timeout || API.timeout;
 
@@ -109,25 +199,25 @@
 
         const isFormData = data instanceof FormData;
 
-        const fetchOptions = {
-            method: method,
-            credentials: "include",
-            headers: requestHeaders(options.headers || {}, isFormData),
-            signal: controller.signal
-        };
-
-        if (data && method !== "GET") {
-            fetchOptions.body = isFormData ? data : JSON.stringify(data);
-        }
-
-        const url = method === "GET"
-            ? buildUrl(endpoint, data || {})
-            : buildUrl(endpoint, options.params || {});
-
         try {
-            if (options.loader !== false && SQ.loader) {
-                SQ.loader.show(options.loaderText || "Please wait...");
+            if (isWriteMethod(method)) {
+                await ensureCsrfToken(retrying);
             }
+
+            const fetchOptions = {
+                method: method,
+                credentials: "include",
+                headers: requestHeaders(options.headers || {}, isFormData),
+                signal: controller.signal
+            };
+
+            if (data && method !== "GET") {
+                fetchOptions.body = isFormData ? data : JSON.stringify(data);
+            }
+
+            const url = method === "GET"
+                ? buildUrl(endpoint, data || {})
+                : buildUrl(endpoint, options.params || {});
 
             if (API.debug) {
                 console.log("[SQ API]", method, url, data || "");
@@ -136,6 +226,12 @@
             const response = await fetch(url, fetchOptions);
 
             const result = await parseResponse(response);
+
+            const newToken = extractCsrfToken(result);
+
+            if (newToken) {
+                setCsrfToken(newToken);
+            }
 
             if (response.status === 401) {
                 clearSession();
@@ -153,23 +249,24 @@
                 throw result;
             }
 
-            if (!response.ok) {
+            if (!response.ok || result?.status === "error") {
                 throw result;
-            }
-
-            if (result && result.csrf_token) {
-                setCsrfToken(result.csrf_token);
-            }
-
-            if (result && result.data && result.data.csrf_token) {
-                setCsrfToken(result.data.csrf_token);
             }
 
             return result;
 
         } catch (error) {
+            if (
+                !retrying &&
+                isWriteMethod(method) &&
+                isInvalidCsrfError(error)
+            ) {
+                clearCsrfToken();
+                return doFetch(method, endpoint, data, options, true);
+            }
+
             if (error.name === "AbortError") {
-                error = {
+                throw {
                     status: "error",
                     message: "Request timeout. Please try again.",
                     data: null,
@@ -177,6 +274,26 @@
                 };
             }
 
+            throw error;
+
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    async function request(method, endpoint, data = null, options = {}) {
+        try {
+            if (
+                options.loader !== false &&
+                SQ.loader &&
+                typeof SQ.loader.show === "function"
+            ) {
+                SQ.loader.show(options.loaderText || "Please wait...");
+            }
+
+            return await doFetch(method, endpoint, data, options, false);
+
+        } catch (error) {
             if (SQ.toast && options.showError !== false) {
                 SQ.toast(error.message || "Something went wrong", "danger");
             }
@@ -184,9 +301,11 @@
             throw error;
 
         } finally {
-            clearTimeout(timer);
-
-            if (options.loader !== false && SQ.loader) {
+            if (
+                options.loader !== false &&
+                SQ.loader &&
+                typeof SQ.loader.hide === "function"
+            ) {
                 SQ.loader.hide();
             }
         }
@@ -251,9 +370,15 @@
             URL.revokeObjectURL(objectUrl);
         },
 
-        setCsrfToken: setCsrfToken,
-        getCsrfToken: getCsrfToken,
-        clearSession: clearSession
+        csrf: function (forceRefresh = false) {
+            return ensureCsrfToken(forceRefresh);
+        },
+
+        setCsrfToken,
+        getCsrfToken,
+        clearCsrfToken,
+        clearSession,
+        buildUrl
     };
 
 })(window);

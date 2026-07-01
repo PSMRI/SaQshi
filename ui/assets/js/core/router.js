@@ -1,36 +1,13 @@
 /*!
  * ==========================================================
- * SQ Router Service v1.0
+ * SQ Router Service v2.5
  * ----------------------------------------------------------
  * Project  : SaQshi Open Source
  * Module   : Frontend Navigation / Routing Service
  * File     : router.js
  * License  : Apache-2.0
  * ==========================================================
- *
- * PURPOSE
- * ----------------------------------------------------------
- * Centralized navigation manager.
- *
- * Used for:
- * - Page navigation
- * - Query string handling
- * - Active menu highlighting
- * - Breadcrumb generation
- * - Browser history handling
- * - Safe redirects
- * - Future SPA migration
- *
- * Do not use scattered window.location code everywhere.
- * Prefer:
- *
- *      SQ.router.go("/ui/dashboard.html");
- *      SQ.router.query("assessment_id");
- *      SQ.router.setActiveMenu();
- *
- * ==========================================================
  */
-
 
 (function (window, document) {
     "use strict";
@@ -70,27 +47,55 @@
             .replace(/\.html$/, "")
             .split("?")[0];
 
+        if (value === "dashboard") {
+            return "dashboard";
+        }
+
+        if (value === "login") {
+            return "login";
+        }
+
         return value || CONFIG.defaultRoute;
     }
 
-    function manifestUrl(route) {
+    function routeBasePath(route) {
         const name = routeName(route);
-        return `${CONFIG.pagesPath}/${name}/${name}.json`;
+
+        if (name === "dashboard") {
+            return `${CONFIG.pagesPath}/dashboard/dashboard`;
+        }
+
+        if (name === "login") {
+            return `${CONFIG.pagesPath}/login/login`;
+        }
+
+        return `${CONFIG.pagesPath}/${name}`;
+    }
+
+    function manifestUrl(route) {
+        return `${routeBasePath(route)}.json`;
     }
 
     function pageHtmlUrl(route) {
-        const name = routeName(route);
-        return `${CONFIG.pagesPath}/${name}/${name}.html`;
+        return `${routeBasePath(route)}.html`;
     }
 
     function layoutUrl(layout) {
         return `${CONFIG.layoutPath}/${layout}.html`;
     }
 
+    function debugLog() {
+        if (CONFIG.debug && console && console.log) {
+            console.log.apply(console, arguments);
+        }
+    }
+
     async function fetchJson(url) {
         const res = await fetch(url, {
             credentials: "same-origin",
-            headers: { "Accept": "application/json" }
+            headers: {
+                "Accept": "application/json"
+            }
         });
 
         if (!res.ok) {
@@ -103,7 +108,9 @@
     async function fetchHtml(url) {
         const res = await fetch(url, {
             credentials: "same-origin",
-            headers: { "Accept": "text/html" }
+            headers: {
+                "Accept": "text/html"
+            }
         });
 
         if (!res.ok) {
@@ -114,7 +121,9 @@
     }
 
     async function loadCss(url) {
-        if (!url || state.loadedCss[url]) return;
+        if (!url || state.loadedCss[url]) {
+            return;
+        }
 
         if (document.querySelector(`link[href="${url}"]`)) {
             state.loadedCss[url] = true;
@@ -126,18 +135,24 @@
             link.rel = "stylesheet";
             link.href = url;
             link.setAttribute("data-sq-page-css", url);
-            link.onload = resolve;
+
+            link.onload = function () {
+                state.loadedCss[url] = true;
+                resolve();
+            };
+
             link.onerror = function () {
                 reject(new Error("Unable to load CSS: " + url));
             };
+
             document.head.appendChild(link);
         });
-
-        state.loadedCss[url] = true;
     }
 
     async function loadJs(url) {
-        if (!url || state.loadedJs[url]) return;
+        if (!url || state.loadedJs[url]) {
+            return;
+        }
 
         if (document.querySelector(`script[src="${url}"]`)) {
             state.loadedJs[url] = true;
@@ -148,14 +163,18 @@
             const script = document.createElement("script");
             script.src = url;
             script.setAttribute("data-sq-page-js", url);
-            script.onload = resolve;
+
+            script.onload = function () {
+                state.loadedJs[url] = true;
+                resolve();
+            };
+
             script.onerror = function () {
                 reject(new Error("Unable to load JS: " + url));
             };
+
             document.body.appendChild(script);
         });
-
-        state.loadedJs[url] = true;
     }
 
     async function loadLayout(layoutName) {
@@ -178,9 +197,13 @@
     }
 
     async function checkAuth(manifest) {
-        const required = manifest.authentication && manifest.authentication.required === true;
+        const required =
+            manifest.authentication &&
+            manifest.authentication.required === true;
 
-        if (!required) return;
+        if (!required) {
+            return;
+        }
 
         if (SQ.auth && typeof SQ.auth.requireAuth === "function") {
             await SQ.auth.requireAuth();
@@ -210,15 +233,18 @@
 
     function renderActions(manifest) {
         const target = document.querySelector(CONFIG.pageActionsSelector);
-        if (!target) return;
+
+        if (!target) {
+            return;
+        }
 
         target.innerHTML = "";
 
         (manifest.quickActions || []).forEach(function (action) {
             const a = document.createElement("a");
             a.href = action.url || "#";
-            a.className = "sq-btn sq-btn-primary";
-            a.setAttribute("data-sq-route", action.url || "#");
+            a.className = action.className || "sq-btn sq-btn-primary";
+            a.setAttribute("data-sq-route", action.route || action.url || "#");
 
             a.innerHTML = `
                 ${action.icon ? `<i class="bi ${action.icon}"></i>` : ""}
@@ -230,7 +256,9 @@
     }
 
     function renderBreadcrumb(manifest) {
-        if (!SQ.breadcrumb || typeof SQ.breadcrumb.render !== "function") return;
+        if (!SQ.breadcrumb || typeof SQ.breadcrumb.render !== "function") {
+            return;
+        }
 
         const items = (manifest.breadcrumb || []).map(function (item) {
             return {
@@ -243,24 +271,47 @@
         SQ.breadcrumb.render(items);
     }
 
+    function forceHideLoader() {
+        if (SQ.loader && typeof SQ.loader.hide === "function") {
+            SQ.loader.hide();
+        }
+
+        document.querySelectorAll("#sq-page-loader, .sq-loader").forEach(function (el) {
+            el.classList.remove("active", "success", "error");
+            el.style.display = "none";
+            el.setAttribute("aria-hidden", "true");
+        });
+
+        document.body.style.overflow = "";
+    }
+
     async function loadPage(route, options = {}) {
-        if (state.isLoading) return;
+        if (state.isLoading) {
+            return;
+        }
 
         const name = routeName(route);
         state.isLoading = true;
 
         try {
-            // if (SQ.loader && typeof SQ.loader.show === "function") {
-            //     SQ.loader.show("Loading page...");
-            //  }
-            const useLoader = options.loader !== false && name !== CONFIG.loginRoute;
+            const useLoader =
+                options.loader !== false &&
+                name !== CONFIG.loginRoute;
 
             forceHideLoader();
 
             if (useLoader && SQ.loader && typeof SQ.loader.show === "function") {
                 SQ.loader.show("Loading page...");
             }
+
+            debugLog("[SQ Router] Route:", name);
+            debugLog("[SQ Router] Manifest:", manifestUrl(name));
+            debugLog("[SQ Router] HTML:", pageHtmlUrl(name));
+
             const manifest = await fetchJson(manifestUrl(name));
+
+            debugLog("[SQ Router] CSS assets:", manifest.assets?.css || []);
+            debugLog("[SQ Router] JS assets:", manifest.assets?.js || []);
 
             await checkAuth(manifest);
             await loadLayout(manifest.layout || "dashboard");
@@ -272,7 +323,10 @@
             const content = document.querySelector(CONFIG.contentSelector);
 
             if (!content) {
-                throw new Error("Page content container not found: " + CONFIG.contentSelector);
+                throw new Error(
+                    "Page content container not found: " +
+                    CONFIG.contentSelector
+                );
             }
 
             content.innerHTML = await fetchHtml(pageHtmlUrl(name));
@@ -293,7 +347,13 @@
             state.currentManifest = manifest;
 
             if (options.history !== false) {
-                history.pushState({ route: name }, "", `/ui/${name}.html`);
+                history.pushState(
+                    {
+                        route: name
+                    },
+                    "",
+                    `${CONFIG.basePath}/${name}.html`
+                );
             }
 
             setActiveMenu();
@@ -305,7 +365,14 @@
                 }
             }));
 
-            const module = SQ[name];
+            const moduleName =
+                manifest.moduleName ||
+                manifest.module ||
+                name.replace(/[/-](\w)/g, function (_, c) {
+                    return c.toUpperCase();
+                });
+
+            const module = SQ[moduleName] || SQ[name];
 
             if (module && typeof module.init === "function") {
                 await module.init();
@@ -325,29 +392,11 @@
                 </div>
             `;
         } finally {
-    state.isLoading = false;
-
-    if (SQ.loader && typeof SQ.loader.hide === "function") {
-        SQ.loader.hide();
+            state.isLoading = false;
+            forceHideLoader();
+        }
     }
 
-    document.querySelectorAll("#sq-page-loader, .sq-loader").forEach(function (el) {
-        el.classList.remove("active", "success", "error");
-        el.style.display = "none";
-        el.setAttribute("aria-hidden", "true");
-    });
-
-    document.body.style.overflow = "";
-}
-    }
-    function forceHideLoader() {
-        document.querySelectorAll(".sq-loader").forEach(function (loader) {
-            loader.classList.remove("active", "success", "error");
-            loader.setAttribute("aria-hidden", "true");
-        });
-
-        document.body.style.overflow = "";
-    }
     function navigate(route, params = {}, options = {}) {
         if (Object.keys(params).length) {
             setQuery(params);
@@ -377,7 +426,11 @@
         );
 
         Object.keys(params).forEach(function (key) {
-            if (params[key] !== null && params[key] !== undefined && params[key] !== "") {
+            if (
+                params[key] !== null &&
+                params[key] !== undefined &&
+                params[key] !== ""
+            ) {
                 url.searchParams.set(key, params[key]);
             }
         });
@@ -389,7 +442,11 @@
         const url = new URL(window.location.href);
 
         Object.keys(params).forEach(function (key) {
-            if (params[key] === null || params[key] === undefined || params[key] === "") {
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === ""
+            ) {
                 url.searchParams.delete(key);
             } else {
                 url.searchParams.set(key, params[key]);
@@ -409,26 +466,32 @@
 
     function queries() {
         const obj = {};
+
         new URLSearchParams(window.location.search).forEach(function (value, key) {
             obj[key] = value;
         });
+
         return obj;
     }
 
     function removeQuery(keys = []) {
         const url = new URL(window.location.href);
+
         keys.forEach(function (key) {
             url.searchParams.delete(key);
         });
+
         window.history.replaceState({}, "", url.toString());
     }
 
     function setActiveMenu(selector = "[data-sq-nav]") {
         document.querySelectorAll(selector).forEach(function (link) {
             const href = link.getAttribute("href") || "";
+            const route = link.getAttribute("data-sq-route") || href;
+
             const active =
-                href.includes(state.currentRoute || "") ||
-                window.location.pathname === href;
+                route.includes(state.currentRoute || "") ||
+                href.includes(state.currentRoute || "");
 
             link.classList.toggle("is-active", active);
 
@@ -442,7 +505,9 @@
 
     function reload() {
         if (state.currentRoute) {
-            return loadPage(state.currentRoute, { history: false });
+            return loadPage(state.currentRoute, {
+                history: false
+            });
         }
 
         window.location.reload();
@@ -464,11 +529,16 @@
         document.addEventListener("click", function (event) {
             const el = event.target.closest("[data-sq-route]");
 
-            if (!el) return;
+            if (!el) {
+                return;
+            }
 
             event.preventDefault();
 
-            const route = el.getAttribute("data-sq-route") || el.getAttribute("href");
+            const route =
+                el.getAttribute("data-sq-route") ||
+                el.getAttribute("href");
+
             navigate(route);
         });
     }
@@ -477,8 +547,14 @@
         bindLinks();
 
         window.addEventListener("popstate", function (event) {
-            const route = event.state?.route || state.currentRoute || CONFIG.defaultRoute;
-            loadPage(route, { history: false });
+            const route =
+                event.state?.route ||
+                state.currentRoute ||
+                CONFIG.defaultRoute;
+
+            loadPage(route, {
+                history: false
+            });
         });
     }
 
@@ -490,18 +566,7 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
-    function forceHideLoader() {
-        if (SQ.loader && typeof SQ.loader.hide === "function") {
-            SQ.loader.hide();
-        }
 
-        document.querySelectorAll(".sq-loader").forEach(function (loader) {
-            loader.classList.remove("active", "success", "error");
-            loader.setAttribute("aria-hidden", "true");
-        });
-
-        document.body.style.overflow = "";
-    }
     SQ.router = {
         config(settings = {}) {
             Object.assign(CONFIG, settings);
@@ -522,6 +587,8 @@
         setActiveMenu,
         buildUrl,
         routeName,
+        manifestUrl,
+        pageHtmlUrl,
         init,
         state
     };

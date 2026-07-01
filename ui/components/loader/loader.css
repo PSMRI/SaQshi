@@ -388,3 +388,14 @@
     }
 
 }
+.sq-loader:not(.active) {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+.sq-loader.active {
+    display: flex !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+}

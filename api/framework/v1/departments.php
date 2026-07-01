@@ -79,31 +79,39 @@ try {
 
         $runtimeStatus = $statusMap[$deptId] ?? null;
 
-        $departments[] = [
-            'id'           => $deptId,
-            'code'         => $department['code'] ?? null,
-            'name'         => $department['name'] ?? '',
-            'facility_type'=> $department['facility_type'] ?? $facilityType,
-            'subtype_ids'  => $department['subtype_ids'] ?? [],
-            'is_active'    => $runtimeStatus ? (int)$runtimeStatus['is_active'] : 0,
-            'configured'   => $runtimeStatus ? true : false,
-            'activated_by' => $runtimeStatus['activated_by'] ?? null,
-            'activated_on' => $runtimeStatus['activated_on'] ?? null,
-            'updated_on'   => $runtimeStatus['updated_on'] ?? null
-        ];
+       $departments[] = [
+    'id'            => $deptId,
+    'dept_id'       => $deptId,
+    'fac_dept_id'   => $deptId,
+    'code'          => $department['code'] ?? null,
+    'name'          => $department['name'] ?? '',
+    'department_name' => $department['name'] ?? '',
+    'dept_name'     => $department['name'] ?? '',
+    'facility_type' => $department['facility_type'] ?? $facilityType,
+    'subtype_ids'   => $department['subtype_ids'] ?? [],
+    'is_active'     => $runtimeStatus ? (int)$runtimeStatus['is_active'] : 0,
+    'configured'    => $runtimeStatus ? true : false,
+    'activated_by'  => $runtimeStatus['activated_by'] ?? null,
+    'activated_on'  => $runtimeStatus['activated_on'] ?? null,
+    'updated_on'    => $runtimeStatus['updated_on'] ?? null
+];
     }
 
-    Response::success(
-        'Departments fetched successfully',
-        [
-            'framework'     => $engine->getFrameworkInfo(),
-            'facility_type' => strtoupper($facilityType),
-            'fac_id'        => $facId,
-            'ass_period'    => $assPeriod,
-            'total'         => count($departments),
-            'departments'   => $departments
-        ]
-    );
+   Response::success(
+    'Departments fetched successfully',
+    [
+        'framework' => method_exists($engine, 'getFrameworkInfo')
+            ? $engine->getFrameworkInfo()
+            : [
+                'code' => $frameworkCode
+            ],
+        'facility_type' => strtoupper($facilityType),
+        'fac_id'        => $facId,
+        'ass_period'    => $assPeriod,
+        'total'         => count($departments),
+        'departments'   => $departments
+    ]
+);
 
 } catch (Throwable $e) {
 

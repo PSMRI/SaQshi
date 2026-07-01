@@ -10,12 +10,6 @@
  *
  * URL:
  * /api/auth/v1/login.php
- *
- * Body:
- * {
- *   "username": "admin",
- *   "password": "password"
- * }
  * -------------------------------------------------------
  */
 
@@ -45,20 +39,32 @@ try {
         $password
     );
 
-    if ($result['status'] !== 'success') {
-        Response::error($result['message']);
+    if (
+        !isset($result['status']) ||
+        $result['status'] !== 'success'
+    ) {
+        Response::error(
+            $result['message'] ?? 'Invalid username or password'
+        );
     }
 
     /*
-     * Generate CSRF token after login
+     * IMPORTANT:
+     * CSRF token is regenerated only after successful login.
+     * Frontend must store this token and should not call csrf.php
+     * again immediately after login.
      */
     $csrfToken = Csrf::regenerate();
 
     Response::success(
         'Login successful',
         [
-            'user' => $result['data']['user'],
-            'csrf_token' => $csrfToken
+            'user' => $result['data']['user'] ?? null,
+            'csrf_token' => $csrfToken,
+            'csrf' => [
+                'token' => $csrfToken,
+                'header_name' => 'X-CSRF-TOKEN'
+            ]
         ]
     );
 

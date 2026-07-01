@@ -1,0 +1,249 @@
+/*!
+ * ==========================================================
+ * SQ Create Assessment Page v1.0
+ * ----------------------------------------------------------
+ * Project  : SaQshi Open Source
+ * Module   : Assessment
+ * Page     : Create Assessment
+ * File     : create.css
+ * License  : Apache-2.0
+ * ==========================================================
+ */
+
+/* ==========================================================
+   Page
+========================================================== */
+
+.sq-assessment-create-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sq-space-6);
+}
+
+/* ==========================================================
+   Grid
+========================================================== */
+
+.sq-assessment-create-page > .sq-grid {
+    align-items: start;
+}
+
+/* ==========================================================
+   Card
+========================================================== */
+
+.sq-card {
+    background: var(--sq-bg-surface);
+    border: 1px solid var(--sq-border);
+    border-radius: var(--sq-card-radius);
+    box-shadow: var(--sq-shadow-xs);
+    overflow: hidden;
+}
+
+.sq-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: var(--sq-card-padding);
+    border-bottom: 1px solid var(--sq-border);
+    background: var(--sq-bg-surface);
+}
+
+.sq-card-title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: var(--sq-font-weight-bold);
+    color: var(--sq-text-primary);
+}
+
+.sq-card-subtitle {
+    margin-top: .35rem;
+    color: var(--sq-text-secondary);
+    font-size: var(--sq-font-size-sm);
+}
+
+.sq-card-body {
+    padding: var(--sq-card-padding);
+}
+
+/* ==========================================================
+   Form
+========================================================== */
+
+#assessmentCreateForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sq-space-5);
+}
+
+.sq-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.sq-form-label {
+    font-size: var(--sq-font-size-sm);
+    font-weight: var(--sq-font-weight-semibold);
+    color: var(--sq-text-primary);
+}
+
+.sq-form-control {
+    width: 100%;
+    min-height: var(--sq-input-height);
+    padding: .7rem .9rem;
+    border: 1px solid var(--sq-border);
+    border-radius: var(--sq-input-radius);
+    background: var(--sq-input-bg);
+    color: var(--sq-input-text);
+    font-size: var(--sq-font-size-md);
+    transition:
+        border-color var(--sq-transition-fast),
+        box-shadow var(--sq-transition-fast);
+}
+
+.sq-form-control:focus {
+    border-color: var(--sq-color-primary);
+    box-shadow: var(--sq-shadow-focus);
+}
+
+textarea.sq-form-control {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.sq-help-text {
+    font-size: var(--sq-font-size-xs);
+    color: var(--sq-text-muted);
+}
+
+/* ==========================================================
+   Actions
+========================================================== */
+
+.sq-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sq-space-3);
+    padding-top: var(--sq-space-3);
+    border-top: 1px solid var(--sq-border);
+}
+
+/* ==========================================================
+   Alert
+========================================================== */
+
+.sq-alert {
+    border-radius: var(--sq-radius-lg);
+}
+
+.sq-alert-info {
+    background: var(--sq-color-info-50);
+    border: 1px solid var(--sq-color-info-100);
+}
+
+.sq-alert-content {
+    padding: 1rem;
+}
+
+.sq-alert-title {
+    font-weight: var(--sq-font-weight-semibold);
+    margin-bottom: .35rem;
+}
+
+.sq-alert-text {
+    color: var(--sq-text-secondary);
+    font-size: var(--sq-font-size-sm);
+}
+
+/* ==========================================================
+   Facility Information
+========================================================== */
+
+.sq-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sq-space-3);
+}
+
+.sq-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sq-space-3);
+    padding-bottom: .75rem;
+    border-bottom: 1px dashed var(--sq-border);
+}
+
+.sq-info-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.sq-info-label {
+    color: var(--sq-text-muted);
+    font-size: var(--sq-font-size-sm);
+}
+
+.sq-info-value {
+    color: var(--sq-text-primary);
+    font-weight: var(--sq-font-weight-semibold);
+}
+
+/* ==========================================================
+   Empty State
+========================================================== */
+
+.sq-empty-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    text-align: center;
+    color: var(--sq-text-muted);
+    font-size: var(--sq-font-size-md);
+    border: 2px dashed var(--sq-border);
+    border-radius: var(--sq-radius-lg);
+    background: var(--sq-bg-muted);
+}
+
+/* ==========================================================
+   Status Card
+========================================================== */
+
+.sq-status-active {
+    color: var(--sq-color-success);
+}
+
+.sq-status-inactive {
+    color: var(--sq-color-danger);
+}
+
+/* ==========================================================
+   Responsive
+========================================================== */
+
+@media (max-width: 992px) {
+
+    .sq-assessment-create-page > .sq-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .sq-card-header {
+        flex-direction: column;
+        gap: var(--sq-space-3);
+    }
+
+    .sq-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .sq-form-actions .sq-btn {
+        width: 100%;
+    }
+
+}
