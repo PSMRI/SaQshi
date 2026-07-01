@@ -31,7 +31,7 @@ function calculateResult(row) {
             numerator = parseFloat(document.getElementById('input3').value);
             denominator = parseFloat(document.getElementById('input4').value);
             if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                result = ((numerator) / (denominator))*100; // Example calculation
+                result = ((numerator) / (denominator)); // Example calculation
                 document.getElementById('result2').value = result.toFixed(2) + '%';
             } else {
                 document.getElementById('result2').value = 'Invalid input';
@@ -42,7 +42,7 @@ function calculateResult(row) {
             numerator = parseFloat(document.getElementById('input5').value);
             denominator = parseFloat(document.getElementById('input6').value);
             if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                result =(numerator/ denominator)*100; // Example calculation
+                result =(numerator/ denominator); // Example calculation
                 document.getElementById('result3').value = result.toFixed(2) + '%';
             } else {
                 document.getElementById('result3').value = 'Invalid input';
@@ -60,9 +60,9 @@ function calculateResult(row) {
             break;
         case 5:
             numerator = parseFloat(document.getElementById('input9').value);
-            denominator = parseFloat(document.getElementById('input10').value);
-            if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                result = ((numerator) / (denominator))*100; // Example calculation
+          //  denominator = parseFloat(document.getElementById('input10').value);
+            if (!isNaN(numerator) ) {
+                result = ((numerator) ); // Example calculation
                 document.getElementById('result5').value = result.toFixed(2) + '%';
             } else {
                 document.getElementById('result5').value = 'Invalid input';
@@ -100,9 +100,9 @@ function calculateResult(row) {
             break;
         case 9:
             numerator = parseFloat(document.getElementById('input17').value);
-            denominator = parseFloat(document.getElementById('input18').value);
-           if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                result = ((numerator) / (denominator))*100 // Example calculation
+          //  denominator = parseFloat(document.getElementById('input18').value);
+           if (!isNaN(numerator)) {
+                result = ((numerator)) // Example calculation
                 document.getElementById('result9').value = result.toFixed(2) + '%';
             } else {
                 document.getElementById('result9').value = 'Invalid input';
@@ -120,9 +120,9 @@ function calculateResult(row) {
             break;
         case 11:
             numerator = parseFloat(document.getElementById('input21').value);
-           // denominator = parseFloat(document.getElementById('input22').value);
-            if (!isNaN(numerator)) {
-                result = (numerator ); // Example calculation
+            denominator = parseFloat(document.getElementById('input22').value);
+            if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+                result = (numerator/denominator ); // Example calculation
                 document.getElementById('result11').value = result.toFixed(2) ;
             } else {
                 document.getElementById('result11').value = 'Invalid input';
@@ -131,7 +131,7 @@ function calculateResult(row) {
         case 12:
             numerator = parseFloat(document.getElementById('input23').value);
             denominator = parseFloat(document.getElementById('input24').value);
-            if (!isNaN(numerator)) {
+            if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0){
                 result = ((numerator*100) / (denominator)); // Example calculation
                 document.getElementById('result12').value = result.toFixed(2) + '%';
             } else {
@@ -142,7 +142,7 @@ function calculateResult(row) {
             numerator = parseFloat(document.getElementById('input25').value);
             denominator = parseFloat(document.getElementById('input26').value);
             if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                result = ((numerator*1000) / (denominator)); // Example calculation
+                result = ((numerator*100) / (denominator)); // Example calculation
                 document.getElementById('result13').value = result.toFixed(2);
             } else {
                 document.getElementById('result13').value = 'Invalid input';
@@ -152,7 +152,7 @@ function calculateResult(row) {
             numerator = parseFloat(document.getElementById('input27').value);
             denominator = parseFloat(document.getElementById('input28').value);
             if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                result = ((numerator*100) / (denominator)); // Example calculation
+                result = ((numerator) / (denominator)); // Example calculation
                 document.getElementById('result14').value = result.toFixed(2) + '%';
             } else {
                 document.getElementById('result14').value = 'Invalid input';
@@ -162,7 +162,7 @@ function calculateResult(row) {
             numerator = parseFloat(document.getElementById('input29').value);
             denominator = parseFloat(document.getElementById('input30').value);
             if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                result = ((numerator * 100) / (denominator)); // Example calculation
+                result = ((numerator) / (denominator)); // Example calculation
                 document.getElementById('result15').value = result.toFixed(2) + '%';
             } else {
                 document.getElementById('result15').value = 'Invalid input';
@@ -172,7 +172,7 @@ function calculateResult(row) {
             numerator = parseFloat(document.getElementById('input31').value);
             denominator = parseFloat(document.getElementById('input32').value);
             if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                result = ((numerator) / (denominator))*100; // Example calculation
+                result = ((numerator) / (denominator)); // Example calculation
                 document.getElementById('result16').value = result.toFixed(2) + '%';
             } else {
                 document.getElementById('result16').value = 'Invalid input';
@@ -182,7 +182,7 @@ function calculateResult(row) {
                 numerator = parseFloat(document.getElementById('input33').value);
                 denominator = parseFloat(document.getElementById('input34').value);
                 if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                    result = ((numerator) / (denominator))*100; // Example calculation
+                    result = ((numerator) / (denominator)); // Example calculation
                     document.getElementById('result17').value = result.toFixed(2) + '%';
                 } else {
                     document.getElementById('result17').value = 'Invalid input';
@@ -198,26 +198,7 @@ function calculateResult(row) {
                         document.getElementById('result18').value = 'Invalid input';
                     }
                     break;
-                    case 19:
-                    numerator = parseFloat(document.getElementById('input37').value);
-                    denominator = parseFloat(document.getElementById('input38').value);
-                    if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                        result = ((numerator) / (denominator)); // Example calculation
-                        document.getElementById('result19').value = result.toFixed(2) ;
-                    } else {
-                        document.getElementById('result19').value = 'Invalid input';
-                    }
-                    break;
-                    case 20:
-                    numerator = parseFloat(document.getElementById('input39').value);
-                    denominator = parseFloat(document.getElementById('input40').value);
-                    if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                        result = ((numerator*100) / (denominator)); // Example calculation
-                        document.getElementById('result20').value = result.toFixed(2) + '%';
-                    } else {
-                        document.getElementById('result20').value = 'Invalid input';
-                    }
-                    break;
+                    
         // Add additional cases for more rows if needed
         // Example:
         // case 4:

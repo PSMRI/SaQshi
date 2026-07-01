@@ -92,7 +92,7 @@ if (!isNaN(numerator))  {
             numerator = parseFloat(document.getElementById('input15').value);
             denominator = parseFloat(document.getElementById('input16').value);
             if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-                result = ((numerator*10000)/(denominator)); // Example calculation
+                result = ((numerator*1000)/(denominator)); // Example calculation
                 document.getElementById('result8').value = result.toFixed(2) + '%';
             } else {
                 document.getElementById('result8').value = 'Invalid input';
