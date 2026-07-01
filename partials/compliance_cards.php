@@ -42,14 +42,24 @@ $query = "CALL count_zero($Fa, $dept_id, $p, $fat)";
 $result = mysqli_query($con, $query);
 
 $compliance_data = ['Non' => 0, 'Partially' => 0, 'Fully' => 0];
-if ($result && $row = mysqli_fetch_assoc($result)) {
-    $compliance_data['Non'] = (int)$row['z'];
-    $compliance_data['Partially'] = (int)$row['o'];
-    $compliance_data['Fully'] = (int)$row['t'];
-}
-mysqli_free_result($result);
-$con->next_result();
 
+if (!$result) {
+    echo "<pre>SQL Error: " . mysqli_error($con) . "\nQuery: $query</pre>";
+} else {
+    if ($row = mysqli_fetch_assoc($result)) {
+        $compliance_data['Non']       = (int)$row['z'];
+        $compliance_data['Partially'] = (int)$row['o'];
+        $compliance_data['Fully']     = (int)$row['t'];
+    }
+
+    mysqli_free_result($result);
+
+    while (mysqli_more_results($con) && mysqli_next_result($con)) {
+        if ($extraResult = mysqli_store_result($con)) {
+            mysqli_free_result($extraResult);
+        }
+    }
+}
 $compliance_cards = [
     ["label" => "Non", "file" => "assets/export/export_deprt_indicators_non.php", "color" => "text-danger", "value" => $compliance_data['Non']],
     ["label" => "Partially", "file" => "assets/export/export_deprt_indicators_partially.php", "color" => "text-warning", "value" => $compliance_data['Partially']],
