@@ -250,14 +250,14 @@ try {
                 ap.closed_by,
                 ap.closed_on
 
-            FROM assessment_cycle_response r
+            FROM assessment_response r
 
             LEFT JOIN assessment_action_plan ap
-                ON ap.assessment_id = r.cycle_id
+                ON ap.assessment_id = r.assessment_id
                AND ap.dept_id = r.dept_id
                AND ap.checkpoint_id = r.checkpoint_id
 
-            WHERE r.cycle_id = ?
+            WHERE r.assessment_id = ?
               AND r.dept_id = ?
               AND r.score < 2
 
@@ -283,14 +283,14 @@ try {
                 ap.closed_by,
                 ap.closed_on
 
-            FROM assessment_cycle_response r
+            FROM assessment_response r
 
             LEFT JOIN assessment_action_plan ap
-                ON ap.assessment_id = r.cycle_id
+                ON ap.assessment_id = r.assessment_id
                AND ap.dept_id = r.dept_id
                AND ap.checkpoint_id = r.checkpoint_id
 
-            WHERE r.cycle_id = ?
+            WHERE r.assessment_id = ?
               AND r.score < 2
 
             ORDER BY r.dept_id, r.checkpoint_id

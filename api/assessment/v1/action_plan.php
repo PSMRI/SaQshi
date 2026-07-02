@@ -301,8 +301,8 @@ try {
                 evidence_url,
                 updated_by,
                 updated_on
-            FROM assessment_cycle_response
-            WHERE cycle_id = ?
+            FROM assessment_response
+            WHERE assessment_id = ?
               AND dept_id = ?
               AND score < 2
             ORDER BY dept_id, checkpoint_id
@@ -318,8 +318,8 @@ try {
                 evidence_url,
                 updated_by,
                 updated_on
-            FROM assessment_cycle_response
-            WHERE cycle_id = ?
+            FROM assessment_response
+            WHERE assessment_id = ?
               AND score < 2
             ORDER BY dept_id, checkpoint_id
         ";

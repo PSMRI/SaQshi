@@ -12,7 +12,7 @@
  * - Improved/revised score
  * - Gap closure summary
  *
- * cycle_id = assessment_id
+ * response assessment_id is the current assessment_id
  *
  * Method:
  * GET
@@ -159,14 +159,14 @@ try {
                 END
             ) AS open_gaps
 
-        FROM assessment_cycle_response r
+        FROM assessment_response r
 
         LEFT JOIN assessment_action_plan ap
-            ON ap.assessment_id = r.cycle_id
+            ON ap.assessment_id = r.assessment_id
            AND ap.dept_id = r.dept_id
            AND ap.checkpoint_id = r.checkpoint_id
 
-        WHERE r.cycle_id = ?
+        WHERE r.assessment_id = ?
           AND r.score < 2
     ";
 
@@ -286,8 +286,8 @@ try {
            AND ai.fac_id_fk = d.fac_id_fk
            AND ai.dept_id = d.dept_id
 
-        LEFT JOIN assessment_cycle_response r
-            ON r.cycle_id = d.assessment_id
+        LEFT JOIN assessment_response r
+            ON r.assessment_id = d.assessment_id
            AND r.dept_id = d.dept_id
 
         LEFT JOIN assessment_action_plan ap

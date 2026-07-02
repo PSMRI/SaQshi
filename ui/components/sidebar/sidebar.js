@@ -171,6 +171,32 @@
 
     }
 
+    function ensureAssessorInfoLink() {
+
+        if (document.querySelector('[data-sq-route="assessment/assessor-info"]')) {
+            return;
+        }
+
+        const departmentsLink = document.querySelector('[data-sq-route="assessment/departments"]');
+
+        if (!departmentsLink) {
+            return;
+        }
+
+        const link = document.createElement("a");
+        link.href = "#";
+        link.className = "sq-sidebar-link";
+        link.setAttribute("data-sq-route", "assessment/assessor-info");
+        link.setAttribute("data-sq-nav", "");
+        link.innerHTML = `
+            <i class="bi bi-person-lines-fill"></i>
+            <span>Assessor Info</span>
+        `;
+
+        departmentsLink.insertAdjacentElement("afterend", link);
+
+    }
+
     /* ======================================================
        Overlay
     ====================================================== */
@@ -286,6 +312,8 @@
         bindEscape();
 
         bindAccordion();
+
+        ensureAssessorInfoLink();
 
         activeMenu();
 

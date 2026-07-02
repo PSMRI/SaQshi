@@ -15,10 +15,10 @@
 
     "assets": {
         "css": [
-            "/ui/pages/assessment/create.css"
+            "/ui/pages/assessment/create.css?v=20260702-3"
         ],
         "js": [
-            "/ui/pages/assessment/create.js"
+            "/ui/pages/assessment/create.js?v=20260702-3"
         ]
     },
 

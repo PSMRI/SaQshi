@@ -37,6 +37,7 @@
         }
 
         loader.classList.remove("success", "error");
+        loader.style.display = "";
         loader.classList.add("active");
         loader.setAttribute("aria-hidden", "false");
 
@@ -52,6 +53,7 @@
         }
 
         loader.classList.remove("active", "success", "error");
+        loader.style.display = "none";
         loader.setAttribute("aria-hidden", "true");
         reset();
     }
@@ -83,6 +85,7 @@
         }
 
         loader.classList.remove("error");
+        loader.style.display = "";
         loader.classList.add("active", "success");
 
         setText("sq-loader-message", text);
@@ -99,6 +102,7 @@
         }
 
         loader.classList.remove("success");
+        loader.style.display = "";
         loader.classList.add("active", "error");
 
         setText("sq-loader-title", "Error");

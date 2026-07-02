@@ -181,8 +181,8 @@ try {
 
     $sqlGap = "
         SELECT response_id, score
-        FROM assessment_cycle_response
-        WHERE cycle_id = ?
+        FROM assessment_response
+        WHERE assessment_id = ?
           AND dept_id = ?
           AND checkpoint_id = ?
           AND score < 2

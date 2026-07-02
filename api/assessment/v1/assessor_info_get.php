@@ -88,13 +88,12 @@ try {
      */
     $sqlDept = "
         SELECT
-            id,
             dept_id,
             is_active,
             activated_by,
             activated_on
-        FROM assessment_department
-        WHERE assessment_id = ?
+        FROM assessment_department_status
+        WHERE ass_period_id = ?
           AND fac_id_fk = ?
           AND dept_id = ?
           AND is_active = 1

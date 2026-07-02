@@ -10,14 +10,14 @@
  * - Department-wise score
  *
  * Original score:
- * - assessment_cycle_response.score
+ * - assessment_response.score
  *
  * Improved score:
  * - assessment_action_plan.revised_score if available
  * - otherwise original score
  *
  * Simplified design:
- * - assessment_id is used as cycle_id in assessment_cycle_response
+ * - responses are stored by assessment_id in assessment_response
  * -------------------------------------------------------
  */
 
@@ -179,14 +179,14 @@ try {
                     END
                 ) AS revised_checkpoints
 
-            FROM assessment_cycle_response r
+            FROM assessment_response r
 
             LEFT JOIN assessment_action_plan ap
-                ON ap.assessment_id = r.cycle_id
+                ON ap.assessment_id = r.assessment_id
                AND ap.dept_id = r.dept_id
                AND ap.checkpoint_id = r.checkpoint_id
 
-            WHERE r.cycle_id = ?
+            WHERE r.assessment_id = ?
               AND r.dept_id = ?
         ";
 
@@ -307,8 +307,8 @@ try {
 
         FROM assessment_department d
 
-        LEFT JOIN assessment_cycle_response r
-            ON r.cycle_id = d.assessment_id
+        LEFT JOIN assessment_response r
+            ON r.assessment_id = d.assessment_id
            AND r.dept_id = d.dept_id
 
         LEFT JOIN assessment_action_plan ap

@@ -51,8 +51,9 @@
 
     const CONFIG = {
         basePath: "/ui/components",
+        assetVersion: "20260702-4",
         attribute: "data-component",
-        cache: true,
+        cache: false,
         debug: true,
         errorTemplate: true,
         autoLoadAssets: true,
@@ -71,15 +72,15 @@
     }
 
     function componentHtmlUrl(name) {
-        return `${CONFIG.basePath}/${name}/${name}.html`;
+        return `${CONFIG.basePath}/${name}/${name}.html?v=${CONFIG.assetVersion}`;
     }
 
     function componentCssUrl(name) {
-        return `${CONFIG.basePath}/${name}/${name}.css`;
+        return `${CONFIG.basePath}/${name}/${name}.css?v=${CONFIG.assetVersion}`;
     }
 
     function componentJsUrl(name) {
-        return `${CONFIG.basePath}/${name}/${name}.js`;
+        return `${CONFIG.basePath}/${name}/${name}.js?v=${CONFIG.assetVersion}`;
     }
 
     async function loadCss(name) {
@@ -159,6 +160,7 @@
 
         const response = await fetch(url, {
             method: "GET",
+            cache: "no-store",
             credentials: "same-origin",
             headers: {
                 "Accept": "text/html"

@@ -233,8 +233,8 @@ try {
 
     $sqlCount = "
         SELECT COUNT(*) AS saved_count
-        FROM assessment_cycle_response
-        WHERE cycle_id = ?
+        FROM assessment_response
+        WHERE assessment_id = ?
           AND dept_id = ?
     ";
 
@@ -267,7 +267,7 @@ try {
         [
             'can_resume' => true,
             'is_completed' => false,
-            'cycle_id' => $cycleId,
+            'assessment_id' => $assessmentId,
             'resume_checkpoint_id' => $resumeCheckpointId,
 
             'assessment' => [

@@ -168,9 +168,9 @@ try {
      * Check department is activated for this assessment.
      */
     $sqlDept = "
-        SELECT id
-        FROM assessment_department
-        WHERE assessment_id = ?
+        SELECT dept_id
+        FROM assessment_department_status
+        WHERE ass_period_id = ?
           AND fac_id_fk = ?
           AND dept_id = ?
           AND is_active = 1

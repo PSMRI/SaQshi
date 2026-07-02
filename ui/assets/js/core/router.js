@@ -92,6 +92,7 @@
 
     async function fetchJson(url) {
         const res = await fetch(url, {
+            cache: "no-store",
             credentials: "same-origin",
             headers: {
                 "Accept": "application/json"
@@ -107,6 +108,7 @@
 
     async function fetchHtml(url) {
         const res = await fetch(url, {
+            cache: "no-store",
             credentials: "same-origin",
             headers: {
                 "Accept": "text/html"

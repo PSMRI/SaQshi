@@ -77,12 +77,6 @@ try {
         ]);
     }
 
-    if ($assessmentMethod === '') {
-        Response::validation([
-            'assessment_method' => 'Assessment method is required'
-        ]);
-    }
-
     /*
      * 1. Load logged-in user's facility from facilities.json
      */
@@ -222,8 +216,9 @@ try {
         $subtypeId
     );
 
-    /*
- * 5. Filter checkpoints by assessment method
+/*
+ * 5. Filter checkpoints by assessment method.
+ * Blank assessment_method means load all methods for this scope.
  */
 $filteredCheckpoints = [];
 
@@ -276,7 +271,9 @@ foreach ($allCheckpoints as $checkpoint) {
      */
     $methodMatched = false;
 
-    if ($rawMethod === '') {
+    if ($selectedMethod === '') {
+        $methodMatched = true;
+    } elseif ($rawMethod === '') {
         $methodMatched = true;
     } elseif ($selectedMethod === $rawMethod) {
         $methodMatched = true;
@@ -294,6 +291,7 @@ foreach ($allCheckpoints as $checkpoint) {
         'Measurable_Element' => $checkpoint['Measurable_Element'] ?? '',
         'Checkpoint' => $checkpoint['Checkpoint'] ?? '',
         'Assessment_Method' => $normalizedMethods,
+        'Means_of_Verification' => $checkpoint['Means_of_Verification'] ?? '',
         'action_plan' => $checkpoint['action_plan'] ?? '',
         'program_tag' => $checkpoint['program_tag'] ?? '',
         'response' => $checkpoint['response'] ?? [
@@ -309,6 +307,68 @@ foreach ($allCheckpoints as $checkpoint) {
         ]
     ];
 }
+
+/*
+ * 6. Attach already saved responses for this assessment/cycle.
+ * ass_period is the assessment_id in the simplified flow.
+ */
+$checkpointIds = array_values(array_filter(array_map(
+    fn($checkpoint) => (int)($checkpoint['csqa_id'] ?? 0),
+    $filteredCheckpoints
+)));
+
+$savedMap = [];
+
+if (!empty($checkpointIds)) {
+    $placeholders = implode(',', array_fill(0, count($checkpointIds), '?'));
+
+    $sqlSaved = "
+        SELECT
+            response_id,
+            checkpoint_id,
+            response_value,
+            score,
+            remarks,
+            evidence_url,
+            updated_by,
+            updated_on
+        FROM assessment_response
+        WHERE assessment_id = ?
+          AND dept_id = ?
+          AND checkpoint_id IN ($placeholders)
+    ";
+
+    $stmtSaved = $con->prepare($sqlSaved);
+
+    if (!$stmtSaved) {
+        Response::serverError('Saved response prepare failed: ' . $con->error);
+    }
+
+    $types = str_repeat('i', count($checkpointIds) + 2);
+    $params = array_merge([$assPeriod, $deptId], $checkpointIds);
+    $stmtSaved->bind_param($types, ...$params);
+    $stmtSaved->execute();
+
+    $savedResult = $stmtSaved->get_result();
+
+    while ($row = $savedResult->fetch_assoc()) {
+        $savedMap[(int)$row['checkpoint_id']] = [
+            'response_id' => (int)$row['response_id'],
+            'response_value' => $row['response_value'],
+            'score' => (float)$row['score'],
+            'remarks' => $row['remarks'],
+            'evidence_url' => $row['evidence_url'],
+            'updated_by' => (int)$row['updated_by'],
+            'updated_on' => $row['updated_on']
+        ];
+    }
+}
+
+foreach ($filteredCheckpoints as &$checkpoint) {
+    $checkpointId = (int)($checkpoint['csqa_id'] ?? 0);
+    $checkpoint['saved_response'] = $savedMap[$checkpointId] ?? null;
+}
+unset($checkpoint);
 
     Response::success(
         'Checkpoints fetched successfully',

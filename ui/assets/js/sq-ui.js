@@ -218,6 +218,7 @@ const SQ = window.SQ || {};
         const componentLoader = document.getElementById("sq-loader");
 
         if (componentLoader) {
+            componentLoader.style.display = "";
             componentLoader.classList.add("active");
             componentLoader.setAttribute("aria-hidden", "false");
 

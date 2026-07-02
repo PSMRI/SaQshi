@@ -169,8 +169,8 @@ try {
             response_id,
             score,
             response_value
-        FROM assessment_cycle_response
-        WHERE cycle_id = ?
+        FROM assessment_response
+        WHERE assessment_id = ?
           AND dept_id = ?
           AND checkpoint_id = ?
           AND score < 2
@@ -311,7 +311,7 @@ try {
     /*
      * Important:
      * We are not changing original assessment score here.
-     * Original score remains in assessment_cycle_response.
+     * Original score remains in assessment_response.
      * Revised score is stored separately in assessment_action_plan.
      */
 

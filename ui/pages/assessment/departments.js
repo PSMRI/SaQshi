@@ -13,19 +13,17 @@
     const SQ = window.SQ;
 
     const API = {
-        activeAssessment: "/assessment/v1/active_assessment.php",
+        assessment: "/assessment/v1/active_assessment.php",
         departments: "/framework/v1/my_departments.php",
-        saveDepartmentStatus: "/assessment/v1/department-status/save.php",
-        listDepartmentStatus: "/assessment/v1/department-status/list.php"
+        status: "/assessment/v1/department-status/list.php",
+        save: "/assessment/v1/department-status/save.php"
     };
 
     const state = {
         assessment: null,
         departments: [],
-        statuses: {},
-        eventsBound: false,
-        initialized: false,
-        isRefreshing: false
+        statusMap: {},
+        isLoading: false
     };
 
     function $(id) {
@@ -52,396 +50,343 @@
         }
     }
 
-    function hideLoader() {
-        if (SQ.loader && typeof SQ.loader.hide === "function") {
-            SQ.loader.hide();
+    async function apiGet(endpoint, params = {}) {
+        if (SQ.api && typeof SQ.api.get === "function") {
+            return SQ.api.get(endpoint, params, { loader: false });
         }
 
-        document.querySelectorAll("#sq-page-loader, .sq-loader").forEach(function (el) {
-            el.classList.remove("active", "success", "error");
-            el.style.display = "none";
-            el.style.pointerEvents = "none";
-            el.setAttribute("aria-hidden", "true");
+        const url = new URL("/api" + endpoint, window.location.origin);
+
+        Object.keys(params).forEach(function (key) {
+            if (params[key] !== null && params[key] !== undefined && params[key] !== "") {
+                url.searchParams.set(key, params[key]);
+            }
         });
 
-        document.body.style.overflow = "";
+        const response = await fetch(url.toString(), {
+            credentials: "same-origin",
+            headers: {
+                "Accept": "application/json"
+            }
+        });
+
+        return response.json();
     }
 
-    async function apiGet(url, params = {}) {
-        return SQ.api.get(url, params, { loader: false });
+    async function apiPost(endpoint, payload) {
+        if (SQ.api && typeof SQ.api.post === "function") {
+            return SQ.api.post(endpoint, payload, { loader: false });
+        }
+
+        const response = await fetch("/api" + endpoint, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        return response.json();
     }
 
-    async function apiPost(url, payload = {}) {
-        return SQ.api.post(url, payload, { loader: false });
-    }
-
-    function getAssessmentId() {
-        return state.assessment?.assessment_id || "";
-    }
-
-    function getFacilityId() {
-        return state.assessment?.fac_id || state.assessment?.fac_id_fk || "";
-    }
-
-    function getAssessmentPeriod() {
+    function getAssessment(response) {
         return (
-            state.assessment?.ass_period ||
-            state.assessment?.assessment_period ||
-            state.assessment?.assessment_id ||
-            ""
+            response?.data?.assessment ||
+            response?.assessment ||
+            null
         );
     }
 
-    function getDeptId(dept) {
+    function getDepartments(response) {
         return (
-            dept.dept_id ||
-            dept.fac_dept_id ||
-            dept.fac_dept_id_fk ||
-            dept.department_id ||
-            dept.id ||
-            ""
+            response?.data?.departments ||
+            response?.departments ||
+            []
         );
     }
 
-    function getDeptName(dept) {
-        return (
-            dept.department_name ||
-            dept.fac_dept_name ||
-            dept.dept_name ||
-            dept.name ||
-            "Department"
-        );
-    }
-
-    function getDeptCode(dept) {
-        return dept.department_code || dept.dept_code || dept.code || "DEPT-" + getDeptId(dept);
-    }
-
-    function normalizeDepartments(response) {
-        const data = response?.data || response || {};
-        let list = data.departments || data.department_list || response?.departments || [];
-
-        if (!Array.isArray(list) && Array.isArray(data)) {
-            list = data;
-        }
-
-        return Array.isArray(list) ? list : [];
-    }
-
-    function normalizeStatuses(response) {
-        const data = response?.data || response || {};
-        let list = data.statuses || data.departments || data.department_status || response?.statuses || [];
-
-        if (!Array.isArray(list) && Array.isArray(data)) {
-            list = data;
-        }
-
-        const map = {};
-
-        if (Array.isArray(list)) {
-            list.forEach(function (item) {
-                const id =
-                    item.dept_id ||
-                    item.fac_dept_id ||
-                    item.fac_dept_id_fk ||
-                    item.department_id ||
-                    item.id;
-
-                if (id) {
-                    map[String(id)] = item;
-                }
-            });
-        }
-
-        return map;
-    }
-
-    function isActive(dept) {
-        const status = state.statuses[String(getDeptId(dept))];
-
-        if (!status) {
-            return false;
+    function getStatusRows(response) {
+        if (Array.isArray(response?.data)) {
+            return response.data;
         }
 
         return (
-            status.is_active === true ||
-            status.is_active === 1 ||
-            status.is_active === "1" ||
-            String(status.status || "").toUpperCase() === "ACTIVE"
+            response?.data?.departments ||
+            response?.departments ||
+            []
         );
     }
 
-    function progressPercent(dept) {
-        const status = state.statuses[String(getDeptId(dept))] || {};
-        const total = Number(status.total_checkpoints || status.total || 0);
-        const completed = Number(status.completed_checkpoints || status.completed || 0);
+    function isDepartmentActive(dept) {
+        const value =
+            dept?.is_active ??
+            dept?.active ??
+            dept?.activated ??
+            dept?.status_active ??
+            0;
 
-        return total ? Math.round((completed / total) * 100) : 0;
+        if (typeof value === "boolean") {
+            return value;
+        }
+
+        const text = String(value).trim().toLowerCase();
+
+        return (
+            text === "1" ||
+            text === "true" ||
+            text === "yes" ||
+            text === "active" ||
+            text === "activated"
+        );
     }
 
-    function renderSummary() {
-        const target = $("assessmentSummary");
-        if (!target) return;
+    function renderAssessment() {
+        const assessment = state.assessment || {};
 
-        const a = state.assessment || {};
+        const name = $("assessmentName");
+        const status = $("assessmentStatus");
+        const framework = $("assessmentFramework");
 
-        if (!a.assessment_id) {
-            target.innerHTML = `<div class="sq-empty-message">No active assessment found. Please create assessment first.</div>`;
+        if (name) {
+            name.textContent = assessment.assessment_name || "-";
+        }
+
+        if (status) {
+            status.textContent = assessment.status || "-";
+        }
+
+        if (framework) {
+            framework.textContent = assessment.framework_code || "saqshi-nqas";
+        }
+    }
+
+    function renderEmpty(message) {
+        const tbody = $("departmentTable");
+
+        if (!tbody) {
             return;
         }
 
-        target.innerHTML = `
-            <div class="sq-summary-card">
-                <div class="sq-summary-label">Assessment</div>
-                <div class="sq-summary-value">${escapeHtml(a.assessment_name || "-")}</div>
-            </div>
-            <div class="sq-summary-card">
-                <div class="sq-summary-label">Framework</div>
-                <div class="sq-summary-value">${escapeHtml(a.framework_code || "-")}</div>
-            </div>
-            <div class="sq-summary-card">
-                <div class="sq-summary-label">Status</div>
-                <div class="sq-summary-value">${escapeHtml(a.status || "ACTIVE")}</div>
-            </div>
-            <div class="sq-summary-card">
-                <div class="sq-summary-label">Assessment ID</div>
-                <div class="sq-summary-value">${escapeHtml(a.assessment_id || "-")}</div>
-            </div>
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="sq-text-center sq-muted-row">
+                    ${escapeHtml(message)}
+                </td>
+            </tr>
         `;
     }
 
-    function renderDepartments() {
-        const target = $("departmentList");
-        if (!target) return;
+    function renderLoading() {
+        renderEmpty("Loading departments...");
+    }
 
-        if (!state.departments.length) {
-            target.innerHTML = `<div class="sq-empty-message">No departments found for this facility/framework.</div>`;
+    function renderDepartments() {
+        const tbody = $("departmentTable");
+
+        if (!tbody) {
             return;
         }
 
-        target.innerHTML = state.departments.map(function (dept) {
-            const id = getDeptId(dept);
-            const active = isActive(dept);
-            const progress = progressPercent(dept);
-
-            return `
-                <article class="sq-department-card" data-department-id="${escapeHtml(id)}">
-                    <div class="sq-department-header">
-                        <div>
-                            <div class="sq-department-name">${escapeHtml(getDeptName(dept))}</div>
-                            <div class="sq-department-code">${escapeHtml(getDeptCode(dept))}</div>
-                        </div>
-
-                        <span class="sq-status-chip ${active ? "sq-status-active" : "sq-status-inactive"}">
-                            ${active ? "Active" : "Inactive"}
-                        </span>
-                    </div>
-
-                    <div class="sq-department-description">
-                        ${escapeHtml(dept.description || "Activate this department to begin checklist assessment.")}
-                    </div>
-
-                    <div class="sq-department-progress">
-                        <div class="sq-progress-text">
-                            <span>Progress</span>
-                            <span>${progress}%</span>
-                        </div>
-                        <div class="sq-progress">
-                            <div class="sq-progress-bar" style="width:${progress}%"></div>
-                        </div>
-                    </div>
-
-                    <div class="sq-department-footer">
-                        <label class="sq-toggle">
-                            <input
-                                type="checkbox"
-                                data-department-toggle="${escapeHtml(id)}"
-                                ${active ? "checked" : ""}>
-                            <span class="sq-toggle-label">${active ? "Activated" : "Activate"}</span>
-                        </label>
-
-                        <button
-                            type="button"
-                            class="sq-btn sq-btn-primary"
-                            data-start-checklist="${escapeHtml(id)}"
-                            ${active ? "" : "disabled"}>
-                            <i class="bi bi-list-check"></i>
-                            Start Checklist
-                        </button>
-                    </div>
-                </article>
-            `;
-        }).join("");
-    }
-
-    async function loadActiveAssessment() {
-        const response = await apiGet(API.activeAssessment);
-
-        state.assessment =
-            response?.data?.assessment ||
-            response?.assessment ||
-            response?.data ||
-            null;
-    }
-
-    async function loadDepartments() {
-        const response = await apiGet(API.departments, {
-            framework_code: state.assessment?.framework_code || "saqshi-nqas"
-        });
-
-        state.departments = normalizeDepartments(response);
-    }
-
-    async function loadDepartmentStatuses() {
-        const response = await apiGet(API.listDepartmentStatus, {
-            fac_id: getFacilityId(),
-            ass_period: getAssessmentPeriod()
-        });
-
-        state.statuses = normalizeStatuses(response);
-    }
-
-    async function toggleDepartment(departmentId, active) {
-        const id = String(departmentId);
-
-        state.statuses[id] = {
-            ...(state.statuses[id] || {}),
-            dept_id: departmentId,
-            is_active: active ? 1 : 0,
-            status: active ? "ACTIVE" : "INACTIVE"
-        };
-
-        renderDepartments();
-
-        try {
-            const response = await apiPost(API.saveDepartmentStatus, {
-                ass_period: getAssessmentPeriod(),
-                dept_id: departmentId,
-                is_active: active ? 1 : 0
-            });
-
-            if (response?.status === "error") {
-                throw new Error(response.message || "Unable to update department.");
-            }
-
-            notify("success", active ? "Department activated." : "Department deactivated.");
-
-            await loadDepartmentStatuses();
-            renderDepartments();
-
-        } catch (error) {
-            console.error(error);
-            notify("error", error.message || "Unable to update department status.");
-            await refresh();
+        if (!state.departments.length) {
+            renderEmpty("No departments found for this assessment.");
+            return;
         }
-    }
 
-    function startChecklist(departmentId) {
-        sessionStorage.setItem("sq_active_department_id", departmentId);
+        tbody.innerHTML = "";
 
-        if (SQ.router && typeof SQ.router.navigate === "function") {
-            SQ.router.navigate("assessment/checklist", {
-                department_id: departmentId,
-                assessment_id: getAssessmentId()
-            });
-        }
-    }
+        state.departments.forEach(function (dept, index) {
+            const active = isDepartmentActive(dept);
+            const canActivate = !active && dept.can_activate !== false;
 
-    function bindEvents() {
-        if (state.eventsBound) return;
-
-        state.eventsBound = true;
-
-        document.addEventListener("click", function (event) {
-            const refreshBtn = event.target.closest("#btnRefreshDepartments");
-
-            if (refreshBtn) {
-                event.preventDefault();
-                refresh();
-                return;
-            }
-
-            const backBtn = event.target.closest("#btnBackToCreateAssessment");
-
-            if (backBtn) {
-                event.preventDefault();
-                SQ.router.navigate("assessment/create");
-                return;
-            }
-
-            const startBtn = event.target.closest("[data-start-checklist]");
-
-            if (startBtn && !startBtn.disabled) {
-                event.preventDefault();
-                startChecklist(startBtn.getAttribute("data-start-checklist"));
-            }
-        });
-
-        document.addEventListener("change", function (event) {
-            const toggle = event.target.closest("[data-department-toggle]");
-
-            if (!toggle) return;
-
-            toggleDepartment(
-                toggle.getAttribute("data-department-toggle"),
-                toggle.checked
+            tbody.insertAdjacentHTML(
+                "beforeend",
+                `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <strong>${escapeHtml(dept.dept_name || "-")}</strong>
+                            <div class="sq-dept-meta">
+                                ${escapeHtml(dept.program_tag || "General")}
+                            </div>
+                        </td>
+                        <td>${Number(dept.concern_count || 0)}</td>
+                        <td>
+                            <span class="sq-status ${active ? "sq-status-active" : "sq-status-inactive"}">
+                                ${active ? "Activated" : "Inactive"}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="sq-action">
+                                <button
+                                    type="button"
+                                    class="sq-btn ${active ? "sq-btn-light" : "sq-btn-primary"}"
+                                    data-sq-activate-department="${Number(dept.dept_id || 0)}"
+                                    ${canActivate ? "" : "disabled"}>
+                                    ${active ? "Locked" : "Activate"}
+                                </button>
+                                ${active ? `
+                                    <button
+                                        type="button"
+                                        class="sq-btn sq-btn-primary"
+                                        data-sq-assessor-info="${Number(dept.dept_id || 0)}">
+                                        Details
+                                    </button>
+                                ` : ""}
+                            </div>
+                        </td>
+                    </tr>
+                `
             );
         });
     }
 
-    async function refresh() {
-        if (state.isRefreshing) return;
+    async function loadAssessment() {
+        const response = await apiGet(API.assessment);
+        const assessment = getAssessment(response);
 
-        state.isRefreshing = true;
+        if (!assessment || !assessment.assessment_id) {
+            state.assessment = null;
+            renderAssessment();
+            renderEmpty("No active assessment found. Please create an assessment first.");
+            return false;
+        }
+
+        state.assessment = assessment;
+        renderAssessment();
+        return true;
+    }
+
+    async function loadDepartments() {
+        const assessment = state.assessment;
+
+        if (!assessment || !assessment.assessment_id) {
+            return;
+        }
+
+        const departmentsResponse = await apiGet(API.departments, {
+            framework: assessment.framework_code || "saqshi-nqas"
+        });
+
+        const statusResponse = await apiGet(API.status, {
+            fac_id: assessment.fac_id,
+            ass_period: assessment.assessment_id
+        });
+
+        state.statusMap = {};
+
+        getStatusRows(statusResponse).forEach(function (row) {
+            state.statusMap[Number(row.dept_id)] = row;
+        });
+
+        state.departments = getDepartments(departmentsResponse).map(function (dept) {
+            const deptId = Number(dept.dept_id || dept.fac_dept_id || 0);
+            const status = state.statusMap[deptId] || {};
+
+            return Object.assign({}, dept, {
+                dept_id: deptId,
+                is_active: status.is_active ?? dept.is_active ?? 0,
+                activated_by: status.activated_by ?? dept.activated_by ?? null,
+                activated_on: status.activated_on ?? dept.activated_on ?? null
+            });
+        });
+    }
+
+    async function activateDepartment(deptId, button) {
+        if (!state.assessment || !state.assessment.assessment_id || !deptId) {
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Saving...";
 
         try {
-            hideLoader();
+            const response = await apiPost(API.save, {
+                ass_period: state.assessment.assessment_id,
+                dept_id: deptId,
+                is_active: 1
+            });
 
-            await loadActiveAssessment();
-            renderSummary();
-
-            if (!state.assessment?.assessment_id) {
-                state.departments = [];
-                state.statuses = {};
-                renderDepartments();
-                return;
-            }
+            notify("success", response.message || "Department activated.");
 
             await loadDepartments();
-            await loadDepartmentStatuses();
-
             renderDepartments();
 
         } catch (error) {
             console.error(error);
-            notify("error", error.message || "Unable to load departments.");
-        } finally {
-            state.isRefreshing = false;
-            hideLoader();
+            notify("error", error.message || "Unable to activate department.");
+            button.disabled = false;
+            button.textContent = "Activate";
         }
     }
 
+    function bindEvents() {
+        const tbody = $("departmentTable");
+
+        if (!tbody || tbody.dataset.bound === "1") {
+            return;
+        }
+
+        tbody.dataset.bound = "1";
+
+        tbody.addEventListener("click", function (event) {
+            const infoButton = event.target.closest("[data-sq-assessor-info]");
+
+            if (infoButton) {
+                const deptId = Number(infoButton.dataset.sqAssessorInfo || 0);
+
+                if (SQ.router && typeof SQ.router.navigate === "function") {
+                    SQ.router.navigate("assessment/assessor-info", {
+                        dept_id: deptId
+                    });
+                } else {
+                    window.location.href = "/ui/assessment/assessor-info.html?dept_id=" + deptId;
+                }
+
+                return;
+            }
+
+            const button = event.target.closest("[data-sq-activate-department]");
+
+            if (!button || button.disabled) {
+                return;
+            }
+
+            const deptId = Number(button.dataset.sqActivateDepartment || 0);
+            activateDepartment(deptId, button);
+        });
+    }
+
     async function init() {
+        if (state.isLoading) {
+            return;
+        }
+
+        state.isLoading = true;
+        renderLoading();
         bindEvents();
-        await refresh();
+
+        try {
+            const hasAssessment = await loadAssessment();
+
+            if (hasAssessment) {
+                await loadDepartments();
+                renderDepartments();
+            }
+
+        } catch (error) {
+            console.error(error);
+            renderEmpty(error.message || "Unable to load departments.");
+            notify("error", error.message || "Unable to load departments.");
+        } finally {
+            state.isLoading = false;
+        }
     }
 
     SQ.assessmentDepartments = {
         init,
-        refresh,
         state
     };
-
-    document.addEventListener("sq:page-loaded", function (event) {
-        if (event.detail && event.detail.route === "assessment/departments") {
-            init();
-        }
-    });
-
-    if (document.readyState !== "loading") {
-        if ($("departmentList")) {
-            init();
-        }
-    }
 
 })(window, document);

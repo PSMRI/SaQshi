@@ -10,92 +10,39 @@ License : Apache-2.0
 ==========================================================
 -->
 
-<section class="sq-assessment-departments-page">
-
-    <!-- Assessment Status -->
-
-    <div class="sq-card sq-mb-4">
-
-        <div class="sq-card-header">
-
-            <div>
-                <h2 class="sq-card-title">
-                    Assessment Departments
-                </h2>
-
-                <p class="sq-card-subtitle">
-                    Activate departments for this assessment and start checklist entry.
-                </p>
-            </div>
-
-            <div class="sq-page-actions">
-
-                <button
-                    type="button"
-                    class="sq-btn sq-btn-light"
-                    id="btnBackToCreateAssessment">
-
-                    <i class="bi bi-arrow-left"></i>
-                    Back
-
-                </button>
-
-                <button
-                    type="button"
-                    class="sq-btn sq-btn-primary"
-                    id="btnRefreshDepartments">
-
-                    <i class="bi bi-arrow-clockwise"></i>
-                    Refresh
-
-                </button>
-
-            </div>
-
-        </div>
-
-        <div class="sq-card-body">
-
-            <div
-                id="assessmentSummary"
-                class="sq-assessment-summary">
-
-                <div class="sq-empty-message">
-                    Loading assessment details...
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- Department List -->
+<div class="sq-page sq-departments-page">
 
     <div class="sq-card">
 
         <div class="sq-card-header">
 
             <div>
-                <h2 class="sq-card-title">
-                    Department Activation
-                </h2>
 
-                <p class="sq-card-subtitle">
-                    Enable only applicable departments for the facility.
-                </p>
+                <h2>Assessment Departments</h2>
+
+                <p>Activate departments for this assessment.</p>
+
             </div>
 
         </div>
 
         <div class="sq-card-body">
 
-            <div
-                id="departmentList"
-                class="sq-department-grid">
+            <div class="sq-assessment-summary">
 
-                <div class="sq-empty-message">
-                    Loading departments...
+                <div class="sq-summary-item">
+                    <label>Assessment</label>
+                    <span id="assessmentName">-</span>
+                </div>
+
+                <div class="sq-summary-item">
+                    <label>Status</label>
+                    <span id="assessmentStatus">-</span>
+                </div>
+
+                <div class="sq-summary-item">
+                    <label>Framework</label>
+                    <span id="assessmentFramework">-</span>
                 </div>
 
             </div>
@@ -104,4 +51,54 @@ License : Apache-2.0
 
     </div>
 
-</section>
+    <div class="sq-card">
+
+        <div class="sq-card-header">
+
+            <h3>Departments</h3>
+
+        </div>
+
+        <div class="sq-card-body">
+
+            <table class="sq-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th width="60">#</th>
+
+                        <th>Department</th>
+
+                        <th width="120">Concerns</th>
+
+                        <th width="150">Status</th>
+
+                        <th width="180">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="departmentTable">
+
+                    <tr>
+
+                        <td colspan="5" class="sq-text-center">
+
+                            Loading...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

@@ -6,7 +6,7 @@
  * Save or update one checkpoint response.
  *
  * New simplified flow:
- * - assessment_id is used as cycle_id in assessment_cycle_response
+ * - responses are stored by assessment_id in assessment_response
  * - response saved against assessment_id + dept_id + checkpoint_id
  * - current checkpoint is updated in assessment_department
  *
@@ -193,18 +193,14 @@ try {
      * 4. Save / update response
      *
      * Existing table:
-     * assessment_cycle_response
-     * unique key: cycle_id, dept_id, checkpoint_id
+     * assessment_response
+     * unique key: assessment_id, dept_id, checkpoint_id
      *
-     * We use:
-     * cycle_id = assessment_id
      */
-    $cycleId = $assessmentId;
-
     $sqlSave = "
-        INSERT INTO assessment_cycle_response
+        INSERT INTO assessment_response
             (
-                cycle_id,
+                assessment_id,
                 dept_id,
                 checkpoint_id,
                 response_value,
@@ -234,7 +230,7 @@ try {
 
     $stmt->bind_param(
         'iiisdssi',
-        $cycleId,
+        $assessmentId,
         $deptId,
         $checkpointId,
         $responseValue,
@@ -282,8 +278,8 @@ try {
      */
     $sqlCount = "
         SELECT COUNT(*) AS saved_count
-        FROM assessment_cycle_response
-        WHERE cycle_id = ?
+        FROM assessment_response
+        WHERE assessment_id = ?
           AND dept_id = ?
     ";
 
@@ -293,7 +289,7 @@ try {
         Response::serverError('Progress count prepare failed: ' . $con->error);
     }
 
-    $stmt->bind_param('ii', $cycleId, $deptId);
+    $stmt->bind_param('ii', $assessmentId, $deptId);
     $stmt->execute();
 
     $countRow = $stmt->get_result()->fetch_assoc();
@@ -302,7 +298,6 @@ try {
         'Response saved successfully',
         [
             'assessment_id' => $assessmentId,
-            'cycle_id' => $cycleId,
             'dept_id' => $deptId,
             'checkpoint_id' => $checkpointId,
             'response_value' => $responseValue,

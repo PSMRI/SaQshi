@@ -13,7 +13,7 @@
  *      ↓
  * assessment_assessor_info
  *      ↓
- * assessment_cycle_response
+ * assessment_response
  *
  * Method:
  * POST
@@ -139,7 +139,123 @@ try {
     $department = $stmt->get_result()->fetch_assoc();
 
     if (!$department) {
-        Response::error('Department is not activated for this assessment');
+        $sqlStatus = "
+            SELECT dept_id, is_active
+            FROM assessment_department_status
+            WHERE ass_period_id = ?
+              AND fac_id_fk = ?
+              AND dept_id = ?
+              AND is_active = 1
+            LIMIT 1
+        ";
+
+        $stmt = $con->prepare($sqlStatus);
+
+        if (!$stmt) {
+            Response::serverError('Department status prepare failed: ' . $con->error);
+        }
+
+        $stmt->bind_param('iii', $assessmentId, $facId, $deptId);
+        $stmt->execute();
+
+        $activeStatus = $stmt->get_result()->fetch_assoc();
+
+        if (!$activeStatus) {
+            Response::error('Department is not activated for this assessment');
+        }
+
+        $sqlExistingDepartment = "
+            SELECT
+                id,
+                assessment_id,
+                fac_id_fk,
+                dept_id,
+                is_active,
+                status,
+                started_on,
+                completed_on,
+                current_checkpoint_id
+            FROM assessment_department
+            WHERE assessment_id = ?
+              AND fac_id_fk = ?
+              AND dept_id = ?
+            LIMIT 1
+        ";
+
+        $stmt = $con->prepare($sqlExistingDepartment);
+
+        if (!$stmt) {
+            Response::serverError('Existing department prepare failed: ' . $con->error);
+        }
+
+        $stmt->bind_param('iii', $assessmentId, $facId, $deptId);
+        $stmt->execute();
+
+        $existingDepartment = $stmt->get_result()->fetch_assoc();
+
+        if ($existingDepartment) {
+            $sqlReactivateDepartment = "
+                UPDATE assessment_department
+                SET is_active = 1,
+                    activated_by = ?,
+                    activated_on = COALESCE(activated_on, CURRENT_TIMESTAMP)
+                WHERE id = ?
+            ";
+
+            $stmt = $con->prepare($sqlReactivateDepartment);
+
+            if (!$stmt) {
+                Response::serverError('Department reactivate prepare failed: ' . $con->error);
+            }
+
+            $existingDepartmentId = (int)$existingDepartment['id'];
+            $stmt->bind_param('ii', $userId, $existingDepartmentId);
+
+            if (!$stmt->execute()) {
+                Response::serverError('Department reactivate failed: ' . $stmt->error);
+            }
+
+            $department = $existingDepartment;
+            $department['is_active'] = 1;
+        } else {
+        $sqlInsertDepartment = "
+            INSERT INTO assessment_department
+                (
+                    assessment_id,
+                    fac_id_fk,
+                    dept_id,
+                    is_active,
+                    status,
+                    activated_by
+                )
+            VALUES
+                (?, ?, ?, 1, 'NOT_STARTED', ?)
+        ";
+
+        $stmt = $con->prepare($sqlInsertDepartment);
+
+        if (!$stmt) {
+            Response::serverError('Department insert prepare failed: ' . $con->error);
+        }
+
+        $stmt->bind_param('iiii', $assessmentId, $facId, $deptId, $userId);
+
+        if (!$stmt->execute()) {
+            Response::serverError('Department insert failed: ' . $stmt->error);
+        }
+
+        $department = [
+            'id' => (int)$stmt->insert_id,
+            'assessment_id' => $assessmentId,
+            'fac_id_fk' => $facId,
+            'dept_id' => $deptId,
+            'is_active' => 1,
+            'status' => 'NOT_STARTED',
+            'started_on' => null,
+            'completed_on' => null,
+            'current_checkpoint_id' => null
+        ];
+        }
     }
 
     if (($department['status'] ?? '') === 'COMPLETED') {
@@ -246,14 +362,14 @@ try {
      */
     $sqlCount = "
         SELECT COUNT(*) AS saved_count
-        FROM assessment_cycle_response
-        WHERE cycle_id = ?
+        FROM assessment_response
+        WHERE assessment_id = ?
           AND dept_id = ?
     ";
 
     /*
      * Since we removed assessment_cycle,
-     * we are treating assessment_id as cycle_id
+     * responses are keyed by assessment_id
      * for response mapping.
      */
     $cycleId = $assessmentId;
@@ -278,7 +394,7 @@ try {
         'Department assessment started successfully',
         [
             'can_start' => true,
-            'cycle_id' => $cycleId,
+            'assessment_id' => $assessmentId,
             'assessment' => [
                 'assessment_id' => (int)$assessment['assessment_id'],
                 'assessment_name' => $assessment['assessment_name'],

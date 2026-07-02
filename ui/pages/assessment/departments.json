@@ -1,74 +1,38 @@
 {
     "id": "assessment-departments",
-    "name": "Assessment Departments",
+
     "title": "Assessment Departments",
-    "description": "Activate departments and start department-wise assessment.",
-    "version": "1.0.0",
 
     "layout": "dashboard",
 
+    "moduleName": "assessmentDepartments",
+
     "authentication": {
-        "required": true,
-        "roles": [
-            "*"
-        ]
+        "required": true
     },
-
-    "pageHeader": {
-        "title": "Assessment Departments",
-        "subtitle": "Activate departments and begin checklist assessment.",
-        "icon": "bi bi-building-check"
-    },
-
-    "breadcrumb": [
-        {
-            "label": "Dashboard",
-            "url": "/ui/dashboard.html"
-        },
-        {
-            "label": "Assessment"
-        },
-        {
-            "label": "Departments"
-        }
-    ],
 
     "assets": {
-    "css": [
-        "/ui/pages/assessment/departments.css?v=5"
-    ],
-    "js": [
-        "/ui/pages/assessment/departments.js?v=5"
-    ]
-},
 
+        "css": [
+            "/ui/pages/assessment/departments.css?v=20260702-2"
+        ],
+
+        "js": [
+            "/ui/pages/assessment/departments.js?v=20260702-2"
+        ]
+
+    },
 
     "api": {
-        "activeAssessment": "/assessment/v1/active_assessment.php",
+
+        "assessment": "/assessment/v1/active_assessment.php",
+
         "departments": "/framework/v1/my_departments.php",
-        "departmentStatus": "/assessment/v1/department-status/list.php",
-        "saveDepartmentStatus": "/assessment/v1/department-status/save.php"
-    },
 
-    "permissions": {
-        "view": true,
-        "activateDepartment": true,
-        "startChecklist": true
-    },
+        "status": "/assessment/v1/department-status/list.php",
 
-    "features": {
-        "departmentActivation": true,
-        "progressTracking": true,
-        "resumeChecklist": true,
-        "search": false,
-        "filter": false,
-        "pagination": false
-    },
+        "save": "/assessment/v1/department-status/save.php"
 
-    "storage": {
-        "activeAssessmentKey": "sq_active_assessment_id",
-        "activeDepartmentKey": "sq_active_department_id"
-    },
+    }
 
-    "moduleName": "assessmentDepartments"
 }

@@ -19,7 +19,8 @@
     const API = {
         me: "/auth/v1/me.php",
         activeAssessment: "/assessment/v1/active_assessment.php",
-        createAssessment: "/assessment/v1/create_assessment.php"
+        createAssessment: "/assessment/v1/create_assessment.php",
+        cancelAssessment: "/assessment/v1/cancel_assessment.php"
     };
 
     const state = {
@@ -96,6 +97,19 @@
         btn.innerHTML = isLoading
             ? `<span class="sq-btn-spinner"></span> Creating...`
             : `<i class="bi bi-plus-circle"></i> Create Assessment`;
+    }
+
+    function setCancelLoading(isLoading) {
+        const btn = $("btnCancelActiveAssessment");
+
+        if (!btn) {
+            return;
+        }
+
+        btn.disabled = isLoading;
+        btn.innerHTML = isLoading
+            ? `<span class="sq-btn-spinner"></span> Cancelling...`
+            : `Cancel Current Assessment`;
     }
 
     function setDefaultDates() {
@@ -187,7 +201,7 @@
                         ACTIVE assessment already exists
                     </div>
                     <div class="sq-alert-text">
-                        You cannot create another assessment until the current assessment is completed or cancelled.
+                        You cannot create another assessment until the current assessment is completed or cancelled. If required, cancel this assessment and then create a new one.
                     </div>
                 </div>
             </div>
@@ -217,6 +231,16 @@
                     <span class="sq-info-label">End Date</span>
                     <span class="sq-info-value">${escapeHtml(assessment.end_date || "-")}</span>
                 </div>
+            </div>
+
+            <div class="sq-danger-zone sq-mt-4">
+                <div>
+                    <div class="sq-danger-title">Cancel current assessment</div>
+                    <div class="sq-danger-text">This will close the active assessment for this facility and allow a new assessment to be created.</div>
+                </div>
+                <button type="button" class="sq-btn sq-btn-danger" id="btnCancelActiveAssessment">
+                    Cancel Current Assessment
+                </button>
             </div>
         `;
 
@@ -337,6 +361,13 @@
                 throw new Error(response.message || "Unable to create assessment");
             }
 
+            if (response.data?.created === false) {
+                state.activeAssessment = response.data.assessment || null;
+                renderActiveAssessment();
+                notify("warning", response.message || "Active assessment already exists.");
+                return;
+            }
+
             notify("success", response.message || "Assessment created successfully.");
 
             const assessment =
@@ -369,6 +400,54 @@
         }
     }
 
+    async function handleCancelActiveAssessment() {
+        const assessment = state.activeAssessment;
+
+        if (!assessment || !assessment.assessment_id) {
+            notify("warning", "No active assessment found.");
+            return;
+        }
+
+        const confirmed = window.confirm(
+            "Cancel current active assessment? After cancellation you can create a new assessment."
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setCancelLoading(true);
+
+            if (SQ.loader && typeof SQ.loader.show === "function") {
+                SQ.loader.show("Cancelling assessment...");
+            }
+
+            const response = await apiPost(API.cancelAssessment, {
+                assessment_id: assessment.assessment_id
+            });
+
+            if (response.status === "error" || response.success === false) {
+                throw new Error(response.message || "Unable to cancel assessment");
+            }
+
+            sessionStorage.removeItem("sq_active_assessment_id");
+            state.activeAssessment = null;
+            notify("success", response.message || "Assessment cancelled successfully.");
+            await loadActiveAssessment();
+
+        } catch (error) {
+            console.error(error);
+            notify("error", error.message || "Unable to cancel assessment.");
+        } finally {
+            setCancelLoading(false);
+
+            if (SQ.loader && typeof SQ.loader.hide === "function") {
+                SQ.loader.hide();
+            }
+        }
+    }
+
     function bindEvents() {
         const form = $("assessmentCreateForm");
 
@@ -381,6 +460,18 @@
         if (cancel) {
             cancel.addEventListener("click", function () {
                 window.location.href = "/ui/dashboard.html";
+            });
+        }
+
+        const activeStatus = $("activeAssessmentStatus");
+
+        if (activeStatus) {
+            activeStatus.addEventListener("click", function (event) {
+                const cancelActive = event.target.closest("#btnCancelActiveAssessment");
+
+                if (cancelActive) {
+                    handleCancelActiveAssessment();
+                }
             });
         }
     }

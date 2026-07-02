@@ -196,14 +196,14 @@ try {
      * 4. Check saved responses
      *
      * Simplified design:
-     * cycle_id = assessment_id
+     * response assessment_id is the current assessment_id
      */
     $cycleId = $assessmentId;
 
     $sqlResponseCount = "
         SELECT COUNT(*) AS saved_count
-        FROM assessment_cycle_response
-        WHERE cycle_id = ?
+        FROM assessment_response
+        WHERE assessment_id = ?
           AND dept_id = ?
     ";
 
@@ -259,7 +259,7 @@ try {
         [
             'completed' => true,
             'assessment_id' => $assessmentId,
-            'cycle_id' => $cycleId,
+            'assessment_id' => $assessmentId,
             'dept_id' => $deptId,
             'saved_responses' => $savedCount,
             'status' => 'COMPLETED',

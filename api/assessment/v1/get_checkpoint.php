@@ -346,15 +346,15 @@ try {
             evidence_url,
             updated_by,
             updated_on
-        FROM assessment_cycle_response
-        WHERE cycle_id = ?
+        FROM assessment_response
+        WHERE assessment_id = ?
           AND dept_id = ?
           AND checkpoint_id = ?
         LIMIT 1
     ";
 
     /*
-     * assessment_id is used as cycle_id in simplified design
+     * responses are keyed by assessment_id
      */
     $cycleId = $assessmentId;
 
