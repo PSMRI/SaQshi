@@ -60,6 +60,133 @@ body {
     background: var(--sq-bg-body);
     color: var(--sq-text-primary);
     font-family: var(--sq-font-family-sans);
+    font-size: 12px;
+}
+
+/* ==========================================================
+   App Compact Density
+========================================================== */
+
+.sq-card-header {
+    padding: .55rem .7rem !important;
+    gap: .45rem !important;
+}
+
+.sq-card-body {
+    padding: .65rem .7rem !important;
+}
+
+.sq-card-footer {
+    padding: .55rem .7rem !important;
+}
+
+.sq-card-title {
+    font-size: .95rem !important;
+}
+
+.sq-card-subtitle {
+    margin-top: .1rem !important;
+    font-size: .72rem !important;
+}
+
+.sq-btn {
+    min-height: 30px !important;
+    padding: 5px 10px !important;
+    border-radius: 7px !important;
+    font-size: .75rem !important;
+}
+
+.sq-form-group {
+    gap: .3rem !important;
+    margin-bottom: .6rem !important;
+}
+
+.sq-form-control,
+.sq-input,
+.sq-select {
+    min-height: 31px !important;
+    padding: .35rem .55rem !important;
+    border-radius: 7px !important;
+    font-size: .78rem !important;
+}
+
+.sq-textarea,
+textarea.sq-form-control {
+    min-height: 54px !important;
+}
+
+.sq-label,
+.sq-form-label {
+    font-size: .72rem !important;
+}
+
+.sq-help-text {
+    font-size: .68rem !important;
+}
+
+.sq-alert-content {
+    padding: .55rem .65rem !important;
+}
+
+.sq-alert-title {
+    margin-bottom: .15rem !important;
+    font-size: .8rem !important;
+}
+
+.sq-alert-text {
+    font-size: .72rem !important;
+}
+
+.sq-table {
+    font-size: .72rem !important;
+}
+
+.sq-table th,
+.sq-table td {
+    padding: .4rem .55rem !important;
+}
+
+.sq-badge,
+.sq-status-badge {
+    min-height: 22px !important;
+    padding: 0 .45rem !important;
+    font-size: .68rem !important;
+}
+
+.sq-dashboard .sq-metric-card {
+    min-height: 58px !important;
+    padding: .55rem .7rem !important;
+}
+
+.sq-dashboard .sq-grid {
+    gap: .65rem !important;
+}
+
+.sq-dashboard .sq-mt-4,
+.sq-dashboard .sq-mt-5 {
+    margin-top: .65rem !important;
+}
+
+.sq-dashboard .sq-card-header {
+    padding: .5rem .65rem !important;
+}
+
+.sq-dashboard .sq-card-body {
+    padding: .6rem .65rem !important;
+}
+
+.sq-chat-toggle,
+.sq-help-button,
+[data-sq-chat-toggle] {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: .9rem !important;
+}
+
+.sq-footer {
+    min-height: 28px !important;
+    padding: .25rem .7rem !important;
+    font-size: .68rem !important;
 }
 
 /* ==========================================================

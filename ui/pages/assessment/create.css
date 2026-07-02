@@ -35,20 +35,20 @@ body:has(.sq-assessment-create-page) .sq-sidebar-nav {
 }
 
 body:has(.sq-assessment-create-page) .sq-sidebar-section-title {
-    padding: .45rem 1rem .25rem !important;
-    font-size: .68rem !important;
+    padding: .42rem .85rem .2rem !important;
+    font-size: .58rem !important;
 }
 
 body:has(.sq-assessment-create-page) .sq-sidebar-link {
-    min-height: 34px !important;
-    padding: .42rem 1rem !important;
-    gap: .65rem !important;
-    font-size: .82rem !important;
+    min-height: 31px !important;
+    padding: .35rem .85rem !important;
+    gap: .55rem !important;
+    font-size: .75rem !important;
 }
 
 body:has(.sq-assessment-create-page) .sq-sidebar-link i {
-    width: 18px !important;
-    font-size: .9rem !important;
+    width: 17px !important;
+    font-size: .82rem !important;
 }
 
 /* ==========================================================

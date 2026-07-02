@@ -30,7 +30,7 @@
 
     flex-direction:column;
 
-    gap:1.5rem;
+    gap:.5rem;
 
 }
 
@@ -46,9 +46,9 @@
 
     justify-content:space-between;
 
-    gap:1rem;
+    gap:.45rem;
 
-    margin-bottom:1.5rem;
+    margin-bottom:.45rem;
 
     flex-wrap:wrap;
 
@@ -58,7 +58,7 @@
 
     margin:0;
 
-    font-size:2rem;
+    font-size:1.2rem;
 
     font-weight:700;
 
@@ -68,11 +68,11 @@
 
 .sq-page-description{
 
-    margin-top:.35rem;
+    margin-top:.2rem;
 
     color:var(--sq-text-secondary);
 
-    font-size:.95rem;
+    font-size:.72rem;
 
 }
 
@@ -80,7 +80,7 @@
 
     display:flex;
 
-    gap:.75rem;
+    gap:.5rem;
 
     flex-wrap:wrap;
 
@@ -98,9 +98,9 @@
 
     border:1px solid var(--sq-border);
 
-    border-radius:16px;
+    border-radius:8px;
 
-    padding:1.5rem;
+    padding:.55rem .7rem;
 
     transition:.25s ease;
 
@@ -110,7 +110,7 @@
 
 .sq-metric-card:hover{
 
-    transform:translateY(-4px);
+    transform:translateY(-2px);
 
     box-shadow:var(--sq-shadow-lg);
 
@@ -128,17 +128,17 @@
 
 .sq-metric-title{
 
-    font-size:.90rem;
+    font-size:.68rem;
 
     color:var(--sq-text-muted);
 
-    margin-bottom:.5rem;
+    margin-bottom:.25rem;
 
 }
 
 .sq-metric-value{
 
-    font-size:2rem;
+    font-size:1.25rem;
 
     font-weight:700;
 
@@ -150,9 +150,9 @@
 
 .sq-metric-icon{
 
-    width:56px;
+    width:34px;
 
-    height:56px;
+    height:34px;
 
     border-radius:50%;
 
@@ -162,7 +162,7 @@
 
     justify-content:center;
 
-    font-size:1.5rem;
+    font-size:1rem;
 
     background:rgba(0,0,0,.04);
 
@@ -170,9 +170,9 @@
 
 .sq-metric-footer{
 
-    margin-top:1.25rem;
+    margin-top:.5rem;
 
-    font-size:.85rem;
+    font-size:.72rem;
 
     color:var(--sq-text-secondary);
 
@@ -242,7 +242,7 @@
 
     align-items:center;
 
-    margin-bottom:.75rem;
+    margin-bottom:.4rem;
 
 }
 
@@ -274,13 +274,13 @@
 
     justify-content:center;
 
-    min-height:180px;
+    min-height:56px;
 
     color:var(--sq-text-muted);
 
     text-align:center;
 
-    font-size:.95rem;
+    font-size:.8rem;
 
 }
 
@@ -302,7 +302,7 @@
 
     justify-content:center;
 
-    min-width:110px;
+    min-width:82px;
 
 }
 
@@ -372,7 +372,7 @@
 
     .sq-metric-value{
 
-        font-size:1.75rem;
+        font-size:1.35rem;
 
     }
 
@@ -460,4 +460,37 @@
 
     }
 
+}
+
+/* ==========================================================
+   Dashboard Compact Header Strip
+========================================================== */
+
+.sq-layout-main > .sq-page-header {
+    min-height: 0 !important;
+    padding: 5px 14px !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin-bottom: 0 !important;
+}
+
+.sq-layout-main > .sq-page-header .sq-page-title {
+    font-size: 16px !important;
+    line-height: 1.05 !important;
+}
+
+.sq-layout-main > .sq-page-header .sq-page-subtitle,
+.sq-layout-main > .sq-page-header .sq-page-description {
+    margin-top: 1px !important;
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+}
+
+.sq-layout-main > .sq-page-header .sq-page-actions {
+    gap: 6px !important;
+}
+
+.sq-layout-main > .sq-page-header .sq-btn {
+    min-height: 28px !important;
+    padding: 4px 9px !important;
 }

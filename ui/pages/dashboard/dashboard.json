@@ -62,11 +62,11 @@
     "assets": {
 
         "css": [
-            "/ui/pages/dashboard/dashboard.css"
+            "/ui/pages/dashboard/dashboard.css?v=20260702-12"
         ],
 
         "js": [
-            "/ui/pages/dashboard/dashboard.js"
+            "/ui/pages/dashboard/dashboard.js?v=20260702-12"
         ]
 
     },
@@ -133,7 +133,8 @@
             "title": "New Assessment",
             "icon": "bi-plus-circle",
             "permission": "assessment.create",
-            "url": "/assessment/create.html"
+            "url": "#",
+            "route": "assessment/create"
         },
 
         {
@@ -141,7 +142,8 @@
             "title": "Assessment List",
             "icon": "bi-list-check",
             "permission": "assessment.view",
-            "url": "/assessment/list.html"
+            "url": "#",
+            "route": "assessment/list"
         },
 
         {
@@ -149,7 +151,8 @@
             "title": "Reports",
             "icon": "bi-file-earmark-bar-graph",
             "permission": "reports.view",
-            "url": "/reports/index.html"
+            "url": "#",
+            "route": "dashboard"
         }
 
     ],

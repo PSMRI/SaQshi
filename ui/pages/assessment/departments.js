@@ -341,7 +341,7 @@
                         dept_id: deptId
                     });
                 } else {
-                    window.location.href = "/ui/assessment/assessor-info.html?dept_id=" + deptId;
+                    window.location.href = "/ui/dashboard.html?route=assessment/assessor-info&dept_id=" + deptId;
                 }
 
                 return;

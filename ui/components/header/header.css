@@ -501,3 +501,82 @@
         display: none !important;
     }
 }
+
+/* ==========================================================
+   Compact App Density
+========================================================== */
+
+.sq-header {
+    height: 48px !important;
+    gap: 7px !important;
+    padding: 0 10px !important;
+}
+
+.sq-header-left {
+    gap: 6px !important;
+    min-width: 210px !important;
+}
+
+.sq-header-toggle {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    font-size: .95rem !important;
+}
+
+.sq-logo {
+    width: 26px !important;
+    height: 26px !important;
+}
+
+.sq-header-title {
+    font-size: .88rem !important;
+}
+
+.sq-header-version {
+    font-size: .58rem !important;
+}
+
+.sq-header-center {
+    min-width: 180px !important;
+}
+
+.sq-header-search {
+    max-width: 480px !important;
+}
+
+.sq-header-search i {
+    left: 11px !important;
+    font-size: .85rem !important;
+}
+
+.sq-header-search input {
+    height: 32px !important;
+    padding-left: 32px !important;
+    padding-right: 10px !important;
+    font-size: .78rem !important;
+}
+
+.sq-header-right {
+    gap: 4px !important;
+}
+
+.sq-icon-button {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 8px !important;
+    font-size: .85rem !important;
+}
+
+.sq-user-avatar {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+.sq-user-name {
+    font-size: .78rem !important;
+}
+
+.sq-user-role {
+    font-size: .62rem !important;
+}

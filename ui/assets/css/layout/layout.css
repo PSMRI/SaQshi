@@ -495,162 +495,247 @@ body.sq-sidebar-collapsed .sq-sidebar-link {
 ========================================================== */
 
 :root {
-    --sq-header-height: 60px;
-    --sq-sidebar-width: 240px;
-    --sq-content-padding: 16px;
+    --sq-header-height: 48px;
+    --sq-sidebar-width: 188px;
+    --sq-content-padding: 10px;
 
-    --sq-font-size-xs: 11px;
-    --sq-font-size-sm: 13px;
-    --sq-font-size-md: 14px;
-    --sq-font-size-lg: 16px;
-    --sq-font-size-xl: 20px;
-    --sq-font-size-2xl: 32px;
+    --sq-font-size-xs: 10px;
+    --sq-font-size-sm: 11px;
+    --sq-font-size-md: 12px;
+    --sq-font-size-lg: 14px;
+    --sq-font-size-xl: 17px;
+    --sq-font-size-2xl: 24px;
 
-    --sq-space-1: 4px;
-    --sq-space-2: 8px;
-    --sq-space-3: 10px;
-    --sq-space-4: 14px;
-    --sq-space-5: 16px;
-    --sq-space-6: 20px;
+    --sq-space-1: 3px;
+    --sq-space-2: 5px;
+    --sq-space-3: 7px;
+    --sq-space-4: 9px;
+    --sq-space-5: 11px;
+    --sq-space-6: 13px;
+
+    --sq-card-padding: .65rem;
+    --sq-input-height: 2rem;
+    --sq-button-height-md: 2rem;
 }
 
 /* Header compact */
 .sq-header {
-    height: 60px !important;
-    padding: 0 16px !important;
+    height: 48px !important;
+    padding: 0 10px !important;
 }
 
 .sq-header-toggle {
-    width: 42px !important;
-    height: 42px !important;
+    width: 32px !important;
+    height: 32px !important;
 }
 
 .sq-logo {
-    width: 34px !important;
-    height: 34px !important;
+    width: 26px !important;
+    height: 26px !important;
 }
 
 .sq-header-title {
-    font-size: 1rem !important;
+    font-size: .86rem !important;
 }
 
 .sq-header-version {
-    font-size: .68rem !important;
+    font-size: .58rem !important;
 }
 
 .sq-header-search input {
-    height: 40px !important;
-    font-size: 14px !important;
+    height: 32px !important;
+    font-size: 12px !important;
 }
 
 /* Sidebar compact */
 .sq-layout-sidebar {
-    width: 240px !important;
-    min-width: 240px !important;
-    flex-basis: 240px !important;
+    width: 188px !important;
+    min-width: 188px !important;
+    flex-basis: 188px !important;
 }
 
 .sq-sidebar {
-    width: 240px !important;
-    top: 60px !important;
-    height: calc(100vh - 60px) !important;
+    width: 188px !important;
+    top: 48px !important;
+    height: calc(100vh - 48px) !important;
 }
 
 .sq-sidebar-link {
-    min-height: 42px !important;
-    padding: 10px 16px !important;
-    font-size: 14px !important;
+    min-height: 31px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
 }
 
 .sq-sidebar-section-title {
-    padding: 10px 16px 6px !important;
-    font-size: 11px !important;
+    padding: 7px 12px 4px !important;
+    font-size: 9px !important;
 }
 
 /* Main compact */
 .sq-layout-body {
-    min-height: calc(100vh - 60px) !important;
+    min-height: calc(100vh - 48px) !important;
 }
 
 .sq-layout-main,
 .sq-main {
-    width: calc(100% - 240px) !important;
+    width: calc(100% - 188px) !important;
 }
 
 .sq-page-header {
-    padding: 18px 24px !important;
+    padding: 10px 16px !important;
+    gap: 8px !important;
 }
 
 .sq-page-title {
-    font-size: 34px !important;
+    font-size: 24px !important;
 }
 
 .sq-page-subtitle,
 .sq-page-description {
-    font-size: 16px !important;
+    margin-top: 2px !important;
+    font-size: 13px !important;
 }
 
 .sq-page-content,
 .sq-content {
-    padding: 18px 24px !important;
+    padding: 10px 16px !important;
 }
 
 /* Cards compact */
 .sq-card,
 .sq-metric-card {
-    border-radius: 14px !important;
+    border-radius: 8px !important;
 }
 
 .sq-metric-card {
-    min-height: 118px !important;
-    padding: 18px 22px !important;
+    min-height: 82px !important;
+    padding: 12px 14px !important;
 }
 
 .sq-metric-title {
-    font-size: 14px !important;
+    font-size: 12px !important;
 }
 
 .sq-metric-value {
-    font-size: 34px !important;
+    font-size: 26px !important;
 }
 
 /* Grid compact */
 .sq-grid {
-    gap: 18px !important;
+    gap: 12px !important;
 }
 
 .sq-grid-4 {
-    grid-template-columns: repeat(4, minmax(220px, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(160px, 1fr)) !important;
 }
 
 /* Button compact */
 .sq-btn {
-    min-height: 40px !important;
-    padding: 9px 16px !important;
-    font-size: 14px !important;
-    border-radius: 10px !important;
+    min-height: 32px !important;
+    padding: 6px 11px !important;
+    font-size: 12px !important;
+    border-radius: 7px !important;
 }
 
 /* Collapsed sidebar compact */
 body.sq-sidebar-collapsed .sq-layout-sidebar {
-    width: 64px !important;
-    min-width: 64px !important;
-    flex-basis: 64px !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    flex-basis: 48px !important;
 }
 
 body.sq-sidebar-collapsed .sq-layout-main,
 body.sq-sidebar-collapsed .sq-main {
-    width: calc(100% - 64px) !important;
+    width: calc(100% - 48px) !important;
 }
 
 body.sq-sidebar-collapsed .sq-sidebar {
-    width: 64px !important;
+    width: 48px !important;
+}
+
+/* Use an in-flow sidebar on desktop so no empty spacer remains beside it. */
+@media (min-width: 993px) {
+    .sq-layout-sidebar {
+        width: 188px !important;
+        min-width: 188px !important;
+        flex: 0 0 188px !important;
+        border-right: 1px solid var(--sq-border) !important;
+    }
+
+    .sq-layout-sidebar .sq-sidebar {
+        position: sticky !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: calc(100vh - 48px) !important;
+    }
+
+    .sq-layout-main,
+    .sq-main {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        margin-left: 0 !important;
+    }
+}
+
+.sq-layout-footer {
+    display: none !important;
+}
+
+.sq-layout-breadcrumb {
+    min-height: 0 !important;
+}
+
+.sq-page-header {
+    align-items: center !important;
+    padding: 8px 14px !important;
+}
+
+.sq-page-title {
+    font-size: 20px !important;
+}
+
+.sq-page-subtitle,
+.sq-page-description {
+    font-size: 12px !important;
+}
+
+.sq-layout-main > .sq-page-header {
+    min-height: 0 !important;
+    padding: 5px 14px !important;
+    gap: 6px !important;
+}
+
+.sq-layout-main > .sq-page-header > div:first-child {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    min-height: 30px !important;
+}
+
+.sq-layout-main > .sq-page-header .sq-page-title {
+    font-size: 16px !important;
+    line-height: 1.05 !important;
+}
+
+.sq-layout-main > .sq-page-header .sq-page-subtitle {
+    margin-top: 1px !important;
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+}
+
+.sq-layout-main > .sq-page-header .sq-page-actions {
+    gap: 6px !important;
+}
+
+.sq-layout-main > .sq-page-header .sq-btn {
+    min-height: 28px !important;
+    padding: 4px 9px !important;
 }
 
 /* Responsive */
 @media (max-width: 1200px) {
     .sq-grid-4 {
-        grid-template-columns: repeat(2, minmax(220px, 1fr)) !important;
+        grid-template-columns: repeat(4, minmax(140px, 1fr)) !important;
     }
 }
 
@@ -667,5 +752,4 @@ body.sq-sidebar-collapsed .sq-sidebar {
     .sq-grid-4 {
         grid-template-columns: 1fr !important;
     }
-}
 }

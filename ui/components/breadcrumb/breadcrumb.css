@@ -32,7 +32,7 @@
 
     width:100%;
 
-    padding:1rem 1.5rem;
+    padding:.45rem 1rem;
 
     background:var(--sq-bg-surface);
 
@@ -52,7 +52,7 @@
 
     flex-wrap:wrap;
 
-    gap:.50rem;
+    gap:.35rem;
 
     list-style:none;
 
@@ -72,7 +72,7 @@
 
     align-items:center;
 
-    font-size:.875rem;
+    font-size:.75rem;
 
     color:var(--sq-text-secondary);
 
@@ -86,7 +86,7 @@
 
     content:"/";
 
-    margin-left:.50rem;
+    margin-left:.35rem;
 
     color:var(--sq-text-muted);
 
@@ -102,7 +102,7 @@
 
     align-items:center;
 
-    gap:.45rem;
+    gap:.3rem;
 
     text-decoration:none;
 
@@ -154,7 +154,7 @@
 
 .sq-breadcrumb-item i{
 
-    font-size:.90rem;
+    font-size:.78rem;
 
 }
 

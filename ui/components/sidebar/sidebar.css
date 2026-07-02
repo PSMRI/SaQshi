@@ -407,3 +407,63 @@ body.sq-sidebar-collapsed .sq-main{
     }
 
 }
+
+/* ==========================================================
+   Compact App Density
+========================================================== */
+
+.sq-sidebar {
+    top: 48px !important;
+    width: 188px !important;
+    height: calc(100vh - 48px) !important;
+}
+
+.sq-sidebar-nav {
+    padding: .4rem 0 !important;
+}
+
+.sq-sidebar-section-title {
+    padding: .42rem .85rem .2rem !important;
+    font-size: .58rem !important;
+    letter-spacing: .06em !important;
+}
+
+.sq-sidebar-link {
+    min-height: 31px !important;
+    gap: .55rem !important;
+    padding: .35rem .85rem !important;
+    font-size: .75rem !important;
+}
+
+.sq-sidebar-link i {
+    width: 17px !important;
+    font-size: .82rem !important;
+}
+
+body.sq-sidebar-collapsed .sq-sidebar {
+    width: 48px !important;
+}
+
+body.sq-sidebar-collapsed .sq-sidebar-link {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+@media (min-width: 993px) {
+    .sq-layout-sidebar .sq-sidebar {
+        position: sticky !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: calc(100vh - 48px) !important;
+    }
+
+    body.sq-sidebar-collapsed .sq-layout-sidebar {
+        width: 48px !important;
+        min-width: 48px !important;
+        flex-basis: 48px !important;
+    }
+
+    body.sq-sidebar-collapsed .sq-layout-sidebar .sq-sidebar {
+        width: 100% !important;
+    }
+}

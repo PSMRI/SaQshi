@@ -10,7 +10,7 @@
 
     <title>Dashboard | SaQshi</title>
 
-    <link rel="stylesheet" href="/ui/assets/css/sq-ui.css?v=20260702-4">
+    <link rel="stylesheet" href="/ui/assets/css/sq-ui.css?v=20260702-12">
 
     <link
         rel="stylesheet"
@@ -22,23 +22,25 @@
     <div id="sq-root"></div>
 
     <!-- Core JS -->
-    <script src="/ui/assets/js/sq-ui.js?v=20260702-4"></script>
+    <script src="/ui/assets/js/sq-ui.js?v=20260702-12"></script>
     <script src="/ui/assets/js/core/storage.js"></script>
     <script src="/ui/assets/js/core/api.js"></script>
     <script src="/ui/assets/js/core/auth.js"></script>
     <script src="/ui/assets/js/core/validator.js"></script>
     <script src="/ui/assets/js/core/upload.js"></script>
-    <script src="/ui/assets/js/core/router.js?v=20260702-4"></script>
+    <script src="/ui/assets/js/core/router.js?v=20260702-12"></script>
     <script src="/ui/assets/js/core/chat.js"></script>
-    <script src="/ui/assets/js/core/component-loader.js?v=20260702-4"></script>
-    <script src="/ui/assets/js/app.js?v=20260702-4"></script>
+    <script src="/ui/assets/js/core/component-loader.js?v=20260702-12"></script>
+    <script src="/ui/assets/js/app.js?v=20260702-12"></script>
 
     <!-- Page Bootstrap -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             if (window.SQ && SQ.router) {
                 SQ.router.navigate(
-                    "dashboard",
+                    SQ.router.currentRouteFromUrl
+                        ? SQ.router.currentRouteFromUrl()
+                        : "dashboard",
                     {},
                     {
                         history: false

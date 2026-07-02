@@ -42,6 +42,7 @@
     function routeName(route = "") {
         let value = String(route || CONFIG.defaultRoute)
             .replace(window.location.origin, "")
+            .replace(/^\/ui\/dashboard\.html\?route=/, "")
             .replace(/^\/ui\//, "")
             .replace(/^\/+/, "")
             .replace(/\.html$/, "")
@@ -70,6 +71,29 @@
         }
 
         return `${CONFIG.pagesPath}/${name}`;
+    }
+
+    function routeUrl(route, params = {}) {
+        const name = routeName(route);
+
+        if (name === CONFIG.defaultRoute) {
+            return `${CONFIG.basePath}/dashboard.html`;
+        }
+
+        const url = new URL(`${CONFIG.basePath}/dashboard.html`, window.location.origin);
+        url.searchParams.set("route", name);
+
+        Object.keys(params || {}).forEach(function (key) {
+            if (
+                params[key] !== null &&
+                params[key] !== undefined &&
+                params[key] !== ""
+            ) {
+                url.searchParams.set(key, params[key]);
+            }
+        });
+
+        return url.pathname + url.search;
     }
 
     function manifestUrl(route) {
@@ -354,7 +378,7 @@
                         route: name
                     },
                     "",
-                    `${CONFIG.basePath}/${name}.html`
+                    routeUrl(name, options.params || {})
                 );
             }
 
@@ -400,11 +424,12 @@
     }
 
     function navigate(route, params = {}, options = {}) {
-        if (Object.keys(params).length) {
-            setQuery(params);
-        }
-
-        return loadPage(routeName(route), options);
+        return loadPage(
+            routeName(route),
+            Object.assign({}, options, {
+                params: params || {}
+            })
+        );
     }
 
     function go(path, params = {}, options = {}) {
@@ -545,6 +570,17 @@
         });
     }
 
+    function currentRouteFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const route = params.get("route");
+
+        if (route) {
+            return routeName(route);
+        }
+
+        return routeName(window.location.pathname);
+    }
+
     function init() {
         bindLinks();
 
@@ -591,6 +627,8 @@
         routeName,
         manifestUrl,
         pageHtmlUrl,
+        routeUrl,
+        currentRouteFromUrl,
         init,
         state
     };

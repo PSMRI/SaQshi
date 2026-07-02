@@ -147,7 +147,7 @@
                     <div>
                         <strong>No active assessment found.</strong>
                         <br>
-                        <a href="/ui/assessment/create.html" class="sq-btn sq-btn-primary sq-mt-3">
+                        <a href="#" data-sq-route="assessment/create" class="sq-btn sq-btn-primary sq-mt-3">
                             Create Assessment
                         </a>
                     </div>
@@ -183,12 +183,12 @@
                 </div>
 
                 <div class="sq-assessment-footer">
-                    <a href="/ui/assessment/progress.html?assessment_id=${assessment.assessment_id}"
+                    <a href="#" data-sq-route="assessment/departments"
                        class="sq-btn sq-btn-outline-primary sq-btn-sm">
                         View Progress
                     </a>
 
-                    <a href="/ui/assessment/checklist.html?assessment_id=${assessment.assessment_id}"
+                    <a href="#" data-sq-route="assessment/checklist"
                        class="sq-btn sq-btn-primary sq-btn-sm">
                         Continue Assessment
                     </a>
@@ -277,7 +277,7 @@
                 <td>${escapeHtml(assessment.end_date || "-")}</td>
                 <td id="recent-score">-</td>
                 <td class="sq-td-right">
-                    <a href="/ui/assessment/progress.html?assessment_id=${assessment.assessment_id}"
+                    <a href="#" data-sq-route="assessment/departments"
                        class="sq-btn sq-btn-sm sq-btn-outline-primary">
                         Open
                     </a>
