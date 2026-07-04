@@ -89,8 +89,12 @@
             "image/png",
             "image/webp",
             "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "text/csv",
+            "application/csv"
 
         ]
 
@@ -320,17 +324,17 @@
 
     }
 
-    async function remove(fileId) {
+    async function remove(fileRef) {
+
+        const payload = String(fileRef || "").includes("/")
+            ? { url: fileRef }
+            : { file_id: fileRef };
 
         return SQ.api.delete(
 
             "/files/v1/delete.php",
 
-            {
-
-                file_id: fileId
-
-            }
+            payload
 
         );
 

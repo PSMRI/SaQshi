@@ -9,66 +9,71 @@
 .sq-checklist-page{
     display:flex;
     flex-direction:column;
-    gap:.5rem;
+    gap:.35rem;
+}
+
+body:has(.sq-checklist-page) .sq-page-content,
+body:has(.sq-checklist-page) .sq-content{
+    padding:6px 10px !important;
 }
 
 .sq-assessment-summary,
 .sq-filter-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-    gap:.55rem;
+    gap:.35rem;
 }
 
 .sq-checklist-page .sq-card-header{
-    padding:.45rem .65rem !important;
+    padding:.25rem .45rem !important;
 }
 
 .sq-checklist-page .sq-card-header h2,
 .sq-checklist-page .sq-card-header h3{
     margin:0;
-    font-size:1rem;
+    font-size:.82rem;
     line-height:1.1;
 }
 
 .sq-checklist-page .sq-card-header p{
     margin:.1rem 0 0;
-    font-size:.72rem;
+    font-size:.64rem;
     line-height:1.15;
 }
 
 .sq-checklist-page .sq-card-body{
-    padding:.55rem .65rem !important;
+    padding:.35rem .45rem !important;
 }
 
 .sq-summary-item{
     border:1px solid var(--sq-border);
-    border-radius:8px;
-    padding:.45rem .55rem;
-    min-height:48px;
+    border-radius:6px;
+    padding:.28rem .42rem;
+    min-height:34px;
     background:var(--sq-bg-surface);
 }
 
 .sq-summary-item label,
 .sq-form-group label{
     display:block;
-    font-size:.75rem;
+    font-size:.62rem;
     color:var(--sq-text-muted);
     text-transform:uppercase;
-    margin-bottom:.18rem;
+    margin-bottom:.08rem;
 }
 
 .sq-summary-item span{
-    font-size:.86rem;
+    font-size:.74rem;
     font-weight:600;
     color:var(--sq-text);
 }
 
 .sq-form-control{
     width:100%;
-    min-height:30px;
+    min-height:26px;
     border:1px solid var(--sq-border);
-    border-radius:8px;
-    padding:.35rem .5rem;
+    border-radius:6px;
+    padding:.25rem .4rem;
     background:var(--sq-bg-surface);
     color:var(--sq-text);
 }
@@ -83,7 +88,7 @@
     display:flex;
     justify-content:flex-end;
     gap:.45rem;
-    padding:.45rem .65rem;
+    padding:.3rem .45rem;
     border-top:1px solid var(--sq-border);
 }
 

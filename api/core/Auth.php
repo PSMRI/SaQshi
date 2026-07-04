@@ -31,41 +31,48 @@ class Auth
     }
 
     public function login(string $username, string $password): array
-{
-    $username = trim($username);
-    $password = trim($password);
+    {
+        $username = trim($username);
+        $password = trim($password);
 
-    if ($username === '' || $password === '') {
-        return $this->error('Username and password are required');
+        if ($username === '' || $password === '') {
+            return $this->error('Username and password are required');
+        }
+
+        if ($this->isLocked($username)) {
+            return $this->error('Too many failed login attempts. Please try again later.');
+        }
+
+        $user = $this->findUser($username);
+
+        if (!$user || (int)($user['is_active'] ?? 0) !== 1) {
+            $this->recordAttempt($username, 'FAILED');
+            return $this->error('Invalid username or password');
+        }
+
+        $storedPassword = (string)($user['u_password'] ?? '');
+        $passwordStatus = $this->passwordStatus($password, $storedPassword);
+
+        if (!$passwordStatus['valid']) {
+            $this->recordAttempt($username, 'FAILED');
+            return $this->error('Invalid username or password');
+        }
+
+        if ($passwordStatus['needs_hash_upgrade']) {
+            $this->upgradePasswordHash((int)$user['u_id'], $password);
+        }
+
+        $this->clearOldFailedAttempts($username);
+        $this->recordAttempt($username, 'SUCCESS');
+
+        unset($user['u_password']);
+
+        SessionManager::login($user);
+
+        return $this->success('Login successful', [
+            'user' => SessionManager::user()
+        ]);
     }
-
-    $user = $this->findUser($username);
-
-    if (!$user) {
-        return $this->error('DEBUG: User not found for username [' . $username . ']');
-    }
-
-    if ((int)($user['is_active'] ?? 0) !== 1) {
-        return $this->error('DEBUG: User inactive. is_active=[' . ($user['is_active'] ?? 'NULL') . ']');
-    }
-
- $dbPassword = (string)$user['u_password'];
-$inputPassword = (string)$password;
-
-if (trim($dbPassword) !== trim($inputPassword)) {
-    return $this->error(
-        'DEBUG: Password mismatch. DB=[' . bin2hex($dbPassword) . '] INPUT=[' . bin2hex($inputPassword) . ']'
-    );
-}
-
-    unset($user['u_password']);
-
-    SessionManager::login($user);
-
-    return $this->success('Login successful', [
-        'user' => SessionManager::user()
-    ]);
-}
 
     public function logout(): array
     {
@@ -140,24 +147,62 @@ if (trim($dbPassword) !== trim($inputPassword)) {
         return $result->fetch_assoc();
     }
 
- private function verifyPassword(string $plainPassword, string $storedPassword): bool
-{
-    $plainPassword  = trim((string)$plainPassword);
-    $storedPassword = trim((string)$storedPassword);
+    private function passwordStatus(string $plainPassword, string $storedPassword): array
+    {
+        $plainPassword = trim((string)$plainPassword);
+        $storedPassword = trim((string)$storedPassword);
 
-    $plainPassword  = preg_replace('/[[:^print:]]/', '', $plainPassword);
-    $storedPassword = preg_replace('/[[:^print:]]/', '', $storedPassword);
+        $plainPassword = preg_replace('/[[:^print:]]/', '', $plainPassword);
+        $storedPassword = preg_replace('/[[:^print:]]/', '', $storedPassword);
 
-    if ($storedPassword === '') {
-        return false;
+        if ($storedPassword === '') {
+            return [
+                'valid' => false,
+                'needs_hash_upgrade' => false
+            ];
+        }
+
+        $passwordInfo = password_get_info($storedPassword);
+        $isHashedPassword = (
+            !empty($passwordInfo['algo']) ||
+            (($passwordInfo['algoName'] ?? 'unknown') !== 'unknown')
+        );
+
+        if ($isHashedPassword) {
+            return [
+                'valid' => password_verify($plainPassword, $storedPassword),
+                'needs_hash_upgrade' => false
+            ];
+        }
+
+        return [
+            'valid' => hash_equals($storedPassword, $plainPassword),
+            'needs_hash_upgrade' => hash_equals($storedPassword, $plainPassword)
+        ];
     }
 
-    if (password_get_info($storedPassword)['algo'] !== 0) {
-        return password_verify($plainPassword, $storedPassword);
-    }
+    private function upgradePasswordHash(int $userId, string $plainPassword): void
+    {
+        if ($userId <= 0) {
+            return;
+        }
 
-    return strcmp($storedPassword, $plainPassword) === 0;
-}
+        $hash = self::hashPassword($plainPassword);
+
+        $stmt = $this->db->prepare("
+            UPDATE s_user
+            SET u_password = ?
+            WHERE u_id = ?
+            LIMIT 1
+        ");
+
+        if (!$stmt) {
+            throw new Exception('Password hash update prepare failed: ' . $this->db->error);
+        }
+
+        $stmt->bind_param('si', $hash, $userId);
+        $stmt->execute();
+    }
 
     private function isLocked(string $username): bool
     {

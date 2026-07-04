@@ -282,9 +282,16 @@
     }
 
     async function request(method, endpoint, data = null, options = {}) {
+        const shouldShowLoader =
+            options.loader === true ||
+            (
+                options.loader !== false &&
+                String(method).toUpperCase() !== "GET"
+            );
+
         try {
             if (
-                options.loader !== false &&
+                shouldShowLoader &&
                 SQ.loader &&
                 typeof SQ.loader.show === "function"
             ) {
@@ -302,7 +309,7 @@
 
         } finally {
             if (
-                options.loader !== false &&
+                shouldShowLoader &&
                 SQ.loader &&
                 typeof SQ.loader.hide === "function"
             ) {

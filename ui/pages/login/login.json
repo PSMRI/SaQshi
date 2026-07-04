@@ -40,15 +40,16 @@
 
     "assets": {
         "css": [
-            "/ui/pages/login/login.css"
+            "/ui/pages/login/login.css?v=20260702-2"
         ],
         "js": [
-            "/ui/pages/login/login.js"
+            "/ui/pages/login/login.js?v=20260702-2"
         ]
     },
 
     "api": {
         "csrf": "/api/auth/v1/csrf.php",
+        "captcha": "/api/auth/v1/captcha.php",
         "login": "/api/auth/v1/login.php",
         "me": "/api/auth/v1/me.php"
     },

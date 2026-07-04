@@ -1,434 +1,431 @@
 /*!
  * ==========================================================
- * SaQshi Login Page v1.0
- * ----------------------------------------------------------
- * Project   : SaQshi Open Source
- * Module    : Login
- * File      : login.css
- * License   : Apache-2.0
+ * SaQshi Login Page
+ * login.css
  * ==========================================================
- *
- * Login page specific styles only.
- * Shared styles belong in the Design System.
- * ==========================================================
-*/
-
-/* ==========================================================
-   Page
-========================================================== */
+ */
 
 .sq-login-page{
-
     min-height:100vh;
-
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
-    padding:2rem;
-
+    padding:24px;
     background:
-        linear-gradient(135deg,#0f172a 0%,#1e40af 100%);
-
+        radial-gradient(circle at 18% 20%, rgba(37,99,235,.08), transparent 28%),
+        linear-gradient(135deg,#eef4ff 0%,#f8fafc 48%,#eefdf6 100%);
+    color:var(--sq-text-primary);
 }
 
-/* ==========================================================
-   Container
-========================================================== */
-
-.sq-login-container{
-
-    width:100%;
-
-    max-width:1200px;
-
+.sq-login-shell{
+    width:min(980px,100%);
+    min-height:570px;
     display:grid;
-
-    grid-template-columns:1fr 420px;
-
-    background:#ffffff;
-
-    border-radius:24px;
-
+    grid-template-columns:minmax(0,1fr) 380px;
     overflow:hidden;
-
-    box-shadow:0 30px 80px rgba(0,0,0,.25);
-
+    border:1px solid rgba(148,163,184,.35);
+    border-radius:18px;
+    background:rgba(255,255,255,.92);
+    box-shadow:0 24px 70px rgba(15,23,42,.16);
 }
 
-/* ==========================================================
-   Left Side
-========================================================== */
-
-.sq-login-brand{
-
-    padding:4rem;
-
-    color:#ffffff;
-
-    background:
-        linear-gradient(160deg,#2563eb,#0f172a);
-
+.sq-login-intro{
     display:flex;
-
     flex-direction:column;
+    justify-content:space-between;
+    gap:24px;
+    padding:34px;
+    background:
+        linear-gradient(145deg,#ffffff 0%,#f1f7ff 58%,#effcf7 100%);
+    border-right:1px solid var(--sq-border);
+}
 
-    justify-content:center;
-
+.sq-login-brandmark{
+    display:flex;
+    align-items:center;
+    gap:12px;
 }
 
 .sq-login-logo{
-
-    width:90px;
-
-    margin-bottom:2rem;
-
+    width:44px;
+    height:44px;
+    object-fit:contain;
+    border:1px solid var(--sq-border);
+    border-radius:12px;
+    background:#ffffff;
+    padding:6px;
 }
 
-.sq-login-brand h1{
-
+.sq-login-brandmark h1{
     margin:0;
+    font-size:1.35rem;
+    line-height:1.1;
+    letter-spacing:0;
+}
 
-    font-size:3rem;
+.sq-login-brandmark p{
+    margin:.15rem 0 0;
+    color:var(--sq-text-muted);
+    font-size:.74rem;
+}
 
+.sq-login-copy{
+    max-width:520px;
+}
+
+.sq-login-kicker{
+    display:inline-flex;
+    margin-bottom:10px;
+    color:var(--sq-color-primary);
+    font-size:.7rem;
     font-weight:700;
-
+    letter-spacing:.08em;
+    text-transform:uppercase;
 }
 
-.sq-login-brand p{
-
-    margin:1rem 0 2rem;
-
-    font-size:1.1rem;
-
-    opacity:.9;
-
-    line-height:1.7;
-
-}
-
-.sq-login-features{
-
-    list-style:none;
-
+.sq-login-copy h2{
     margin:0;
-
-    padding:0;
-
+    max-width:560px;
+    color:#0f172a;
+    font-size:2rem;
+    line-height:1.08;
+    letter-spacing:0;
 }
 
-.sq-login-features li{
+.sq-login-copy p{
+    margin:14px 0 0;
+    max-width:520px;
+    color:#475569;
+    font-size:.92rem;
+    line-height:1.6;
+}
 
+.sq-login-meta-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+}
+
+.sq-login-meta-grid div{
+    min-width:0;
+    padding:10px 12px;
+    border:1px solid rgba(148,163,184,.32);
+    border-radius:10px;
+    background:rgba(255,255,255,.72);
+}
+
+.sq-login-meta-grid strong{
+    display:block;
+    color:#0f172a;
+    font-size:.78rem;
+}
+
+.sq-login-meta-grid span{
+    display:block;
+    margin-top:3px;
+    color:#64748b;
+    font-size:.66rem;
+    line-height:1.25;
+}
+
+.sq-login-panel{
     display:flex;
-
     align-items:center;
-
-    gap:.75rem;
-
-    padding:.8rem 0;
-
-    font-size:1rem;
-
+    justify-content:center;
+    padding:28px;
+    background:#ffffff;
 }
-
-.sq-login-features i{
-
-    color:#4ade80;
-
-}
-
-/* ==========================================================
-   Login Card
-========================================================== */
 
 .sq-login-card{
+    width:100%;
+    max-width:330px;
+}
 
-    background:#ffffff;
+.sq-login-card-header{
+    margin-bottom:18px;
+}
 
-    display:flex;
-
+.sq-login-chip{
+    display:inline-flex;
     align-items:center;
-
-    justify-content:center;
-
-    padding:2.5rem;
-
+    gap:6px;
+    min-height:24px;
+    padding:0 9px;
+    border:1px solid #bfdbfe;
+    border-radius:999px;
+    background:#eff6ff;
+    color:#1d4ed8;
+    font-size:.68rem;
+    font-weight:700;
 }
 
-.sq-login-card .sq-card{
-
-    width:100%;
-
-    border:none;
-
-    box-shadow:none;
-
+.sq-login-card-header h2{
+    margin:12px 0 0;
+    color:#0f172a;
+    font-size:1.45rem;
+    line-height:1.1;
+    letter-spacing:0;
 }
 
-.sq-card-header{
-
-    text-align:center;
-
-    margin-bottom:2rem;
-
+.sq-login-card-header p{
+    margin:6px 0 0;
+    color:#64748b;
+    font-size:.82rem;
 }
 
-.sq-card-header h2{
-
-    margin:0;
-
-    font-size:2rem;
-
-    color:var(--sq-text-primary);
-
+.sq-login-form{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
 }
 
-.sq-card-header p{
-
-    margin-top:.75rem;
-
-    color:var(--sq-text-secondary);
-
+.sq-login-form .sq-form-group{
+    margin:0 !important;
+    gap:5px !important;
 }
 
-/* ==========================================================
-   Form
-========================================================== */
-
-.sq-form-group{
-
-    margin-bottom:1.5rem;
-
-}
-
-.sq-form-group label{
-
+.sq-login-form label,
+.sq-label-row label{
     display:block;
-
-    margin-bottom:.5rem;
-
-    font-weight:600;
-
-    color:var(--sq-text-primary);
-
+    margin:0;
+    color:#334155;
+    font-size:.74rem;
+    font-weight:700;
 }
 
-.sq-form-control{
-
-    width:100%;
-
+.sq-login-form .sq-form-control{
+    min-height:36px !important;
+    border-color:#cbd5e1 !important;
+    background:#ffffff !important;
+    color:#0f172a !important;
+    font-size:.82rem !important;
 }
 
-/* ==========================================================
-   Password
-========================================================== */
+.sq-login-form .sq-form-control::placeholder{
+    color:#94a3b8 !important;
+}
 
 .sq-password-group{
-
     position:relative;
-
 }
 
 .sq-password-group .sq-form-control{
-
-    padding-right:3rem;
-
+    padding-right:38px !important;
 }
 
 .sq-password-toggle{
-
     position:absolute;
-
-    right:.75rem;
-
     top:50%;
-
+    right:6px;
+    width:28px;
+    height:28px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
     transform:translateY(-50%);
-
-    border:none;
-
-    background:none;
-
+    border:0;
+    border-radius:7px;
+    background:transparent;
+    color:#64748b;
     cursor:pointer;
-
-    color:var(--sq-text-muted);
-
-    font-size:1rem;
-
 }
 
 .sq-password-toggle:hover{
-
-    color:var(--sq-color-primary);
-
+    background:#f1f5f9;
+    color:#2563eb;
 }
 
-/* ==========================================================
-   Remember Me
-========================================================== */
+.sq-label-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.sq-captcha-refresh{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    min-height:24px;
+    padding:0 8px;
+    border:1px solid #dbe3ee;
+    border-radius:7px;
+    background:#f8fafc;
+    color:#475569;
+    font-size:.68rem;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.sq-captcha-refresh:hover{
+    border-color:#93c5fd;
+    color:#1d4ed8;
+}
+
+.sq-captcha-box{
+    min-height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px dashed #b7c5d8;
+    border-radius:8px;
+    background:#f8fafc;
+    color:#0f172a;
+    font-size:.88rem;
+    font-weight:800;
+    letter-spacing:.04em;
+}
 
 .sq-login-options{
-
     display:flex;
-
-    justify-content:space-between;
-
     align-items:center;
-
-    margin-bottom:1.5rem;
-
-    font-size:.9rem;
-
+    justify-content:space-between;
+    gap:10px;
+    color:#64748b;
+    font-size:.73rem;
 }
 
-.sq-checkbox{
-
-    display:flex;
-
+.sq-login-options .sq-checkbox{
+    display:inline-flex;
     align-items:center;
-
-    gap:.5rem;
-
+    gap:6px;
+    margin:0;
 }
 
 .sq-login-options a{
-
-    color:var(--sq-color-primary);
-
+    color:#2563eb;
+    font-weight:700;
     text-decoration:none;
-
 }
 
 .sq-login-options a:hover{
-
     text-decoration:underline;
-
 }
 
-/* ==========================================================
-   Button
-========================================================== */
-
-.sq-btn-block{
-
-    width:100%;
-
+.sq-login-form .sq-btn{
+    min-height:36px !important;
+    margin-top:2px;
 }
 
-/* ==========================================================
-   Footer
-========================================================== */
-
-.sq-card-footer{
-
-    text-align:center;
-
-    margin-top:2rem;
-
-    color:var(--sq-text-muted);
-
+.sq-login-card-footer{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:16px;
+    padding-top:12px;
+    border-top:1px solid #e2e8f0;
+    color:#64748b;
+    font-size:.68rem;
 }
 
-/* ==========================================================
-   Animation
-========================================================== */
-
-.sq-login-card{
-
-    animation:loginFade .45s ease;
-
+[data-theme="dark"] .sq-login-page{
+    background:
+        radial-gradient(circle at 18% 20%, rgba(96,165,250,.14), transparent 28%),
+        linear-gradient(135deg,#0b1220 0%,#111a2c 48%,#10231c 100%);
 }
 
-@keyframes loginFade{
-
-    from{
-
-        opacity:0;
-
-        transform:translateY(20px);
-
-    }
-
-    to{
-
-        opacity:1;
-
-        transform:none;
-
-    }
-
+[data-theme="dark"] .sq-login-shell,
+[data-theme="dark"] .sq-login-panel{
+    background:#172033;
+    border-color:#33445f;
 }
 
-/* ==========================================================
-   Responsive
-========================================================== */
+[data-theme="dark"] .sq-login-intro{
+    background:linear-gradient(145deg,#111a2c 0%,#172033 58%,#10231c 100%);
+    border-color:#33445f;
+}
 
-@media(max-width:992px){
+[data-theme="dark"] .sq-login-logo,
+[data-theme="dark"] .sq-login-meta-grid div{
+    background:#0f172a;
+    border-color:#33445f;
+}
 
-    .sq-login-container{
+[data-theme="dark"] .sq-login-copy h2,
+[data-theme="dark"] .sq-login-meta-grid strong,
+[data-theme="dark"] .sq-login-card-header h2,
+[data-theme="dark"] .sq-login-form label,
+[data-theme="dark"] .sq-label-row label,
+[data-theme="dark"] .sq-captcha-box{
+    color:#f8fafc;
+}
 
+[data-theme="dark"] .sq-login-copy p,
+[data-theme="dark"] .sq-login-brandmark p,
+[data-theme="dark"] .sq-login-meta-grid span,
+[data-theme="dark"] .sq-login-card-header p,
+[data-theme="dark"] .sq-login-card-footer,
+[data-theme="dark"] .sq-login-options{
+    color:#a9b6c8;
+}
+
+[data-theme="dark"] .sq-login-chip{
+    background:#13233d;
+    border-color:#275083;
+    color:#bfdbfe;
+}
+
+[data-theme="dark"] .sq-login-form .sq-form-control,
+[data-theme="dark"] .sq-captcha-box{
+    background:#0f172a !important;
+    border-color:#50627f !important;
+}
+
+[data-theme="dark"] .sq-captcha-refresh{
+    background:#202b3f;
+    border-color:#50627f;
+    color:#dbe4f0;
+}
+
+[data-theme="dark"] .sq-password-toggle:hover{
+    background:#202b3f;
+}
+
+[data-theme="dark"] .sq-login-card-footer{
+    border-color:#33445f;
+}
+
+@media (max-width:860px){
+    .sq-login-shell{
         grid-template-columns:1fr;
-
+        min-height:auto;
     }
 
-    .sq-login-brand{
-
-        display:none;
-
+    .sq-login-intro{
+        padding:24px;
+        border-right:0;
+        border-bottom:1px solid var(--sq-border);
     }
 
+    .sq-login-copy h2{
+        font-size:1.55rem;
+    }
+
+    .sq-login-panel{
+        padding:24px;
+    }
 }
 
-@media(max-width:768px){
-
+@media (max-width:560px){
     .sq-login-page{
-
-        padding:1rem;
-
+        padding:12px;
     }
 
-    .sq-login-card{
-
-        padding:1.5rem;
-
+    .sq-login-shell{
+        border-radius:14px;
     }
 
-    .sq-card-header h2{
-
-        font-size:1.6rem;
-
+    .sq-login-intro{
+        padding:18px;
     }
 
-}
-
-/* ==========================================================
-   Dark Theme
-========================================================== */
-
-[data-theme="dark"] .sq-login-card{
-
-    background:var(--sq-bg-surface);
-
-}
-
-[data-theme="dark"] .sq-login-container{
-
-    background:var(--sq-bg-surface);
-
-}
-
-/* ==========================================================
-   Print
-========================================================== */
-
-@media print{
-
-    .sq-login-brand{
-
-        display:none;
-
+    .sq-login-meta-grid{
+        grid-template-columns:1fr;
     }
 
+    .sq-login-options,
+    .sq-login-card-footer{
+        align-items:flex-start;
+        flex-direction:column;
+    }
 }

@@ -30,9 +30,90 @@
  */
 
 require_once __DIR__ . '/../../auth_api.php';
+require_once __DIR__ . '/../../core/FrameworkEngine.php';
 require_once __DIR__ . '/../../assets/conn/db.php';
 
 Security::requireMethod('GET');
+
+function progressFacilityTypeId(int $facId): int
+{
+    $facilityJsonPath = __DIR__ . '/../../config/masters/facilities.json';
+
+    if (!file_exists($facilityJsonPath)) {
+        return 0;
+    }
+
+    $states = json_decode(file_get_contents($facilityJsonPath), true);
+
+    if (!is_array($states)) {
+        return 0;
+    }
+
+    foreach ($states as $state) {
+        foreach (($state['divisions'] ?? []) as $division) {
+            foreach (($division['districts'] ?? []) as $district) {
+                foreach (($district['blocks'] ?? []) as $block) {
+                    foreach (($block['facilities'] ?? []) as $facility) {
+                        if ((int)($facility['fac_id'] ?? 0) === $facId) {
+                            return (int)($facility['fac_type_id'] ?? 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+function progressCheckpointMaxScore(array $checkpoint): float
+{
+    $options = $checkpoint['response']['options'] ?? [];
+
+    if (!is_array($options) || empty($options)) {
+        return 2;
+    }
+
+    $scores = array_map(
+        fn($option) => (float)($option['score'] ?? 0),
+        $options
+    );
+
+    $max = max($scores);
+
+    return $max > 0 ? $max : 2;
+}
+
+function progressDepartmentBase(FrameworkEngine $engine, int $facTypeId, int $deptId): array
+{
+    if ($facTypeId <= 0 || $deptId <= 0) {
+        return [
+            'total_checkpoints' => 0,
+            'total_score' => 0
+        ];
+    }
+
+    $seen = [];
+    $totalCheckpoints = 0;
+    $totalScore = 0;
+
+    foreach ($engine->getCheckpoints($facTypeId, $deptId) as $checkpoint) {
+        $checkpointId = (string)($checkpoint['csqa_id'] ?? '');
+
+        if ($checkpointId === '' || isset($seen[$checkpointId])) {
+            continue;
+        }
+
+        $seen[$checkpointId] = true;
+        $totalCheckpoints++;
+        $totalScore += progressCheckpointMaxScore($checkpoint);
+    }
+
+    return [
+        'total_checkpoints' => $totalCheckpoints,
+        'total_score' => $totalScore
+    ];
+}
 
 try {
 
@@ -94,6 +175,10 @@ try {
     if (!$assessment) {
         Response::error('Assessment not found for this facility');
     }
+
+    $frameworkCode = $assessment['framework_code'] ?: 'saqshi-nqas';
+    $facTypeId = progressFacilityTypeId($facId);
+    $engine = FrameworkEngine::load($frameworkCode);
 
     /*
      * 2. Department summary
@@ -226,35 +311,6 @@ try {
                 0
             ) AS improved_obtained_score,
 
-            COUNT(r.response_id) * 2 AS total_score,
-
-            ROUND(
-                CASE
-                    WHEN COUNT(r.response_id) = 0 THEN 0
-                    ELSE (COALESCE(SUM(r.score), 0) / (COUNT(r.response_id) * 2)) * 100
-                END,
-                2
-            ) AS original_percentage,
-
-            ROUND(
-                CASE
-                    WHEN COUNT(r.response_id) = 0 THEN 0
-                    ELSE (
-                        COALESCE(
-                            SUM(
-                                CASE
-                                    WHEN ap.revised_score IS NOT NULL
-                                    THEN ap.revised_score
-                                    ELSE r.score
-                                END
-                            ),
-                            0
-                        ) / (COUNT(r.response_id) * 2)
-                    ) * 100
-                END,
-                2
-            ) AS improved_percentage,
-
             SUM(
                 CASE
                     WHEN ap.revised_score IS NOT NULL THEN 1
@@ -342,13 +398,24 @@ try {
 
         $savedResponses = (int)($row['saved_responses'] ?? 0);
         $revisedCheckpoints = (int)($row['revised_checkpoints'] ?? 0);
+        $isActive = (int)($row['is_active'] ?? 0);
 
         $originalObtained = (float)($row['original_obtained_score'] ?? 0);
         $improvedObtained = (float)($row['improved_obtained_score'] ?? 0);
-        $possibleScore = (float)($row['total_score'] ?? 0);
+        $scoreBase = $isActive === 1
+            ? progressDepartmentBase($engine, $facTypeId, (int)$row['dept_id'])
+            : [
+                'total_checkpoints' => 0,
+                'total_score' => 0
+            ];
+        $possibleScore = (float)$scoreBase['total_score'];
 
-        $originalPercentage = (float)($row['original_percentage'] ?? 0);
-        $improvedPercentage = (float)($row['improved_percentage'] ?? 0);
+        $originalPercentage = $possibleScore > 0
+            ? round(($originalObtained / $possibleScore) * 100, 2)
+            : 0;
+        $improvedPercentage = $possibleScore > 0
+            ? round(($improvedObtained / $possibleScore) * 100, 2)
+            : 0;
 
         $deptOriginalGaps = (int)($row['original_gaps'] ?? 0);
         $deptClosedGaps = (int)($row['closed_gaps'] ?? 0);

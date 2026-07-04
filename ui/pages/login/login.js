@@ -34,6 +34,14 @@
         return document.getElementById("loginButton");
     }
 
+    function captcha() {
+        return document.getElementById("captcha");
+    }
+
+    function captchaQuestion() {
+        return document.getElementById("captchaQuestion");
+    }
+
     function setButtonLoading(isLoading) {
         const btn = button();
 
@@ -64,6 +72,47 @@
         }
     }
 
+    async function loadCaptcha() {
+        const question = captchaQuestion();
+        const input = captcha();
+
+        if (question) {
+            question.textContent = "Loading...";
+        }
+
+        if (input) {
+            input.value = "";
+        }
+
+        try {
+            const response = await SQ.api.get(
+                "/auth/v1/captcha.php",
+                {},
+                {
+                    loader: false,
+                    showError: false,
+                    redirectOnUnauthorized: false
+                }
+            );
+
+            const text =
+                response.data?.question ||
+                response.question ||
+                "";
+
+            if (question) {
+                question.textContent = text || "Unable to load";
+            }
+
+        } catch (error) {
+            console.error(error);
+
+            if (question) {
+                question.textContent = "Refresh captcha";
+            }
+        }
+    }
+
     async function handleLogin(event) {
         event.preventDefault();
 
@@ -76,7 +125,8 @@
         if (SQ.validator) {
             const result = SQ.validator.validateAndShow(frm, {
                 username: ["required"],
-                password: ["required"]
+                password: ["required"],
+                captcha: ["required"]
             });
 
             if (!result.valid) {
@@ -86,7 +136,8 @@
 
         const payload = {
             username: username().value.trim(),
-            password: password().value
+            password: password().value,
+            captcha: captcha().value.trim()
         };
 
         try {
@@ -99,7 +150,7 @@
             let response;
 
             if (SQ.auth && SQ.auth.login) {
-                response = await SQ.auth.login(payload.username, payload.password);
+                response = await SQ.auth.login(payload.username, payload.password, payload.captcha);
             } else {
                 response = await SQ.api.post(
                     "/auth/v1/login.php",
@@ -127,6 +178,7 @@
 
         } catch (error) {
             console.error(error);
+            loadCaptcha();
 
             if (SQ.notification) {
                 SQ.notification.error(error.message || "Invalid username or password");
@@ -158,6 +210,12 @@
             toggle.addEventListener("click", togglePassword);
         }
 
+        const refresh = document.getElementById("refreshCaptcha");
+
+        if (refresh) {
+            refresh.addEventListener("click", loadCaptcha);
+        }
+
         const forgot = document.getElementById("forgotPasswordLink");
 
         if (forgot) {
@@ -181,11 +239,13 @@
 
     function init() {
         bindEvents();
+        loadCaptcha();
         focusUsername();
     }
 
     SQ.login = {
-        init
+        init,
+        loadCaptcha
     };
 
 })(window, document);

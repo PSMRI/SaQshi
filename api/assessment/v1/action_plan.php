@@ -384,6 +384,103 @@ try {
     }
 
     /*
+     * 7b. Load reusable facility action plan suggestions by checkpoint.
+     */
+    $sqlLibrary = "
+        CREATE TABLE IF NOT EXISTS assessment_action_plan_library (
+            id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            checkpoint_id INT NOT NULL,
+            framework_code VARCHAR(100) NULL,
+            fac_id INT NOT NULL,
+            fac_name VARCHAR(255) NULL,
+            source_assessment_id BIGINT NOT NULL,
+            source_dept_id INT NOT NULL,
+            user_action_plan TEXT NOT NULL,
+            created_by INT NULL,
+            created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_checkpoint (checkpoint_id),
+            INDEX idx_fac_checkpoint (fac_id, checkpoint_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ";
+
+    if (!$con->query($sqlLibrary)) {
+        Response::serverError('Action plan library prepare failed: ' . $con->error);
+    }
+
+    $checkpointIds = [];
+
+    foreach ($checkpointLookup as $lookup) {
+        $checkpointId = (int)($lookup['checkpoint']['checkpoint_id'] ?? 0);
+
+        if ($checkpointId > 0) {
+            $checkpointIds[$checkpointId] = true;
+        }
+    }
+
+    $suggestionMap = [];
+
+    if (!empty($checkpointIds)) {
+        $ids = implode(',', array_map('intval', array_keys($checkpointIds)));
+
+        $sqlSuggestions = "
+            SELECT
+                id,
+                checkpoint_id,
+                framework_code,
+                fac_id,
+                fac_name,
+                source_assessment_id,
+                source_dept_id,
+                user_action_plan,
+                created_by,
+                created_on
+            FROM assessment_action_plan_library
+            WHERE checkpoint_id IN ($ids)
+              AND (
+                    framework_code IS NULL
+                    OR framework_code = ''
+                    OR framework_code = ?
+                  )
+            ORDER BY checkpoint_id, created_on DESC
+            LIMIT 500
+        ";
+
+        $stmtSuggestions = $con->prepare($sqlSuggestions);
+
+        if (!$stmtSuggestions) {
+            Response::serverError('Action plan suggestion prepare failed: ' . $con->error);
+        }
+
+        $stmtSuggestions->bind_param('s', $frameworkCode);
+        $stmtSuggestions->execute();
+
+        $suggestionResult = $stmtSuggestions->get_result();
+
+        while ($suggestion = $suggestionResult->fetch_assoc()) {
+            $checkpointId = (int)$suggestion['checkpoint_id'];
+
+            if (!isset($suggestionMap[$checkpointId])) {
+                $suggestionMap[$checkpointId] = [];
+            }
+
+            $suggestionMap[$checkpointId][] = [
+                'id' => (int)$suggestion['id'],
+                'checkpoint_id' => $checkpointId,
+                'framework_code' => $suggestion['framework_code'],
+                'fac_id' => (int)$suggestion['fac_id'],
+                'fac_name' => $suggestion['fac_name'],
+                'source_assessment_id' => (int)$suggestion['source_assessment_id'],
+                'source_dept_id' => (int)$suggestion['source_dept_id'],
+                'user_action_plan' => $suggestion['user_action_plan'],
+                'created_by' => $suggestion['created_by'] !== null
+                    ? (int)$suggestion['created_by']
+                    : null,
+                'created_on' => $suggestion['created_on']
+            ];
+        }
+    }
+
+    /*
      * 8. Build action plan output
      */
     $actionPlans = [];
@@ -392,6 +489,13 @@ try {
     $partiallyCompliant = 0;
     $achievable = 0;
     $nonAchievable = 0;
+    $planValue = static function ($plan, $key, $default = null) {
+        if (!is_array($plan) || !array_key_exists($key, $plan)) {
+            return $default;
+        }
+
+        return $plan[$key];
+    };
 
     while ($row = $gapResult->fetch_assoc()) {
 
@@ -402,6 +506,7 @@ try {
         $key = $deptId . '_' . $checkpointId;
         $meta = $checkpointLookup[$key] ?? null;
         $savedPlan = $savedPlanMap[$key] ?? null;
+        $savedPlanData = is_array($savedPlan) ? $savedPlan : [];
 
         if ($score <= 0) {
             $gapType = 'NON_COMPLIANT';
@@ -411,7 +516,7 @@ try {
             $partiallyCompliant++;
         }
 
-        $achievability = $savedPlan['achievability'] ?? 'ACHIEVABLE';
+        $achievability = $planValue($savedPlanData, 'achievability', 'ACHIEVABLE');
 
         if ($achievability === 'NON_ACHIEVABLE') {
             $nonAchievable++;
@@ -452,43 +557,69 @@ try {
             'action_plan' => [
                 'has_saved_plan' => $savedPlan ? true : false,
 
-                'id' => $savedPlan ? (int)$savedPlan['id'] : null,
+                'id' => $planValue($savedPlanData, 'id') !== null
+                    ? (int)$planValue($savedPlanData, 'id')
+                    : null,
 
                 'system_action_plan' =>
-                    $savedPlan['system_action_plan']
+                    $planValue($savedPlanData, 'system_action_plan')
                     ?? ($meta['checkpoint']['system_action_plan'] ?? ''),
 
                 'user_action_plan' =>
-                    $savedPlan['user_action_plan'] ?? '',
+                    $planValue($savedPlanData, 'user_action_plan', ''),
 
                 'achievability' =>
-                    $savedPlan['achievability'] ?? 'ACHIEVABLE',
+                    $planValue($savedPlanData, 'achievability', 'ACHIEVABLE'),
 
                 'responsible_person' =>
-                    $savedPlan['responsible_person'] ?? null,
+                    $planValue($savedPlanData, 'responsible_person'),
 
                 'priority' =>
-                    $savedPlan['priority'] ?? 'MEDIUM',
+                    $planValue($savedPlanData, 'priority', 'MEDIUM'),
 
                 'target_date' =>
-                    $savedPlan['target_date'] ?? null,
+                    $planValue($savedPlanData, 'target_date'),
 
                 'status' =>
-                    $savedPlan['status'] ?? 'OPEN',
+                    $planValue($savedPlanData, 'status', 'OPEN'),
+
+                'revised_score' =>
+                    $planValue($savedPlanData, 'revised_score') !== null
+                        ? (float)$planValue($savedPlanData, 'revised_score')
+                        : null,
+
+                'closure_remarks' =>
+                    $planValue($savedPlanData, 'closure_remarks', ''),
+
+                'closure_evidence_url' =>
+                    $planValue($savedPlanData, 'closure_evidence_url', ''),
+
+                'closed_by' =>
+                    $planValue($savedPlanData, 'closed_by') !== null
+                        ? (int)$planValue($savedPlanData, 'closed_by')
+                        : null,
+
+                'closed_on' =>
+                    $planValue($savedPlanData, 'closed_on'),
 
                 'created_by' =>
-                    $savedPlan ? (int)$savedPlan['created_by'] : null,
+                    $planValue($savedPlanData, 'created_by') !== null
+                        ? (int)$planValue($savedPlanData, 'created_by')
+                        : null,
 
                 'created_on' =>
-                    $savedPlan['created_on'] ?? null,
+                    $planValue($savedPlanData, 'created_on'),
 
                 'updated_by' =>
-                    $savedPlan && $savedPlan['updated_by'] !== null
-                        ? (int)$savedPlan['updated_by']
+                    $planValue($savedPlanData, 'updated_by') !== null
+                        ? (int)$planValue($savedPlanData, 'updated_by')
                         : null,
 
                 'updated_on' =>
-                    $savedPlan['updated_on'] ?? null
+                    $planValue($savedPlanData, 'updated_on'),
+
+                'facility_suggestions' =>
+                    $suggestionMap[$checkpointId] ?? []
             ]
         ];
     }

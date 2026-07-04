@@ -465,7 +465,9 @@ body.sq-sidebar-collapsed .sq-main {
     .sq-page {
         max-width: none !important;
     }
-    body.sq-sidebar-collapsed .sq-layout-sidebar {
+}
+
+body.sq-sidebar-collapsed .sq-layout-sidebar {
     width: 72px !important;
     min-width: 72px !important;
     flex-basis: 72px !important;
@@ -701,26 +703,26 @@ body.sq-sidebar-collapsed .sq-sidebar {
 
 .sq-layout-main > .sq-page-header {
     min-height: 0 !important;
-    padding: 5px 14px !important;
-    gap: 6px !important;
+    padding: 4px 10px !important;
+    gap: 5px !important;
 }
 
 .sq-layout-main > .sq-page-header > div:first-child {
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
-    min-height: 30px !important;
+    min-height: 24px !important;
 }
 
 .sq-layout-main > .sq-page-header .sq-page-title {
-    font-size: 16px !important;
-    line-height: 1.05 !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
 }
 
 .sq-layout-main > .sq-page-header .sq-page-subtitle {
     margin-top: 1px !important;
-    font-size: 11px !important;
-    line-height: 1.1 !important;
+    font-size: 10px !important;
+    line-height: 1.05 !important;
 }
 
 .sq-layout-main > .sq-page-header .sq-page-actions {
@@ -741,12 +743,12 @@ body.sq-sidebar-collapsed .sq-sidebar {
 
 @media (max-width: 768px) {
     .sq-page-title {
-        font-size: 26px !important;
+        font-size: 16px !important;
     }
 
     .sq-page-content,
     .sq-content {
-        padding: 14px !important;
+        padding: 8px 10px !important;
     }
 
     .sq-grid-4 {

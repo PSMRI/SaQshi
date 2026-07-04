@@ -199,11 +199,16 @@
 
     function renderProgress() {
         const summary = state.progress?.summary || {};
+        const departments = summary.departments || summary;
 
-        const active = Number(summary.active_departments || 0);
-        const completed = Number(summary.completed || 0);
+        const active = Number(departments.active_departments || 0);
+        const completed = Number(departments.completed || 0);
         const pending = Math.max(active - completed, 0);
-        const percent = Number(summary.department_completion_percent || 0);
+        const percent = Number(
+            departments.completion_percent ||
+            summary.department_completion_percent ||
+            0
+        );
 
         setText("active-departments", active);
         setText("completed-departments", completed);
@@ -216,7 +221,7 @@
             bar.style.width = percent + "%";
         }
 
-        setText("metric-in-progress", Number(summary.in_progress || 0));
+        setText("metric-in-progress", Number(departments.in_progress || 0));
         setText("metric-completed", completed);
     }
 
@@ -241,10 +246,18 @@
 
     function renderGaps() {
         const gaps = state.gaps || {};
+        const summaryOpenGaps = gaps.summary?.open_gaps;
+        const openGaps = Number.isFinite(Number(summaryOpenGaps))
+            ? Number(summaryOpenGaps)
+            : (
+                Array.isArray(gaps.open_gaps)
+                    ? gaps.open_gaps.length
+                    : Number(gaps.open_gaps || 0)
+            );
 
         setText(
             "metric-open-gaps",
-            Number(gaps.open_gaps || gaps.summary?.open_gaps || 0)
+            Number.isFinite(openGaps) ? openGaps : 0
         );
     }
 
@@ -302,10 +315,6 @@
 
     async function init() {
         try {
-            if (SQ.loader) {
-                SQ.loader.show("Loading dashboard...");
-            }
-
             if (SQ.breadcrumb) {
                 SQ.breadcrumb.render([
                     {
@@ -325,11 +334,6 @@
             }
 
             renderRecentAssessments();
-
-        } finally {
-            if (SQ.loader) {
-                SQ.loader.hide();
-            }
         }
     }
 

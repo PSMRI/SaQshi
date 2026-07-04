@@ -468,22 +468,22 @@
 
 .sq-layout-main > .sq-page-header {
     min-height: 0 !important;
-    padding: 5px 14px !important;
+    padding: 4px 10px !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 5px !important;
     margin-bottom: 0 !important;
 }
 
 .sq-layout-main > .sq-page-header .sq-page-title {
-    font-size: 16px !important;
-    line-height: 1.05 !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
 }
 
 .sq-layout-main > .sq-page-header .sq-page-subtitle,
 .sq-layout-main > .sq-page-header .sq-page-description {
     margin-top: 1px !important;
-    font-size: 11px !important;
-    line-height: 1.1 !important;
+    font-size: 10px !important;
+    line-height: 1.05 !important;
 }
 
 .sq-layout-main > .sq-page-header .sq-page-actions {

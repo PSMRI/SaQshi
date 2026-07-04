@@ -50,8 +50,8 @@
 /* ==========================================================
    Application-level Defaults
 ========================================================== */
-@import url("themes/light.css");
-@import url("themes/dark.css");
+@import url("themes/light.css?v=20260702-17");
+@import url("themes/dark.css?v=20260702-17");
 html {
     scroll-behavior: smooth;
 }
@@ -187,6 +187,66 @@ textarea.sq-form-control {
     min-height: 28px !important;
     padding: .25rem .7rem !important;
     font-size: .68rem !important;
+}
+
+/* ==========================================================
+   Dark Theme Final Contrast Guard
+========================================================== */
+
+[data-theme="dark"] .sq-form-control,
+[data-theme="dark"] .sq-input,
+[data-theme="dark"] .sq-select,
+[data-theme="dark"] select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+    border-color: #50627f !important;
+}
+
+[data-theme="dark"] .sq-form-control:focus,
+[data-theme="dark"] .sq-input:focus,
+[data-theme="dark"] .sq-select:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus {
+    background-color: #111c31 !important;
+    color: #ffffff !important;
+    border-color: #93c5fd !important;
+}
+
+[data-theme="dark"] .sq-form-control option,
+[data-theme="dark"] .sq-select option,
+[data-theme="dark"] select option {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .sq-form-control::placeholder,
+[data-theme="dark"] .sq-input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: #a9b6c8 !important;
+}
+
+[data-theme="dark"] .sq-btn-light {
+    background-color: #26344f !important;
+    border-color: #50627f !important;
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .sq-btn-light:hover,
+[data-theme="dark"] .sq-btn-light:focus {
+    background-color: #33445f !important;
+    border-color: #6b7f9d !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .sq-btn:disabled,
+[data-theme="dark"] .sq-btn[disabled] {
+    background-color: #1e293b !important;
+    border-color: #33445f !important;
+    color: #a9b6c8 !important;
+    opacity: 1 !important;
 }
 
 /* ==========================================================

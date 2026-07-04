@@ -26,11 +26,28 @@ try {
 
     Security::requireFields($request, [
         'username',
-        'password'
+        'password',
+        'captcha'
     ]);
 
     $username = Security::cleanString($request['username']);
     $password = (string)$request['password'];
+    $captcha = trim((string)$request['captcha']);
+
+    $expectedCaptcha = (string)($_SESSION['login_captcha_answer'] ?? '');
+    $captchaExpires = (int)($_SESSION['login_captcha_expires'] ?? 0);
+
+    unset($_SESSION['login_captcha_answer'], $_SESSION['login_captcha_expires']);
+
+    if (
+        $expectedCaptcha === '' ||
+        $captchaExpires < time() ||
+        !hash_equals($expectedCaptcha, $captcha)
+    ) {
+        Response::validation([
+            'captcha' => 'Invalid captcha. Please try again.'
+        ]);
+    }
 
     $auth = new Auth($con);
 

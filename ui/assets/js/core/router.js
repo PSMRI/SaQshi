@@ -321,7 +321,7 @@
 
         try {
             const useLoader =
-                options.loader !== false &&
+                options.loader === true &&
                 name !== CONFIG.loginRoute;
 
             forceHideLoader();

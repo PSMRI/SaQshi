@@ -14,9 +14,107 @@
  */
 
 require_once __DIR__ . '/../../auth_api.php';
+require_once __DIR__ . '/../../core/FrameworkEngine.php';
 require_once __DIR__ . '/../../assets/conn/db.php';
 
 Security::requireMethod('GET');
+
+function listFacilityTypeId(int $facId): int
+{
+    $facilityJsonPath = __DIR__ . '/../../config/masters/facilities.json';
+
+    if (!file_exists($facilityJsonPath)) {
+        return 0;
+    }
+
+    $states = json_decode(file_get_contents($facilityJsonPath), true);
+
+    if (!is_array($states)) {
+        return 0;
+    }
+
+    foreach ($states as $state) {
+        foreach (($state['divisions'] ?? []) as $division) {
+            foreach (($division['districts'] ?? []) as $district) {
+                foreach (($district['blocks'] ?? []) as $block) {
+                    foreach (($block['facilities'] ?? []) as $facility) {
+                        if ((int)($facility['fac_id'] ?? 0) === $facId) {
+                            return (int)($facility['fac_type_id'] ?? 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+function listCheckpointMaxScore(array $checkpoint): float
+{
+    $options = $checkpoint['response']['options'] ?? [];
+
+    if (!is_array($options) || empty($options)) {
+        return 2;
+    }
+
+    $scores = array_map(
+        fn($option) => (float)($option['score'] ?? 0),
+        $options
+    );
+
+    $max = max($scores);
+
+    return $max > 0 ? $max : 2;
+}
+
+function listFrameworkTotalScore(
+    string $frameworkCode,
+    int $facTypeId,
+    array $deptIds,
+    array &$engineCache
+): array {
+    if ($facTypeId <= 0 || empty($deptIds)) {
+        return [
+            'total_checkpoints' => 0,
+            'total_score' => 0
+        ];
+    }
+
+    if (!isset($engineCache[$frameworkCode])) {
+        $engineCache[$frameworkCode] = FrameworkEngine::load($frameworkCode);
+    }
+
+    $engine = $engineCache[$frameworkCode];
+    $totalCheckpoints = 0;
+    $totalScore = 0;
+
+    foreach (array_unique(array_map('intval', $deptIds)) as $deptId) {
+        if ($deptId <= 0) {
+            continue;
+        }
+
+        $seen = [];
+        $checkpoints = $engine->getCheckpoints($facTypeId, $deptId);
+
+        foreach ($checkpoints as $checkpoint) {
+            $checkpointId = (string)($checkpoint['csqa_id'] ?? '');
+
+            if ($checkpointId === '' || isset($seen[$checkpointId])) {
+                continue;
+            }
+
+            $seen[$checkpointId] = true;
+            $totalCheckpoints++;
+            $totalScore += listCheckpointMaxScore($checkpoint);
+        }
+    }
+
+    return [
+        'total_checkpoints' => $totalCheckpoints,
+        'total_score' => $totalScore
+    ];
+}
 
 try {
 
@@ -49,9 +147,7 @@ try {
             COALESCE(dd.started_departments, 0) AS started_departments,
             COALESCE(dd.completed_departments, 0) AS completed_departments,
             COALESCE(rs.answered_checkpoints, 0) AS answered_checkpoints,
-            COALESCE(rs.obtained_score, 0) AS obtained_score,
-            COALESCE(rs.total_score, 0) AS total_score,
-            COALESCE(rs.score_percent, 0) AS score_percent
+            COALESCE(rs.obtained_score, 0) AS obtained_score
         FROM assessment_master a
         LEFT JOIN (
             SELECT
@@ -78,15 +174,7 @@ try {
             SELECT
                 assessment_id,
                 COUNT(response_id) AS answered_checkpoints,
-                ROUND(COALESCE(SUM(score), 0), 2) AS obtained_score,
-                COUNT(response_id) * 2 AS total_score,
-                ROUND(
-                    CASE
-                        WHEN COUNT(response_id) = 0 THEN 0
-                        ELSE (COALESCE(SUM(score), 0) / (COUNT(response_id) * 2)) * 100
-                    END,
-                    2
-                ) AS score_percent
+                ROUND(COALESCE(SUM(score), 0), 2) AS obtained_score
             FROM assessment_response
             GROUP BY assessment_id
         ) rs
@@ -105,6 +193,54 @@ try {
     $stmt->execute();
 
     $result = $stmt->get_result();
+    $rawAssessments = [];
+    $assessmentIds = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $rawAssessments[] = $row;
+        $assessmentIds[] = (int)$row['assessment_id'];
+    }
+
+    $activeDeptMap = [];
+
+    if (!empty($assessmentIds)) {
+        $assessmentIds = array_values(array_unique($assessmentIds));
+        $placeholders = implode(',', array_fill(0, count($assessmentIds), '?'));
+
+        $sqlActiveDept = "
+            SELECT ass_period_id, dept_id
+            FROM assessment_department_status
+            WHERE fac_id_fk = ?
+              AND is_active = 1
+              AND ass_period_id IN ($placeholders)
+        ";
+
+        $stmtDept = $con->prepare($sqlActiveDept);
+
+        if (!$stmtDept) {
+            Response::serverError('Active department prepare failed: ' . $con->error);
+        }
+
+        $types = str_repeat('i', count($assessmentIds) + 1);
+        $params = array_merge([$facId], $assessmentIds);
+        $stmtDept->bind_param($types, ...$params);
+        $stmtDept->execute();
+
+        $deptResult = $stmtDept->get_result();
+
+        while ($deptRow = $deptResult->fetch_assoc()) {
+            $assessmentId = (int)$deptRow['ass_period_id'];
+
+            if (!isset($activeDeptMap[$assessmentId])) {
+                $activeDeptMap[$assessmentId] = [];
+            }
+
+            $activeDeptMap[$assessmentId][] = (int)$deptRow['dept_id'];
+        }
+    }
+
+    $facTypeId = listFacilityTypeId($facId);
+    $engineCache = [];
     $assessments = [];
 
     $summary = [
@@ -118,9 +254,20 @@ try {
     $scoreTotal = 0;
     $scoreCount = 0;
 
-    while ($row = $result->fetch_assoc()) {
+    foreach ($rawAssessments as $row) {
+        $assessmentId = (int)$row['assessment_id'];
+        $obtainedScore = (float)($row['obtained_score'] ?? 0);
+        $scoreBase = listFrameworkTotalScore(
+            $row['framework_code'] ?: 'saqshi-nqas',
+            $facTypeId,
+            $activeDeptMap[$assessmentId] ?? [],
+            $engineCache
+        );
+        $totalScore = (float)$scoreBase['total_score'];
+        $score = $totalScore > 0
+            ? round(($obtainedScore / $totalScore) * 100, 2)
+            : 0;
         $status = strtoupper((string)($row['status'] ?? ''));
-        $score = (float)($row['score_percent'] ?? 0);
 
         $summary['total']++;
 
@@ -138,7 +285,7 @@ try {
         }
 
         $assessments[] = [
-            'assessment_id' => (int)$row['assessment_id'],
+            'assessment_id' => $assessmentId,
             'assessment_name' => $row['assessment_name'],
             'framework_code' => $row['framework_code'],
             'fac_id' => (int)$row['fac_id_fk'],
@@ -154,8 +301,9 @@ try {
             'started_departments' => (int)$row['started_departments'],
             'completed_departments' => (int)$row['completed_departments'],
             'answered_checkpoints' => (int)$row['answered_checkpoints'],
-            'obtained_score' => (float)$row['obtained_score'],
-            'total_score' => (int)$row['total_score'],
+            'total_checkpoints' => (int)$scoreBase['total_checkpoints'],
+            'obtained_score' => $obtainedScore,
+            'total_score' => $totalScore,
             'score_percent' => $score
         ];
     }

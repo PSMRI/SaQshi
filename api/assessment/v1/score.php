@@ -22,9 +22,90 @@
  */
 
 require_once __DIR__ . '/../../auth_api.php';
+require_once __DIR__ . '/../../core/FrameworkEngine.php';
 require_once __DIR__ . '/../../assets/conn/db.php';
 
 Security::requireMethod('GET');
+
+function scoreFacilityTypeId(int $facId): int
+{
+    $facilityJsonPath = __DIR__ . '/../../config/masters/facilities.json';
+
+    if (!file_exists($facilityJsonPath)) {
+        return 0;
+    }
+
+    $states = json_decode(file_get_contents($facilityJsonPath), true);
+
+    if (!is_array($states)) {
+        return 0;
+    }
+
+    foreach ($states as $state) {
+        foreach (($state['divisions'] ?? []) as $division) {
+            foreach (($division['districts'] ?? []) as $district) {
+                foreach (($district['blocks'] ?? []) as $block) {
+                    foreach (($block['facilities'] ?? []) as $facility) {
+                        if ((int)($facility['fac_id'] ?? 0) === $facId) {
+                            return (int)($facility['fac_type_id'] ?? 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+function scoreCheckpointMaxScore(array $checkpoint): float
+{
+    $options = $checkpoint['response']['options'] ?? [];
+
+    if (!is_array($options) || empty($options)) {
+        return 2;
+    }
+
+    $scores = array_map(
+        fn($option) => (float)($option['score'] ?? 0),
+        $options
+    );
+
+    $max = max($scores);
+
+    return $max > 0 ? $max : 2;
+}
+
+function scoreDepartmentBase(FrameworkEngine $engine, int $facTypeId, int $deptId): array
+{
+    if ($facTypeId <= 0 || $deptId <= 0) {
+        return [
+            'total_checkpoints' => 0,
+            'total_score' => 0
+        ];
+    }
+
+    $seen = [];
+    $totalCheckpoints = 0;
+    $totalScore = 0;
+
+    foreach ($engine->getCheckpoints($facTypeId, $deptId) as $checkpoint) {
+        $checkpointId = (string)($checkpoint['csqa_id'] ?? '');
+
+        if ($checkpointId === '' || isset($seen[$checkpointId])) {
+            continue;
+        }
+
+        $seen[$checkpointId] = true;
+        $totalCheckpoints++;
+        $totalScore += scoreCheckpointMaxScore($checkpoint);
+    }
+
+    return [
+        'total_checkpoints' => $totalCheckpoints,
+        'total_score' => $totalScore
+    ];
+}
 
 try {
 
@@ -87,6 +168,9 @@ try {
     }
 
     $cycleId = $assessmentId;
+    $frameworkCode = $assessment['framework_code'] ?: 'saqshi-nqas';
+    $facTypeId = scoreFacilityTypeId($facId);
+    $engine = FrameworkEngine::load($frameworkCode);
 
     /*
      * 2. Department-wise score
@@ -143,35 +227,6 @@ try {
                     0
                 ) AS improved_obtained_score,
 
-                COUNT(r.response_id) * 2 AS total_score,
-
-                ROUND(
-                    CASE
-                        WHEN COUNT(r.response_id) = 0 THEN 0
-                        ELSE (COALESCE(SUM(r.score), 0) / (COUNT(r.response_id) * 2)) * 100
-                    END,
-                    2
-                ) AS original_percentage,
-
-                ROUND(
-                    CASE
-                        WHEN COUNT(r.response_id) = 0 THEN 0
-                        ELSE (
-                            COALESCE(
-                                SUM(
-                                    CASE
-                                        WHEN ap.revised_score IS NOT NULL
-                                        THEN ap.revised_score
-                                        ELSE r.score
-                                    END
-                                ),
-                                0
-                            ) / (COUNT(r.response_id) * 2)
-                        ) * 100
-                    END,
-                    2
-                ) AS improved_percentage,
-
                 SUM(
                     CASE
                         WHEN ap.revised_score IS NOT NULL THEN 1
@@ -200,9 +255,17 @@ try {
         $stmt->execute();
 
         $score = $stmt->get_result()->fetch_assoc();
+        $scoreBase = scoreDepartmentBase($engine, $facTypeId, $deptId);
+        $totalScore = (float)$scoreBase['total_score'];
 
-        $originalPercentage = (float)($score['original_percentage'] ?? 0);
-        $improvedPercentage = (float)($score['improved_percentage'] ?? 0);
+        $originalObtained = (float)($score['original_obtained_score'] ?? 0);
+        $improvedObtained = (float)($score['improved_obtained_score'] ?? 0);
+        $originalPercentage = $totalScore > 0
+            ? round(($originalObtained / $totalScore) * 100, 2)
+            : 0;
+        $improvedPercentage = $totalScore > 0
+            ? round(($improvedObtained / $totalScore) * 100, 2)
+            : 0;
 
         Response::success(
             'Department score calculated successfully',
@@ -222,21 +285,20 @@ try {
                     'revised_checkpoints' => (int)($score['revised_checkpoints'] ?? 0),
 
                     'original' => [
-                        'obtained_score' => (float)($score['original_obtained_score'] ?? 0),
-                        'total_score' => (float)($score['total_score'] ?? 0),
+                        'obtained_score' => $originalObtained,
+                        'total_score' => $totalScore,
                         'percentage' => $originalPercentage
                     ],
 
                     'improved' => [
-                        'obtained_score' => (float)($score['improved_obtained_score'] ?? 0),
-                        'total_score' => (float)($score['total_score'] ?? 0),
+                        'obtained_score' => $improvedObtained,
+                        'total_score' => $totalScore,
                         'percentage' => $improvedPercentage
                     ],
 
                     'improvement' => [
                         'score_gain' =>
-                            (float)($score['improved_obtained_score'] ?? 0)
-                            - (float)($score['original_obtained_score'] ?? 0),
+                            $improvedObtained - $originalObtained,
 
                         'percentage_gain' =>
                             round($improvedPercentage - $originalPercentage, 2)
@@ -268,35 +330,6 @@ try {
                 ),
                 0
             ) AS improved_obtained_score,
-
-            COUNT(r.response_id) * 2 AS total_score,
-
-            ROUND(
-                CASE
-                    WHEN COUNT(r.response_id) = 0 THEN 0
-                    ELSE (COALESCE(SUM(r.score), 0) / (COUNT(r.response_id) * 2)) * 100
-                END,
-                2
-            ) AS original_percentage,
-
-            ROUND(
-                CASE
-                    WHEN COUNT(r.response_id) = 0 THEN 0
-                    ELSE (
-                        COALESCE(
-                            SUM(
-                                CASE
-                                    WHEN ap.revised_score IS NOT NULL
-                                    THEN ap.revised_score
-                                    ELSE r.score
-                                END
-                            ),
-                            0
-                        ) / (COUNT(r.response_id) * 2)
-                    ) * 100
-                END,
-                2
-            ) AS improved_percentage,
 
             SUM(
                 CASE
@@ -354,10 +387,15 @@ try {
 
         $originalObtained = (float)$row['original_obtained_score'];
         $improvedObtained = (float)$row['improved_obtained_score'];
-        $possible = (float)$row['total_score'];
+        $scoreBase = scoreDepartmentBase($engine, $facTypeId, (int)$row['dept_id']);
+        $possible = (float)$scoreBase['total_score'];
 
-        $originalPercentage = (float)$row['original_percentage'];
-        $improvedPercentage = (float)$row['improved_percentage'];
+        $originalPercentage = $possible > 0
+            ? round(($originalObtained / $possible) * 100, 2)
+            : 0;
+        $improvedPercentage = $possible > 0
+            ? round(($improvedObtained / $possible) * 100, 2)
+            : 0;
 
         $departments[] = [
             'dept_id' => (int)$row['dept_id'],

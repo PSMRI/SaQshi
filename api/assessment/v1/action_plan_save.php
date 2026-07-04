@@ -266,8 +266,120 @@ try {
         $userId,
         $userId
     );
-        if (!$stmt->execute()) {
+    if (!$stmt->execute()) {
         Response::serverError('Action plan save failed: ' . $stmt->error);
+    }
+
+    /*
+     * 5. Store reusable facility suggestion for future assessments.
+     */
+    $sqlLibrary = "
+        CREATE TABLE IF NOT EXISTS assessment_action_plan_library (
+            id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            checkpoint_id INT NOT NULL,
+            framework_code VARCHAR(100) NULL,
+            fac_id INT NOT NULL,
+            fac_name VARCHAR(255) NULL,
+            source_assessment_id BIGINT NOT NULL,
+            source_dept_id INT NOT NULL,
+            user_action_plan TEXT NOT NULL,
+            created_by INT NULL,
+            created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_checkpoint (checkpoint_id),
+            INDEX idx_fac_checkpoint (fac_id, checkpoint_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ";
+
+    if (!$con->query($sqlLibrary)) {
+        Response::serverError('Action plan library prepare failed: ' . $con->error);
+    }
+
+    $frameworkCode = '';
+    $facName = '';
+
+    $stmtMeta = $con->prepare("
+        SELECT assessment_name, framework_code
+        FROM assessment_master
+        WHERE assessment_id = ?
+        LIMIT 1
+    ");
+
+    if ($stmtMeta) {
+        $stmtMeta->bind_param('i', $assessmentId);
+        $stmtMeta->execute();
+        $meta = $stmtMeta->get_result()->fetch_assoc();
+        $frameworkCode = (string)($meta['framework_code'] ?? '');
+    }
+
+    $facilityJsonPath = __DIR__ . '/../../config/masters/facilities.json';
+
+    if (file_exists($facilityJsonPath)) {
+        $states = json_decode(file_get_contents($facilityJsonPath), true);
+
+        if (is_array($states)) {
+            foreach ($states as $state) {
+                foreach (($state['divisions'] ?? []) as $division) {
+                    foreach (($division['districts'] ?? []) as $district) {
+                        foreach (($district['blocks'] ?? []) as $block) {
+                            foreach (($block['facilities'] ?? []) as $facility) {
+                                if ((int)($facility['fac_id'] ?? 0) === $facId) {
+                                    $facName = (string)($facility['fac_name'] ?? '');
+                                    break 5;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if ($userActionPlan !== '') {
+        $stmtLibrary = $con->prepare("
+            INSERT INTO assessment_action_plan_library
+                (
+                    checkpoint_id,
+                    framework_code,
+                    fac_id,
+                    fac_name,
+                    source_assessment_id,
+                    source_dept_id,
+                    user_action_plan,
+                    created_by
+                )
+            SELECT ?, ?, ?, ?, ?, ?, ?, ?
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM assessment_action_plan_library
+                WHERE checkpoint_id = ?
+                  AND fac_id = ?
+                  AND user_action_plan = ?
+                LIMIT 1
+            )
+        ");
+
+        if (!$stmtLibrary) {
+            Response::serverError('Action plan library save prepare failed: ' . $con->error);
+        }
+
+        $stmtLibrary->bind_param(
+            'isisiisiiis',
+            $checkpointId,
+            $frameworkCode,
+            $facId,
+            $facName,
+            $assessmentId,
+            $deptId,
+            $userActionPlan,
+            $userId,
+            $checkpointId,
+            $facId,
+            $userActionPlan
+        );
+
+        if (!$stmtLibrary->execute()) {
+            Response::serverError('Action plan library save failed: ' . $stmtLibrary->error);
+        }
     }
 
     Response::success(

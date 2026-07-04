@@ -166,6 +166,8 @@
             const activeDepartments = Number(assessment.active_departments || 0);
             const completedDepartments = Number(assessment.completed_departments || 0);
             const answered = Number(assessment.answered_checkpoints || 0);
+            const totalCheckpoints = Number(assessment.total_checkpoints || 0);
+            const obtainedScore = Number(assessment.obtained_score || 0);
             const totalScore = Number(assessment.total_score || 0);
             const score = Number(assessment.score_percent || 0);
 
@@ -192,12 +194,12 @@
                         <div class="sq-table-subtext">completed/active</div>
                     </td>
                     <td>
-                        <div>${answered}</div>
-                        <div class="sq-table-subtext">checkpoints</div>
+                        <div>${answered}/${totalCheckpoints}</div>
+                        <div class="sq-table-subtext">done/total</div>
                     </td>
                     <td>
                         <span class="sq-score-pill">${score.toFixed(2)}%</span>
-                        <div class="sq-table-subtext">${escapeHtml(assessment.obtained_score)} / ${totalScore}</div>
+                        <div class="sq-table-subtext">${obtainedScore.toFixed(2)} / ${totalScore.toFixed(2)}</div>
                     </td>
                     <td>${actionButton(assessment)}</td>
                 </tr>

@@ -62,11 +62,11 @@
     "assets": {
 
         "css": [
-            "/ui/pages/dashboard/dashboard.css?v=20260702-12"
+            "/ui/pages/dashboard/dashboard.css?v=20260702-14"
         ],
 
         "js": [
-            "/ui/pages/dashboard/dashboard.js?v=20260702-12"
+            "/ui/pages/dashboard/dashboard.js?v=20260704-2"
         ]
 
     },

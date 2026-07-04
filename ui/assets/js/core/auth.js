@@ -78,7 +78,7 @@
         return token;
     }
 
-    async function login(username, password) {
+    async function login(username, password, captcha = "") {
         if (!username || !password) {
             throw {
                 status: "error",
@@ -92,7 +92,8 @@
             "/auth/v1/login.php",
             {
                 username: username,
-                password: password
+                password: password,
+                captcha: captcha
             },
             {
                 loaderText: "Signing in..."
@@ -193,9 +194,10 @@
 
             const username = form.querySelector("[name='username']")?.value.trim();
             const password = form.querySelector("[name='password']")?.value.trim();
+            const captcha = form.querySelector("[name='captcha']")?.value.trim() || "";
 
             try {
-                const response = await login(username, password);
+                const response = await login(username, password, captcha);
 
                 if (SQ.toast) {
                     SQ.toast(response.message || "Login successful", "success");

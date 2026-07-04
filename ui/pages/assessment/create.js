@@ -480,17 +480,12 @@
         setDefaultDates();
         bindEvents();
 
-        if (SQ.loader && typeof SQ.loader.show === "function") {
-            SQ.loader.show("Loading assessment page...");
-        }
-
         try {
             await loadUser();
             await loadActiveAssessment();
-        } finally {
-            if (SQ.loader && typeof SQ.loader.hide === "function") {
-                SQ.loader.hide();
-            }
+        } catch (error) {
+            console.error(error);
+            notify("error", error.message || "Unable to load assessment page.");
         }
     }
 
