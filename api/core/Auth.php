@@ -17,6 +17,7 @@
  */
 
 require_once __DIR__ . '/SessionManager.php';
+require_once __DIR__ . '/Crypto.php';
 
 class Auth
 {
@@ -61,6 +62,8 @@ class Auth
         if ($passwordStatus['needs_hash_upgrade']) {
             $this->upgradePasswordHash((int)$user['u_id'], $password);
         }
+
+        $user = $this->decryptUserProfileFields($user);
 
         $this->clearOldFailedAttempts($username);
         $this->recordAttempt($username, 'SUCCESS');
@@ -145,6 +148,67 @@ class Auth
         }
 
         return $result->fetch_assoc();
+    }
+
+    private function findUserById(int $userId): ?array
+    {
+        if ($userId <= 0) {
+            return null;
+        }
+
+        $sql = "
+            SELECT
+                u.u_id,
+                u.u_name,
+                u.u_password,
+                u.fac_id_fk,
+                u.role_id_fk,
+                u.is_active,
+                u.dept_id,
+                u.f_name,
+                u.m_name,
+                u.l_name,
+                u.mob_no,
+                u.mail_id,
+                u.user_type,
+                u.assessment_id,
+                u.dist_id,
+                u.block_id,
+                u.division_id,
+                r.role_name
+            FROM s_user u
+            LEFT JOIN u_role r
+                ON r.role_id = u.role_id_fk
+            WHERE u.u_id = ?
+            LIMIT 1
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        if (!$stmt) {
+            throw new Exception('User lookup prepare failed: ' . $this->db->error);
+        }
+
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if (!$result || $result->num_rows === 0) {
+            return null;
+        }
+
+        return $result->fetch_assoc();
+    }
+
+    private function decryptUserProfileFields(array $user): array
+    {
+        return Crypto::decryptFields($user, [
+            'f_name',
+            'm_name',
+            'l_name',
+            'mail_id',
+            'mob_no'
+        ]);
     }
 
     private function passwordStatus(string $plainPassword, string $storedPassword): array

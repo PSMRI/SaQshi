@@ -1,0 +1,4 @@
+.sq-performance-list{display:flex;flex-direction:column;gap:.4rem}
+.sq-performance-row{padding:.55rem .65rem;border:1px solid var(--sq-border);border-radius:8px;background:var(--sq-bg-surface)}
+.sq-performance-row strong{display:block;color:var(--sq-text-primary);font-size:.82rem}
+.sq-performance-row span{display:block;color:var(--sq-text-muted);font-size:.68rem}

@@ -15,10 +15,10 @@
 
     "assets": {
         "css": [
-            "/ui/pages/reports/progress.css?v=20260704-1"
+            "/ui/pages/reports/progress.css?v=20260704-2"
         ],
         "js": [
-            "/ui/pages/reports/progress.js?v=20260704-1"
+            "/ui/pages/reports/progress.js?v=20260704-2"
         ]
     },
 

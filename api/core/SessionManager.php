@@ -227,6 +227,21 @@ class SessionManager
         ];
     }
 
+    public static function updateProfile(array $user): void
+    {
+        self::start();
+
+        $_SESSION['full_name'] = trim(
+            ($user['f_name'] ?? '') . ' ' .
+            ($user['m_name'] ?? '') . ' ' .
+            ($user['l_name'] ?? '')
+        );
+
+        $_SESSION['mail_id'] = (string)($user['mail_id'] ?? '');
+        $_SESSION['mob_no'] = (string)($user['mob_no'] ?? '');
+        $_SESSION['user_type'] = (string)($user['user_type'] ?? ($_SESSION['user_type'] ?? ''));
+    }
+
     /**
      * Session timeout handling.
      */

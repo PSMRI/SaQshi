@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../core/Crypto.php';
+
 class AuthService {
 
     public static function login($conn, $username, $password) {
@@ -24,6 +26,14 @@ class AuthService {
         if (!password_verify($password, $user['u_password'])) {
             return ["status" => false, "message" => "Invalid password"];
         }
+
+        $user = Crypto::decryptFields($user, [
+            'f_name',
+            'm_name',
+            'l_name',
+            'mail_id',
+            'mob_no'
+        ]);
 
         // If plain password (temporary fallback)
         // if ($password !== $user['u_password']) { ... }

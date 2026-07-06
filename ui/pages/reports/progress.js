@@ -15,7 +15,8 @@
     const API = {
         list: "/assessment/v1/list.php",
         activeAssessment: "/assessment/v1/active_assessment.php",
-        progress: "/assessment/v1/progress.php"
+        progress: "/assessment/v1/progress.php",
+        progressChecklist: "/reports/v1/checkpoint_progress_report.php"
     };
 
     const state = {
@@ -314,6 +315,28 @@
         $("progressAssessmentSelect")?.addEventListener("change", loadProgress);
         $("btnRefreshProgressReport")?.addEventListener("click", loadProgress);
         $("progressStatusFilter")?.addEventListener("change", renderRows);
+        $("btnDownloadProgressChecklist")?.addEventListener("click", function () {
+            const assessmentId = Number($("progressAssessmentSelect")?.value || state.selectedAssessmentId || 0);
+
+            if (!assessmentId) {
+                notify("warning", "Please select assessment first.");
+                return;
+            }
+
+            if (!SQ.api || typeof SQ.api.download !== "function") {
+                notify("error", "Download service is not available.");
+                return;
+            }
+
+            SQ.api.download(
+                API.progressChecklist,
+                { assessment_id: assessmentId },
+                "checkpoint_progress_assessment_" + assessmentId + ".xlsx"
+            ).catch(function (error) {
+                console.error(error);
+                notify("error", error.message || "Unable to download progress checklist.");
+            });
+        });
     }
 
     async function init() {
