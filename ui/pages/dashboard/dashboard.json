@@ -62,11 +62,11 @@
     "assets": {
 
         "css": [
-            "/ui/pages/dashboard/dashboard.css?v=20260702-14"
+            "/ui/pages/dashboard/dashboard.css?v=20260706-3"
         ],
 
         "js": [
-            "/ui/pages/dashboard/dashboard.js?v=20260704-2"
+            "/ui/pages/dashboard/dashboard.js?v=20260706-3"
         ]
 
     },
@@ -152,7 +152,7 @@
             "icon": "bi-file-earmark-bar-graph",
             "permission": "reports.view",
             "url": "#",
-            "route": "dashboard"
+            "route": "reports/dashboard"
         }
 
     ],

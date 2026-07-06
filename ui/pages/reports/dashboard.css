@@ -14,7 +14,7 @@
 
 .sq-report-kpis{
     display:grid;
-    grid-template-columns:repeat(5,minmax(120px,1fr));
+    grid-template-columns:repeat(7,minmax(110px,1fr));
     gap:.5rem;
 }
 
@@ -217,7 +217,7 @@
 
 @media (max-width:1050px){
     .sq-report-kpis{
-        grid-template-columns:repeat(3,minmax(120px,1fr));
+        grid-template-columns:repeat(3,minmax(110px,1fr));
     }
 
     .sq-report-grid,

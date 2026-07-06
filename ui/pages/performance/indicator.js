@@ -1,3 +1,12 @@
+/*!
+ * ==========================================================
+ * SaQshi Open Source
+ * Performance Indicator Entry
+ * indicator.js
+ * Version 1.0.0 | Updated 2026-07-06
+ * ==========================================================
+ */
+
 (function (window, document) {
     "use strict";
 
@@ -52,6 +61,26 @@
     function selectedPeriod() {
         const parts = ($("indicatorPeriodFilter")?.value || "").split("-");
         return { year: num(parts[0]), month: num(parts[1]) };
+    }
+
+    function applyInitialQuery() {
+        const params = new URLSearchParams(window.location.search);
+        const type = (params.get("indicator_type") || params.get("type") || "").toUpperCase();
+        const deptId = params.get("department_id") || params.get("dept_id") || "";
+        const period = params.get("period") || params.get("month") || "";
+
+        if ((type === "KPI" || type === "OUTCOME") && $("indicatorTypeFilter")) {
+            $("indicatorTypeFilter").value = type;
+        }
+
+        if (/^\d{4}-\d{2}$/.test(period) && $("indicatorPeriodFilter")) {
+            $("indicatorPeriodFilter").value = period;
+        }
+
+        if (deptId && $("indicatorDepartmentFilter")) {
+            $("indicatorDepartmentFilter").innerHTML = `<option value="${esc(deptId)}">Loading selected department...</option>`;
+            $("indicatorDepartmentFilter").value = deptId;
+        }
     }
 
     function fillPeriods() {
@@ -364,6 +393,7 @@
 
     function init() {
         fillPeriods();
+        applyInitialQuery();
         bind();
         loadIndicators().catch(error => {
             console.error(error);

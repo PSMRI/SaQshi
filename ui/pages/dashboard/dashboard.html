@@ -263,6 +263,164 @@ Do NOT add:
     </div>
 
     <!-- ==========================================
+         Score & Checkpoint Analytics
+    =========================================== -->
+
+    <div class="sq-grid sq-grid-2 sq-mt-5">
+
+        <div class="sq-card">
+
+            <div class="sq-card-header">
+
+                <div>
+
+                    <div class="sq-card-title">Score Analytics</div>
+
+                    <div class="sq-card-subtitle">Baseline, final score and improvement</div>
+
+                </div>
+
+            </div>
+
+            <div class="sq-card-body">
+
+                <div class="sq-score-metrics">
+                    <div>
+                        <span>Baseline Score</span>
+                        <strong id="baseline-score">0%</strong>
+                    </div>
+                    <div>
+                        <span>Final Score</span>
+                        <strong id="final-score">0%</strong>
+                    </div>
+                    <div>
+                        <span>Improvement</span>
+                        <strong id="score-improvement">0%</strong>
+                    </div>
+                </div>
+
+                <div class="sq-dashboard-chart-row">
+                    <div>
+                        <div class="sq-mini-chart-title">Score Trend</div>
+                        <div id="score-trend-chart" class="sq-dashboard-chart"></div>
+                    </div>
+                    <div>
+                        <div class="sq-mini-chart-title">Score Split</div>
+                        <div id="score-pie-chart" class="sq-dashboard-chart"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="sq-card">
+
+            <div class="sq-card-header">
+
+                <div>
+
+                    <div class="sq-card-title">Final Progress</div>
+
+                    <div class="sq-card-subtitle">Progress after revised/final score</div>
+
+                </div>
+
+            </div>
+
+            <div class="sq-card-body">
+
+                <div id="final-progress-chart" class="sq-final-progress-chart"></div>
+
+                <div class="sq-grid sq-grid-3 sq-mt-4">
+                    <div>
+                        <div class="sq-text-muted">Answered</div>
+                        <strong id="answered-checkpoints">0</strong>
+                    </div>
+                    <div>
+                        <div class="sq-text-muted">Updated</div>
+                        <strong id="revised-checkpoints">0</strong>
+                    </div>
+                    <div>
+                        <div class="sq-text-muted">Gain</div>
+                        <strong id="score-gain">0</strong>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="sq-card sq-mt-5">
+
+        <div class="sq-card-header">
+
+            <div>
+
+                <div class="sq-card-title">Outcome Data Entry Status</div>
+
+                <div class="sq-card-subtitle">Months where facility has filled outcome indicators</div>
+
+            </div>
+
+            <a href="#" data-sq-route="performance/trend" class="sq-btn sq-btn-outline-primary sq-btn-sm">
+                View Trend
+            </a>
+
+        </div>
+
+        <div class="sq-card-body">
+
+            <div class="sq-outcome-month-summary">
+                <div>
+                    <span>Outcome Months Filled</span>
+                    <strong id="outcome-month-count">0</strong>
+                </div>
+                <div>
+                    <span>Outcome Entries</span>
+                    <strong id="outcome-entry-count">0</strong>
+                </div>
+                <div>
+                    <span>Latest Outcome Month</span>
+                    <strong id="outcome-latest-month">-</strong>
+                </div>
+            </div>
+
+            <div id="outcome-month-list" class="sq-outcome-month-list">
+                <div class="sq-empty-message">No outcome data filled yet.</div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="sq-card sq-mt-5">
+
+        <div class="sq-card-header">
+
+            <div>
+
+                <div class="sq-card-title">Area of Concern Checkpoints</div>
+
+                <div class="sq-card-subtitle">Completed and pending checkpoint status</div>
+
+            </div>
+
+        </div>
+
+        <div class="sq-card-body">
+
+            <div id="area-concern-status" class="sq-area-status-list">
+                <div class="sq-empty-message">No area of concern status available.</div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ==========================================
          Recent Assessments
     =========================================== -->
 
@@ -312,6 +470,8 @@ Do NOT add:
                             <th>Status</th>
 
                             <th>Start Date</th>
+
+                            <th>End Date</th>
 
                             <th>Score</th>
 

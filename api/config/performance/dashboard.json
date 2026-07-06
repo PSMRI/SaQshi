@@ -220,17 +220,10 @@
       "label": "Monthly Trends",
       "route": "performance/trend",
       "icon": "bi bi-graph-up"
-    },
-    {
-      "action_id": "summary",
-      "label": "Performance Summary",
-      "route": "performance/summary",
-      "icon": "bi bi-file-earmark-bar-graph"
     }
   ],
   "api": {
     "dashboard": "/performance/v1/dashboard.php",
-    "summary": "/performance/v1/summary.php",
     "trend": "/performance/v1/trend.php"
   }
 }

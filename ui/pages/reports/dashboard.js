@@ -17,7 +17,8 @@
         activeAssessment: "/assessment/v1/active_assessment.php",
         progress: "/assessment/v1/progress.php",
         score: "/assessment/v1/score.php",
-        gaps: "/assessment/v1/gap_analysis.php"
+        gaps: "/assessment/v1/gap_analysis.php",
+        performanceDashboard: "/performance/v1/dashboard.php"
     };
 
     const state = {
@@ -27,6 +28,7 @@
         progress: null,
         score: null,
         gaps: null,
+        performance: null,
         isLoading: false
     };
 
@@ -126,6 +128,8 @@
         setText("reportActiveAssessments", num(summary.active));
         setText("reportAverageScore", percent(summary.average_score));
         setText("reportOpenGaps", openGaps);
+        setText("reportKpiMonths", num(state.performance?.summary?.kpi_months));
+        setText("reportOutcomeMonths", num(state.performance?.summary?.outcome_months));
     }
 
     function renderCurrentAssessment() {
@@ -283,6 +287,11 @@
         state.gaps = responses[2].data || null;
     }
 
+    async function loadPerformanceSummary() {
+        const response = await apiGet(API.performanceDashboard, { all_indicators: 0 });
+        state.performance = response.data || null;
+    }
+
     async function loadReports() {
         const rows = $("reportAssessmentRows");
 
@@ -295,7 +304,10 @@
             state.summary = listResponse.data?.summary || {};
             state.assessments = listResponse.data?.assessments || [];
 
-            await loadAssessmentDetails();
+            await Promise.all([
+                loadAssessmentDetails(),
+                loadPerformanceSummary()
+            ]);
 
             renderSummary();
             renderCurrentAssessment();
@@ -339,6 +351,19 @@
                 if (SQ.router && typeof SQ.router.navigate === "function") {
                     SQ.router.navigate("reports/progress", {
                         assessment_id: assessmentId
+                    });
+                }
+            }
+
+            const performanceReport = event.target.closest("[data-performance-report]");
+
+            if (performanceReport) {
+                const type = performanceReport.dataset.performanceReport || "";
+
+                if (SQ.router && typeof SQ.router.navigate === "function") {
+                    SQ.router.navigate("performance/trend", {
+                        indicator_type: type,
+                        all_indicators: 1
                     });
                 }
             }

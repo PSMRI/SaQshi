@@ -1,5 +1,14 @@
 <?php
 
+/*!
+ * ==========================================================
+ * SaQshi Open Source
+ * Performance Shared Service
+ * PerformanceService.php
+ * Version 1.0.0 | Updated 2026-07-06
+ * ==========================================================
+ */
+
 /**
  * PerformanceService.php
  * -------------------------------------------------------
@@ -385,14 +394,21 @@ class PerformanceService
         ];
     }
 
-    public static function dashboard(mysqli $con, int $facId): array
+    public static function dashboard(mysqli $con, int $facId, array $filters = []): array
     {
         self::ensureTable($con);
         $summary = self::summary($con, $facId);
+        $showAll = !empty($filters['all_indicators']) || (($filters['scope'] ?? '') === 'all');
+        $trendLimit = $showAll ? 0 : 8;
 
         return [
             'facility' => self::facilityMeta($facId),
             'summary' => $summary,
+            'month_status' => self::monthlyStatus($con, $facId, []),
+            'indicator_trends' => [
+                'KPI' => self::indicatorTrends($con, $facId, ['indicator_type' => 'KPI', 'limit' => $trendLimit])['series'],
+                'OUTCOME' => self::indicatorTrends($con, $facId, ['indicator_type' => 'OUTCOME', 'limit' => $trendLimit])['series']
+            ],
             'trend' => self::trend($con, $facId, [])['series']
         ];
     }
@@ -404,9 +420,11 @@ class PerformanceService
         $stmt = $con->prepare("
             SELECT
                 COUNT(*) AS total_entries,
+                COUNT(DISTINCT CONCAT(entry_year, '-', LPAD(entry_month, 2, '0'))) AS total_months,
+                COUNT(DISTINCT CASE WHEN indicator_type = 'KPI' THEN CONCAT(entry_year, '-', LPAD(entry_month, 2, '0')) END) AS kpi_months,
+                COUNT(DISTINCT CASE WHEN indicator_type = 'OUTCOME' THEN CONCAT(entry_year, '-', LPAD(entry_month, 2, '0')) END) AS outcome_months,
                 COUNT(DISTINCT CASE WHEN indicator_type = 'KPI' THEN indicator_id END) AS kpi_indicators,
                 COUNT(DISTINCT CASE WHEN indicator_type = 'OUTCOME' THEN indicator_id END) AS outcome_indicators,
-                AVG(result_value) AS average_result,
                 MAX(CONCAT(entry_year, '-', LPAD(entry_month, 2, '0'))) AS latest_period
             FROM performance_entries
             WHERE fac_id = ?
@@ -422,11 +440,63 @@ class PerformanceService
 
         return [
             'total_entries' => (int)($row['total_entries'] ?? 0),
+            'total_months' => (int)($row['total_months'] ?? 0),
+            'kpi_months' => (int)($row['kpi_months'] ?? 0),
+            'outcome_months' => (int)($row['outcome_months'] ?? 0),
             'kpi_indicators' => (int)($row['kpi_indicators'] ?? 0),
             'outcome_indicators' => (int)($row['outcome_indicators'] ?? 0),
-            'average_result' => round((float)($row['average_result'] ?? 0), 2),
             'latest_period' => $row['latest_period'] ?? null
         ];
+    }
+
+    public static function monthlyStatus(mysqli $con, int $facId, array $filters = []): array
+    {
+        self::ensureTable($con);
+
+        $indicatorType = strtoupper((string)($filters['indicator_type'] ?? ''));
+        $params = [$facId];
+        $types = 'i';
+        $where = 'fac_id = ?';
+
+        if (in_array($indicatorType, ['KPI', 'OUTCOME'], true)) {
+            $where .= ' AND indicator_type = ?';
+            $params[] = $indicatorType;
+            $types .= 's';
+        }
+
+        $stmt = $con->prepare("
+            SELECT
+                entry_year,
+                entry_month,
+                SUM(CASE WHEN indicator_type = 'KPI' THEN 1 ELSE 0 END) AS kpi_entries,
+                SUM(CASE WHEN indicator_type = 'OUTCOME' THEN 1 ELSE 0 END) AS outcome_entries,
+                COUNT(*) AS total_entries
+            FROM performance_entries
+            WHERE {$where}
+            GROUP BY entry_year, entry_month
+            ORDER BY entry_year ASC, entry_month ASC
+        ");
+
+        if (!$stmt) {
+            Response::serverError('Performance monthly status prepare failed: ' . $con->error);
+        }
+
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+
+        $rows = [];
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = [
+                'period' => sprintf('%04d-%02d', (int)$row['entry_year'], (int)$row['entry_month']),
+                'kpi_entries' => (int)$row['kpi_entries'],
+                'outcome_entries' => (int)$row['outcome_entries'],
+                'total_entries' => (int)$row['total_entries']
+            ];
+        }
+
+        return $rows;
     }
 
     public static function trend(mysqli $con, int $facId, array $filters = []): array
@@ -445,7 +515,7 @@ class PerformanceService
         }
 
         $sql = "
-            SELECT entry_year, entry_month, indicator_type, ROUND(AVG(result_value), 2) AS average_result, COUNT(*) AS entries
+            SELECT entry_year, entry_month, indicator_type, COUNT(*) AS entries
             FROM performance_entries
             WHERE {$where}
             GROUP BY entry_year, entry_month, indicator_type
@@ -468,7 +538,6 @@ class PerformanceService
             $rows[] = [
                 'period' => sprintf('%04d-%02d', (int)$row['entry_year'], (int)$row['entry_month']),
                 'indicator_type' => $row['indicator_type'],
-                'average_result' => (float)$row['average_result'],
                 'entries' => (int)$row['entries']
             ];
         }
@@ -476,6 +545,94 @@ class PerformanceService
         return [
             'filters' => $filters,
             'series' => $rows
+        ];
+    }
+
+    public static function indicatorTrends(mysqli $con, int $facId, array $filters = []): array
+    {
+        self::ensureTable($con);
+
+        $indicatorType = strtoupper((string)($filters['indicator_type'] ?? ''));
+        $seriesLimit = max(0, (int)($filters['limit'] ?? 8));
+        $params = [$facId];
+        $types = 'i';
+        $where = 'fac_id = ?';
+
+        if (in_array($indicatorType, ['KPI', 'OUTCOME'], true)) {
+            $where .= ' AND indicator_type = ?';
+            $params[] = $indicatorType;
+            $types .= 's';
+        }
+
+        $stmt = $con->prepare("
+            SELECT
+                dept_id,
+                indicator_type,
+                indicator_id,
+                indicator_code,
+                indicator_name,
+                entry_year,
+                entry_month,
+                numerator_value,
+                denominator_value,
+                result_value
+            FROM performance_entries
+            WHERE {$where}
+            ORDER BY entry_year DESC, entry_month DESC, updated_on DESC, entry_id DESC
+            LIMIT 500
+        ");
+
+        if (!$stmt) {
+            Response::serverError('Performance indicator trend prepare failed: ' . $con->error);
+        }
+
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+
+        $series = [];
+        $order = [];
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $key = implode('|', [
+                $row['indicator_type'],
+                (int)$row['dept_id'],
+                (int)$row['indicator_id']
+            ]);
+
+            if (!isset($series[$key])) {
+                if ($seriesLimit > 0 && count($order) >= $seriesLimit) {
+                    continue;
+                }
+
+                $order[] = $key;
+                $series[$key] = [
+                    'indicator_type' => $row['indicator_type'],
+                    'indicator_id' => (int)$row['indicator_id'],
+                    'indicator_code' => (string)$row['indicator_code'],
+                    'indicator_name' => (string)$row['indicator_name'],
+                    'department_id' => (int)$row['dept_id'],
+                    'department_name' => self::departmentName((int)$row['dept_id']),
+                    'points' => []
+                ];
+            }
+
+            $series[$key]['points'][] = [
+                'period' => sprintf('%04d-%02d', (int)$row['entry_year'], (int)$row['entry_month']),
+                'numerator' => (float)$row['numerator_value'],
+                'denominator' => (float)$row['denominator_value'],
+                'result' => (float)$row['result_value']
+            ];
+        }
+
+        foreach ($series as &$item) {
+            $item['points'] = array_reverse($item['points']);
+        }
+        unset($item);
+
+        return [
+            'filters' => $filters,
+            'series' => array_values($series)
         ];
     }
 }

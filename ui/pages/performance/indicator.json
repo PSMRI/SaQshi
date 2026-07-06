@@ -11,8 +11,8 @@
     "required": true
   },
   "assets": {
-    "css": ["/ui/pages/performance/indicator.css?v=20260705-1"],
-    "js": ["/ui/pages/performance/indicator.js?v=20260705-1"]
+    "css": ["/ui/pages/performance/indicator.css?v=20260706-1"],
+    "js": ["/ui/pages/performance/indicator.js?v=20260706-1"]
   },
   "breadcrumb": [
     {"label": "Dashboard", "url": "/ui/dashboard.html"},

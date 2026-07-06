@@ -1,3 +1,12 @@
+/*!
+ * ==========================================================
+ * SaQshi Open Source
+ * Performance KPI Entry
+ * kpi.js
+ * Version 1.0.0 | Updated 2026-07-06
+ * ==========================================================
+ */
+
 (function (window, document) {
     "use strict";
 

@@ -22,14 +22,18 @@
         activeAssessment: "/assessment/v1/active_assessment.php",
         progress: "/assessment/v1/progress.php",
         score: "/assessment/v1/score.php",
-        gapAnalysis: "/assessment/v1/gap_analysis.php"
+        gapAnalysis: "/assessment/v1/gap_analysis.php",
+        insights: "/assessment/v1/dashboard_insights.php",
+        performanceDashboard: "/performance/v1/dashboard.php"
     };
 
     const state = {
         activeAssessment: null,
         progress: null,
         score: null,
-        gaps: null
+        gaps: null,
+        insights: null,
+        performance: null
     };
 
     function setText(id, value) {
@@ -79,7 +83,9 @@
             await Promise.all([
                 loadProgress(state.activeAssessment.assessment_id),
                 loadScore(state.activeAssessment.assessment_id),
-                loadGapAnalysis(state.activeAssessment.assessment_id)
+                loadGapAnalysis(state.activeAssessment.assessment_id),
+                loadInsights(state.activeAssessment.assessment_id),
+                loadPerformanceDashboard()
             ]);
         }
     }
@@ -130,6 +136,38 @@
 
         state.gaps = response.data || null;
         renderGaps();
+    }
+
+    async function loadInsights(assessmentId) {
+        const response = await SQ.api.get(
+            API.insights,
+            {
+                assessment_id: assessmentId
+            },
+            {
+                loader: false,
+                showError: false
+            }
+        );
+
+        state.insights = response.data || null;
+        renderAreaConcerns();
+    }
+
+    async function loadPerformanceDashboard() {
+        const response = await SQ.api.get(
+            API.performanceDashboard,
+            {
+                all_indicators: 0
+            },
+            {
+                loader: false,
+                showError: false
+            }
+        );
+
+        state.performance = response.data || null;
+        renderOutcomeMonths();
     }
 
     function renderActiveAssessment() {
@@ -231,16 +269,76 @@
             state.score?.score ||
             {};
 
-        const percentage = Number(
-            overall.improved_percentage ||
-            overall.percentage ||
-            0
-        );
+        const original = overall.original || {};
+        const improved = overall.improved || {};
+        const improvement = overall.improvement || {};
+        const baselinePercent = Number(original.percentage || overall.percentage || 0);
+        const finalPercent = Number(improved.percentage || baselinePercent || 0);
+        const gainPercent = Number(improvement.percentage_gain || (finalPercent - baselinePercent) || 0);
 
         const el = document.getElementById("dashboard-score");
 
         if (el) {
-            el.textContent = percentage + "%";
+            el.textContent = finalPercent + "%";
+        }
+
+        setText("baseline-score", baselinePercent + "%");
+        setText("final-score", finalPercent + "%");
+        setText("score-improvement", gainPercent + "%");
+        setText("answered-checkpoints", Number(overall.answered_checkpoints || 0));
+        setText("revised-checkpoints", Number(overall.revised_checkpoints || 0));
+        setText("score-gain", Number(improvement.score_gain || 0));
+        renderScoreCharts(baselinePercent, finalPercent, gainPercent);
+    }
+
+    function renderScoreCharts(baseline, finalScore, gain) {
+        const trend = document.getElementById("score-trend-chart");
+        const pie = document.getElementById("score-pie-chart");
+        const progress = document.getElementById("final-progress-chart");
+
+        if (trend) {
+            const max = Math.max(100, baseline, finalScore);
+            const baseY = 78 - ((baseline / max) * 58);
+            const finalY = 78 - ((finalScore / max) * 58);
+            trend.innerHTML = `
+                <svg viewBox="0 0 220 92" class="sq-score-svg" role="img" aria-label="Baseline to final score trend">
+                    <line x1="20" y1="78" x2="200" y2="78"></line>
+                    <polyline points="45,${baseY} 175,${finalY}"></polyline>
+                    <circle cx="45" cy="${baseY}" r="5"></circle>
+                    <circle cx="175" cy="${finalY}" r="5"></circle>
+                    <text x="45" y="88" text-anchor="middle">Baseline</text>
+                    <text x="175" y="88" text-anchor="middle">Final</text>
+                    <text x="45" y="${Math.max(12, baseY - 8)}" text-anchor="middle">${escapeHtml(baseline)}%</text>
+                    <text x="175" y="${Math.max(12, finalY - 8)}" text-anchor="middle">${escapeHtml(finalScore)}%</text>
+                </svg>
+            `;
+        }
+
+        if (pie) {
+            const clamped = Math.max(0, Math.min(finalScore, 100));
+            pie.innerHTML = `
+                <div class="sq-score-donut" style="--sq-score:${clamped}">
+                    <span>${escapeHtml(finalScore)}%</span>
+                </div>
+                <div class="sq-chart-note">Final score<br>Gain ${escapeHtml(gain)}%</div>
+            `;
+        }
+
+        if (progress) {
+            const clamped = Math.max(0, Math.min(finalScore, 100));
+            progress.innerHTML = `
+                <div class="sq-final-progress-head">
+                    <strong>${escapeHtml(finalScore)}%</strong>
+                    <span>Final Score</span>
+                </div>
+                <div class="sq-final-progress-track">
+                    <span style="width:${clamped}%"></span>
+                </div>
+                <div class="sq-final-progress-meta">
+                    <span>Baseline ${escapeHtml(baseline)}%</span>
+                    <span>Improvement ${escapeHtml(gain)}%</span>
+                </div>
+            `;
         }
     }
 
@@ -259,6 +357,90 @@
             "metric-open-gaps",
             Number.isFinite(openGaps) ? openGaps : 0
         );
+    }
+
+    function renderAreaConcerns() {
+        const target = document.getElementById("area-concern-status");
+
+        if (!target) {
+            return;
+        }
+
+        const rows = state.insights?.area_concerns || [];
+
+        if (!rows.length) {
+            target.innerHTML = `<div class="sq-empty-message">No area of concern status available.</div>`;
+            return;
+        }
+
+        target.innerHTML = rows.slice(0, 12).map(row => {
+            const total = Number(row.total_checkpoints || 0);
+            const completed = Number(row.completed_checkpoints || 0);
+            const pending = Number(row.pending_checkpoints || 0);
+            const percent = Number(row.completion_percent || 0);
+
+            return `
+                <div class="sq-area-status-row">
+                    <div class="sq-area-status-main">
+                        <strong>${escapeHtml(row.area_name || "Area of Concern")}</strong>
+                        <span>Department ${escapeHtml(row.dept_id || "-")} | ${completed}/${total} completed</span>
+                    </div>
+                    <div class="sq-area-status-counts">
+                        <span class="is-complete">${completed} completed</span>
+                        <span class="is-pending">${pending} pending</span>
+                    </div>
+                    <div class="sq-area-status-bar">
+                        <span style="width:${Math.max(0, Math.min(percent, 100))}%"></span>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    function shortMonth(period) {
+        const parts = String(period || "").split("-");
+
+        if (parts.length !== 2) {
+            return period || "-";
+        }
+
+        const month = Number(parts[1]);
+        const names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        return `${names[month - 1] || parts[1]} ${String(parts[0]).slice(-2)}`;
+    }
+
+    function renderOutcomeMonths() {
+        const summary = state.performance?.summary || {};
+        const rows = (state.performance?.month_status || [])
+            .filter(row => Number(row.outcome_entries || 0) > 0);
+        const latest = rows[rows.length - 1] || null;
+        const totalEntries = rows.reduce(
+            (sum, row) => sum + Number(row.outcome_entries || 0),
+            0
+        );
+
+        setText("outcome-month-count", summary.outcome_months || rows.length || 0);
+        setText("outcome-entry-count", totalEntries);
+        setText("outcome-latest-month", latest ? shortMonth(latest.period) : "-");
+
+        const target = document.getElementById("outcome-month-list");
+
+        if (!target) {
+            return;
+        }
+
+        if (!rows.length) {
+            target.innerHTML = `<div class="sq-empty-message">No outcome data filled yet.</div>`;
+            return;
+        }
+
+        target.innerHTML = rows.slice(-6).reverse().map(row => `
+            <div class="sq-outcome-month-chip">
+                <strong>${escapeHtml(shortMonth(row.period))}</strong>
+                <span>${escapeHtml(row.outcome_entries || 0)} outcome entries filled</span>
+            </div>
+        `).join("");
     }
 
     function renderRecentAssessments() {
@@ -281,6 +463,13 @@
             return;
         }
 
+        const overall = state.score?.overall_score || {};
+        const finalPercent = Number(
+            overall.improved?.percentage ||
+            overall.original?.percentage ||
+            0
+        );
+
         target.innerHTML = `
             <tr>
                 <td>${escapeHtml(assessment.assessment_name || "Assessment")}</td>
@@ -288,7 +477,7 @@
                 <td>${badge(assessment.status)}</td>
                 <td>${escapeHtml(assessment.start_date || "-")}</td>
                 <td>${escapeHtml(assessment.end_date || "-")}</td>
-                <td id="recent-score">-</td>
+                <td id="recent-score">${escapeHtml(finalPercent)}%</td>
                 <td class="sq-td-right">
                     <a href="#" data-sq-route="assessment/departments"
                        class="sq-btn sq-btn-sm sq-btn-outline-primary">
@@ -313,8 +502,39 @@
             .replace(/'/g, "&#039;");
     }
 
+    function bindQuickActions() {
+        const actions = document.getElementById("sq-page-actions");
+
+        if (!actions || actions.dataset.dashboardQuickActionsBound === "1") {
+            return;
+        }
+
+        actions.dataset.dashboardQuickActionsBound = "1";
+        actions.addEventListener("click", function (event) {
+            const link = event.target.closest("[data-sq-route]");
+
+            if (!link || !actions.contains(link)) {
+                return;
+            }
+
+            const route = link.getAttribute("data-sq-route");
+
+            if (!route || route === "#") {
+                return;
+            }
+
+            event.preventDefault();
+
+            if (SQ.router && typeof SQ.router.navigate === "function") {
+                SQ.router.navigate(route);
+            }
+        });
+    }
+
     async function init() {
         try {
+            bindQuickActions();
+
             if (SQ.breadcrumb) {
                 SQ.breadcrumb.render([
                     {

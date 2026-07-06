@@ -1,3 +1,12 @@
+/*!
+ * ==========================================================
+ * SaQshi Open Source
+ * Performance Outcome Entry
+ * outcome.js
+ * Version 1.0.0 | Updated 2026-07-06
+ * ==========================================================
+ */
+
 (function (window, document) {
     "use strict";
 
