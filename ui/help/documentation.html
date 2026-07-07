@@ -23,9 +23,8 @@
         .sq-doc-brand{font-weight:800;font-size:18px;margin-bottom:4px}
         .sq-doc-version{color:var(--sq-muted);font-size:12px;margin-bottom:18px}
         .sq-doc-nav-title{margin:14px 0 4px;padding:0 8px;color:#64748b;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-        .sq-doc-language{width:100%;height:34px;margin-bottom:10px;padding:0 10px;border:1px solid var(--sq-line);border-radius:8px;color:var(--sq-ink);background:#fff}
         .sq-doc-search{width:100%;height:34px;margin-bottom:10px;padding:0 10px;border:1px solid var(--sq-line);border-radius:8px;color:var(--sq-ink)}
-        .sq-doc-search:focus,.sq-doc-language:focus{outline:2px solid #bfdbfe;border-color:var(--sq-blue)}
+        .sq-doc-search:focus{outline:2px solid #bfdbfe;border-color:var(--sq-blue)}
         .sq-doc-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}
         .sq-doc-tab{display:block;text-align:center;padding:9px 10px;border:1px solid var(--sq-line);border-radius:8px;background:#fff;color:#334155;text-decoration:none;font-weight:800}
         .sq-doc-tab.is-active{background:var(--sq-blue);border-color:var(--sq-blue);color:#fff}
@@ -74,10 +73,6 @@
     <aside class="sq-doc-nav">
         <div class="sq-doc-brand">SaQshi Help</div>
         <div class="sq-doc-version">User Documentation | Version 1.0</div>
-        <select id="docLanguage" class="sq-doc-language" aria-label="Select documentation language">
-            <option value="en">English</option>
-            <option value="hi">हिन्दी</option>
-        </select>
         <input id="docSearch" class="sq-doc-search" type="search" placeholder="Search documentation..." aria-label="Search documentation">
         <div class="sq-doc-tabs">
             <a class="sq-doc-tab is-active" data-guide-tab="user" href="#user-guide">User Guide</a>
@@ -91,6 +86,8 @@
         <a data-guide-nav="user" href="#checklist">Checklist Entry</a>
         <a data-guide-nav="user" href="#cqi">CQI: Gap, Action, Closure</a>
         <a data-guide-nav="user" href="#performance">KPI & Outcome</a>
+        <a data-guide-nav="user" href="#certification">Certification</a>
+        <a data-guide-nav="user" href="#ai-chat">AI Chat Assistant</a>
         <a data-guide-nav="user" href="#reports">Reports</a>
         <a data-guide-nav="user" href="#profile">Profile & Facility</a>
         <a data-guide-nav="user" href="#errors">Errors & Messages</a>
@@ -114,11 +111,13 @@
             <span class="sq-doc-tag">CQI</span>
             <span class="sq-doc-tag">Reports</span>
             <span class="sq-doc-tag">Performance Monitoring</span>
+            <span class="sq-doc-tag">Certification</span>
+            <span class="sq-doc-tag">AI Chat Assistant</span>
         </section>
 
         <section class="sq-doc-card full" id="overview" data-guide="user">
             <h2>Overview</h2>
-            <p>SaQshi supports facility quality assessment, checklist scoring, continuous quality improvement, reporting, and monthly KPI/Outcome monitoring.</p>
+            <p>SaQshi supports facility quality assessment, checklist scoring, continuous quality improvement, reporting, certification tracking, and monthly KPI/Outcome monitoring.</p>
             <div class="sq-doc-flow">
                 <div class="sq-doc-step"><strong>1. Create</strong><span>Create or continue an active assessment.</span></div>
                 <div class="sq-doc-step"><strong>2. Activate</strong><span>Enable applicable departments.</span></div>
@@ -233,6 +232,62 @@
             <a class="sq-doc-top" href="#top">Back to top</a>
         </section>
 
+        <section class="sq-doc-card full sq-doc-section" id="certification" data-guide="user">
+            <h2>Certification</h2>
+            <p>The Certification module tracks State and National certification records for the logged-in facility.</p>
+            <div class="sq-doc-grid">
+                <div>
+                    <h3>Dashboard and History</h3>
+                    <ul class="sq-doc-list">
+                        <li>Certification Dashboard shows State status, National status, next expiry date and renewal status.</li>
+                        <li>Certification History lists previous State and National certification records.</li>
+                        <li>Renewal Status highlights active, renewal due and expired certification records.</li>
+                        <li>Report Dashboard includes a Certification Report shortcut that opens the Certification Dashboard.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Add Certification</h3>
+                    <ul class="sq-doc-list">
+                        <li>Facility name and NIN load automatically from the logged-in user's assigned facility.</li>
+                        <li>Facility ID is not shown on screen and is handled from the session.</li>
+                        <li>Certification Type can be STATE or NATIONAL.</li>
+                        <li>Assessment Mode can be PHYSICAL or VIRTUAL.</li>
+                        <li>Applied Date is optional and cannot be greater than Certification Date.</li>
+                        <li>Certification Date cannot be a future date.</li>
+                        <li>CONDITIONAL certificates are valid for 1 year; CERTIFIED certificates are valid for 3 years.</li>
+                        <li>National certification can be saved only after State certification exists.</li>
+                    </ul>
+                </div>
+            </div>
+            <a class="sq-doc-top" href="#top">Back to top</a>
+        </section>
+
+        <section class="sq-doc-card full sq-doc-section" id="ai-chat" data-guide="user">
+            <h2>AI Chat Assistant</h2>
+            <p>The AI Chat Assistant is a floating help component available on authenticated dashboard pages.</p>
+            <div class="sq-doc-grid">
+                <div>
+                    <h3>How users use it</h3>
+                    <ul class="sq-doc-list">
+                        <li>Open the floating chat button from the bottom-right corner.</li>
+                        <li>Ask questions about assessment, checklist scoring, CQI, KPI/Outcome, reports or certification.</li>
+                        <li>Use quick suggestions such as Certification, Gap and Reports for common help.</li>
+                        <li>Clear chat history when the conversation is no longer needed.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Current behavior</h3>
+                    <ul class="sq-doc-list">
+                        <li>The assistant uses authenticated API endpoints under <span class="sq-doc-path">api/chat/v1</span>.</li>
+                        <li>Conversation history is stored per logged-in user and facility.</li>
+                        <li>Responses are SaQshi workflow help generated by <span class="sq-doc-path">ChatAssistantService.php</span>.</li>
+                        <li>The service boundary is ready for future external AI integration.</li>
+                    </ul>
+                </div>
+            </div>
+            <a class="sq-doc-top" href="#top">Back to top</a>
+        </section>
+
         <section class="sq-doc-card full sq-doc-section" id="reports" data-guide="user">
             <h2>Reports</h2>
             <p>Report pages are used for assessment and performance review.</p>
@@ -242,6 +297,7 @@
                 <li><strong>Progress Report:</strong> Downloads checkpoint progress with action plan, responsible person, remarks and revised score.</li>
                 <li><strong>KPI Report:</strong> Opens performance trend for KPI reports and Excel download.</li>
                 <li><strong>Outcome Report:</strong> Opens performance trend for Outcome reports and Excel download.</li>
+                <li><strong>Certification Report:</strong> Opens the Certification Dashboard from Report Shortcuts.</li>
             </ul>
             <a class="sq-doc-top" href="#top">Back to top</a>
         </section>
@@ -334,6 +390,11 @@
                         <td>Verify the NIN number before updating Facility Profile.</td>
                     </tr>
                     <tr>
+                        <td><span class="sq-doc-error-code">Applied date cannot be greater than certification date</span></td>
+                        <td>The optional certification applied date is later than the selected certification date.</td>
+                        <td>Select an applied date on or before the certification date, or leave Applied Date blank.</td>
+                    </tr>
+                    <tr>
                         <td><span class="sq-doc-error-code">Weak password</span></td>
                         <td>Password does not match strength rule.</td>
                         <td>Use at least 8 characters with uppercase, lowercase, digit and special character.</td>
@@ -375,9 +436,10 @@
                 <div class="sq-doc-node"><b>6</b><strong>Action Plan</strong><span>Prepare action plan, owner and target date.</span></div>
                 <div class="sq-doc-node"><b>7</b><strong>Gap Closure</strong><span>Update closure, revised score and optional evidence.</span></div>
                 <div class="sq-doc-node"><b>8</b><strong>Reports</strong><span>Review dashboard and download reports.</span></div>
-                <div class="sq-doc-node"><b>9</b><strong>KPI/Outcome</strong><span>Fill monthly performance indicators.</span></div>
+                <div class="sq-doc-node"><b>9</b><strong>Certification</strong><span>Save State/National certification and monitor renewal status.</span></div>
+                <div class="sq-doc-node"><b>10</b><strong>KPI/Outcome</strong><span>Fill monthly performance indicators.</span></div>
             </div>
-            <div class="sq-doc-note">For best results, complete checklist first, then CQI action plan and gap closure, then generate final reports.</div>
+            <div class="sq-doc-note">For best results, complete checklist first, then CQI action plan and gap closure, then generate final reports and update certification status where applicable.</div>
             <a class="sq-doc-top" href="#top">Back to top</a>
         </section>
 
@@ -463,6 +525,8 @@
                     <tr><td>Dashboard</td><td><span class="sq-doc-path">api/assessment/v1/dashboard_insights.php</span></td><td>Supplies main dashboard cards, baseline/final score, charts, outcome month status and checkpoint status.</td></tr>
                     <tr><td>Reports</td><td><span class="sq-doc-path">api/reports/v1/checkpoint_scorecard.php</span><br><span class="sq-doc-path">api/reports/v1/checkpoint_progress_report.php</span></td><td>Downloads standard checklist scorecard and checkpoint progress/action-plan Excel reports.</td></tr>
                     <tr><td>Performance</td><td><span class="sq-doc-path">api/performance/v1/dashboard.php</span><br><span class="sq-doc-path">api/performance/v1/kpi_list.php</span><br><span class="sq-doc-path">api/performance/v1/kpi_save.php</span><br><span class="sq-doc-path">api/performance/v1/outcome_list.php</span><br><span class="sq-doc-path">api/performance/v1/outcome_save.php</span><br><span class="sq-doc-path">api/performance/v1/trend.php</span></td><td>Loads KPI/Outcome indicators, saves monthly entries and provides month-wise trend data and report downloads.</td></tr>
+                    <tr><td>Certification</td><td><span class="sq-doc-path">api/certification/v1/dashboard.php</span><br><span class="sq-doc-path">api/certification/v1/save.php</span><br><span class="sq-doc-path">api/certification/v1/list.php</span><br><span class="sq-doc-path">api/certification/v1/history.php</span><br><span class="sq-doc-path">api/certification/v1/renewal_status.php</span><br><span class="sq-doc-path">api/service/CertificationService.php</span><br><span class="sq-doc-path">api/service/CertificationValidator.php</span></td><td>Saves State/National certification, validates applied date and certification date rules, calculates validity and returns dashboard/history/renewal data.</td></tr>
+                    <tr><td>AI Chat Assistant</td><td><span class="sq-doc-path">api/chat/v1/send.php</span><br><span class="sq-doc-path">api/chat/v1/history.php</span><br><span class="sq-doc-path">api/chat/v1/clear.php</span><br><span class="sq-doc-path">api/service/ChatAssistantService.php</span></td><td>Stores per-user chat history and returns SaQshi workflow assistant responses for assessment, CQI, reports, certification and performance questions.</td></tr>
                     <tr><td>Facility user</td><td><span class="sq-doc-path">api/admin/v1/users.php</span><br><span class="sq-doc-path">api/admin/v1/facilities.php</span><br><span class="sq-doc-path">api/facility/v1/masters/facilities/profile.php</span><br><span class="sq-doc-path">api/facility/v1/masters/facilities/update.php</span></td><td>Loads and updates logged-in user profile and facility profile with duplicate NIN check and geo coordinates.</td></tr>
                     <tr><td>Framework and masters</td><td><span class="sq-doc-path">api/framework/v1/departments.php</span><br><span class="sq-doc-path">api/framework/v1/concerns.php</span><br><span class="sq-doc-path">api/framework/v1/subtypes.php</span><br><span class="sq-doc-path">api/framework/v1/checkpoints.php</span><br><span class="sq-doc-path">api/config/frameworks/saqshi-nqas.json</span><br><span class="sq-doc-path">api/config/masters/*.json</span></td><td>Loads framework, department, area of concern, subtype, checkpoint and master reference data.</td></tr>
                     <tr><td>Core and services</td><td><span class="sq-doc-path">api/core/Response.php</span><br><span class="sq-doc-path">api/core/Validator.php</span><br><span class="sq-doc-path">api/core/Crypto.php</span><br><span class="sq-doc-path">api/service/PerformanceService.php</span><br><span class="sq-doc-path">api/service/FormulaEngine.php</span></td><td>Shared response format, validation, encryption/decryption, performance calculations and formula handling.</td></tr>
@@ -486,8 +550,10 @@
                     <tr><td>CQI</td><td><span class="sq-doc-path">ui/pages/cqi/gap-analysis.*</span><br><span class="sq-doc-path">ui/pages/cqi/action-plan.*</span><br><span class="sq-doc-path">ui/pages/cqi/closure.*</span></td><td>Gap review, action-plan entry/update and gap closure with revised score and evidence.</td></tr>
                     <tr><td>Performance</td><td><span class="sq-doc-path">ui/pages/performance/dashboard.*</span><br><span class="sq-doc-path">ui/pages/performance/kpi.*</span><br><span class="sq-doc-path">ui/pages/performance/outcome.*</span><br><span class="sq-doc-path">ui/pages/performance/trend.*</span><br><span class="sq-doc-path">ui/pages/performance/indicator.*</span></td><td>KPI/Outcome monthly entry, dashboard cards, charts, trend options and Excel downloads.</td></tr>
                     <tr><td>Reports</td><td><span class="sq-doc-path">ui/pages/reports/dashboard.*</span><br><span class="sq-doc-path">ui/pages/reports/score.*</span><br><span class="sq-doc-path">ui/pages/reports/progress.*</span></td><td>Report shortcuts, scorecard download and progress/action-plan download.</td></tr>
+                    <tr><td>Certification</td><td><span class="sq-doc-path">ui/pages/certification/dashboard.*</span><br><span class="sq-doc-path">ui/pages/certification/manage.*</span><br><span class="sq-doc-path">ui/pages/certification/history.*</span><br><span class="sq-doc-path">ui/pages/certification/renewal.*</span></td><td>Certification dashboard, add certification form, history list and renewal status view.</td></tr>
+                    <tr><td>AI Chat Assistant</td><td><span class="sq-doc-path">ui/components/chat-assistant/chat-assistant.html</span><br><span class="sq-doc-path">ui/components/chat-assistant/chat-assistant.css</span><br><span class="sq-doc-path">ui/components/chat-assistant/chat-assistant.js</span><br><span class="sq-doc-path">ui/layouts/dashboard.html</span></td><td>Floating assistant component loaded globally by the dashboard layout.</td></tr>
                     <tr><td>Facility user profile</td><td><span class="sq-doc-path">ui/pages/facilityusers/users.*</span><br><span class="sq-doc-path">ui/pages/facilityusers/users_profile.*</span><br><span class="sq-doc-path">ui/pages/facilityusers/facilities.*</span><br><span class="sq-doc-path">ui/pages/facilityusers/users_facilities.*</span></td><td>Logged-in user profile update and facility profile update.</td></tr>
-                    <tr><td>Documentation</td><td><span class="sq-doc-path">ui/help/documentation.html</span></td><td>User and developer documentation with search, workflow, error reference and language toggle.</td></tr>
+                    <tr><td>Documentation</td><td><span class="sq-doc-path">ui/help/documentation.html</span></td><td>English user and developer documentation with search, workflow and error reference.</td></tr>
                     <tr><td>Shared UI assets</td><td><span class="sq-doc-path">ui/assets/css/sq-ui.css</span><br><span class="sq-doc-path">ui/assets/css/base/*</span><br><span class="sq-doc-path">ui/assets/css/components/*</span><br><span class="sq-doc-path">ui/assets/css/themes/*</span><br><span class="sq-doc-path">ui/assets/js/core/api.js</span><br><span class="sq-doc-path">ui/assets/js/core/upload.js</span><br><span class="sq-doc-path">ui/assets/js/core/validator.js</span></td><td>Shared theme, compact layout, API helper, upload helper, form validation and reusable UI styling.</td></tr>
                 </tbody>
             </table>
@@ -499,274 +565,12 @@
 <script>
     (function () {
         const search = document.getElementById("docSearch");
-        const language = document.getElementById("docLanguage");
         const noResults = document.getElementById("docNoResults");
         const sections = Array.from(document.querySelectorAll(".sq-doc-main section"));
         const tabs = Array.from(document.querySelectorAll("[data-guide-tab]"));
         const guideNavItems = Array.from(document.querySelectorAll("[data-guide-nav]"));
         const navLinks = Array.from(document.querySelectorAll(".sq-doc-nav a[href^='#']:not(.sq-doc-tab)"));
-        const originalText = new WeakMap();
         let activeGuide = "user";
-        const translations = {
-            hi: {
-                "SaQshi Help": "SaQshi Help",
-                "User Documentation | Version 1.0": "User Guide | Version 1.0",
-                "Search documentation...": "Yahan search karein...",
-                "Overview": "Overview",
-                "Assessment": "Assessment",
-                "Department Activation": "Department activate karna",
-                "Assessor Info": "Assessor Info",
-                "Checklist Entry": "Checklist bharna",
-                "CQI: Gap, Action, Closure": "CQI: Gap, Action, Closure",
-                "KPI & Outcome": "KPI aur Outcome",
-                "Reports": "Reports",
-                "Profile & Facility": "Profile aur Facility",
-                "Recommended Workflow": "Kaam karne ka sahi flow",
-                "SaQshi User Documentation": "SaQshi User Guide",
-                "This guide explains what each page is used for and what actions a facility user can perform.": "Is guide mein bataya gaya hai ki har page ka kya use hai aur facility user wahan kya-kya kaam kar sakta hai.",
-                "Performance Monitoring": "Performance Monitoring",
-                "SaQshi supports facility quality assessment, checklist scoring, continuous quality improvement, reporting, and monthly KPI/Outcome monitoring.": "SaQshi mein facility assessment, checklist score, CQI improvement, reports aur monthly KPI/Outcome monitoring ek jagah manage hota hai.",
-                "1. Create": "1. Create",
-                "2. Activate": "2. Activate",
-                "3. Assess": "3. Assess",
-                "4. Improve": "4. Improve",
-                "Create or continue an active assessment.": "Naya assessment banayein ya active assessment continue karein.",
-                "Enable applicable departments.": "Jo departments facility par lagu hain unko activate karein.",
-                "Fill assessor info and checklist responses.": "Assessor info aur checklist responses fill karein.",
-                "Use gap analysis, action plan and closure.": "Gap analysis dekhein, action plan banayein aur closure update karein.",
-                "Assessment Pages": "Assessment Pages",
-                "Assessment List": "Assessment List",
-                "Shows current and previous assessments for the facility with status and score.": "Facility ke current aur purane assessments status aur score ke saath dikhte hain.",
-                "Use Continue to open the checklist for in-progress assessment.": "In-progress assessment ke liye Continue se checklist open karein.",
-                "Review completed, cancelled and active assessment records.": "Completed, cancelled aur active assessment records yahan review karein.",
-                "Create Assessment": "Create Assessment",
-                "Create a new assessment only when no active assessment exists.": "Naya assessment tabhi banega jab koi active assessment nahi hai.",
-                "Enter assessment name, framework and date period.": "Assessment name, framework aur date period enter karein.",
-                "If an active assessment exists, complete or cancel it before creating a new one.": "Agar active assessment hai, to naya banane se pehle usko complete ya cancel karein.",
-                "Use this page to activate only departments applicable to the facility assessment.": "Is page par sirf wahi departments activate karein jo facility assessment mein applicable hain.",
-                "Activated departments become available in Assessor Info, Checklist, KPI and Outcome workflows.": "Activated departments Assessor Info, Checklist, KPI aur Outcome flow mein dikhne lagenge.",
-                "Activated department buttons become locked for the current assessment.": "Jo department activate ho gaya, current assessment ke liye uska button locked rahega.",
-                "Inactive departments are not included in checklist entry.": "Inactive departments checklist entry mein include nahi honge.",
-                "Capture assessment team details before checklist entry.": "Checklist start karne se pehle assessment team details save karein.",
-                "Select an activated department.": "Activated department select karein.",
-                "Enter assessor name, assessee name, date of assessment and assessment type.": "Assessor name, assessee name, assessment date aur assessment type fill karein.",
-                "If information already exists, the page shows saved details for review or update.": "Agar details pehle se saved hain, page unko review/update ke liye dikhata hai.",
-                "Checklist entry is performed one checkpoint at a time for selected department, area of concern and subtype.": "Selected department, area of concern aur subtype ke checkpoints ek-ek karke fill hote hain.",
-                "Select department, area of concern, subtype and assessment method if available.": "Department, area of concern, subtype aur agar available ho to assessment method select karein.",
-                "Score each checkpoint using 0, 1 or 2.": "Har checkpoint ko 0, 1 ya 2 score dein.",
-                "0 means non-compliance, 1 means partial compliance, 2 means full compliance.": "0 ka matlab non-compliance, 1 partial compliance aur 2 full compliance hai.",
-                "Use Next and Back to move between checkpoints.": "Checkpoints ke beech move karne ke liye Next aur Back use karein.",
-                "If all checkpoints are completed, use Edit/Update to revise responses.": "Agar sab checkpoints complete ho gaye hain, changes ke liye Edit/Update use karein.",
-                "Gap Analysis": "Gap Analysis",
-                "Action Plan": "Action Plan",
-                "Gap Closure": "Gap Closure",
-                "Page": "Page",
-                "Purpose": "Purpose",
-                "User Action": "User Action",
-                "Shows non-compliant and partially compliant checkpoints.": "Non-compliant aur partially compliant checkpoints yahan dikhte hain.",
-                "Review gaps by department and area of concern before planning improvement.": "Improvement planning se pehle department aur area of concern ke hisab se gaps review karein.",
-                "Creates action plans for every checkpoint gap.": "Har checkpoint gap ke liye action plan banaya jata hai.",
-                "Select department/area/subtype, review suggested action plan, enter facility action plan, responsible person and target date.": "Department/area/subtype select karein, suggested action plan dekhein, facility action plan, responsible person aur target date fill karein.",
-                "Records closure evidence and revised score after action plan completion.": "Action plan complete hone ke baad closure evidence aur revised score record hota hai.",
-                "Upload optional evidence, update revised score, remarks and closure status.": "Optional evidence upload karein, revised score, remarks aur closure status update karein.",
-                "Final score is calculated using revised score where available; otherwise original checklist score is used.": "Jahan revised score available hai wahan wahi final score mein use hota hai, warna original checklist score use hota hai.",
-                "KPI and Outcome Performance Monitoring": "KPI aur Outcome Performance Monitoring",
-                "Performance pages capture monthly indicators for activated departments.": "Performance pages activated departments ke monthly indicators capture karte hain.",
-                "Indicator Entry": "Indicator Entry",
-                "Select KPI or Outcome.": "KPI ya Outcome select karein.",
-                "Select activated department and calendar month.": "Activated department aur calendar month select karein.",
-                "Enter numerator, denominator, result and remarks.": "Numerator, denominator, result aur remarks enter karein.",
-                "If denominator is N/A, denominator is locked and result is taken directly from numerator.": "Agar denominator N/A hai, denominator box locked rahega aur result numerator se liya jayega.",
-                "Use Save & Next to complete all indicators for the selected month.": "Selected month ke sab indicators complete karne ke liye Save & Next use karein.",
-                "Performance Dashboard and Trend": "Performance Dashboard aur Trend",
-                "Dashboard shows total months, entries, KPI indicator count and Outcome indicator count.": "Dashboard total months, entries, KPI indicator count aur Outcome indicator count dikhata hai.",
-                "Trend page shows month-wise KPI and Outcome chart views.": "Trend page month-wise KPI aur Outcome charts dikhata hai.",
-                "Use chart options to switch between line, area and bar views.": "Chart option se line, area aur bar view change kar sakte hain.",
-                "Use KPI/Outcome Excel buttons to download formatted performance reports.": "KPI/Outcome Excel buttons se formatted performance reports download karein.",
-                "Report pages are used for assessment and performance review.": "Report pages assessment aur performance review ke liye use hote hain.",
-                "Report Dashboard:": "Report Dashboard:",
-                "Summary of assessments, score, gaps, KPI months and Outcome months.": "Assessment, score, gaps, KPI months aur Outcome months ka summary yahan milta hai.",
-                "Score Report:": "Score Report:",
-                "Downloads full checklist scorecard in standard format.": "Full checklist scorecard standard format mein download hota hai.",
-                "Progress Report:": "Progress Report:",
-                "Downloads checkpoint progress with action plan, responsible person, remarks and revised score.": "Checkpoint progress action plan, responsible person, remarks aur revised score ke saath download hota hai.",
-                "KPI Report:": "KPI Report:",
-                "Opens performance trend for KPI reports and Excel download.": "KPI report aur Excel download ke liye performance trend open hota hai.",
-                "Outcome Report:": "Outcome Report:",
-                "Opens performance trend for Outcome reports and Excel download.": "Outcome report aur Excel download ke liye performance trend open hota hai.",
-                "Profile and Facility Pages": "Profile aur Facility Pages",
-                "My Profile": "My Profile",
-                "Facility Profile": "Facility Profile",
-                "Facility user can update own name, mobile, email and password.": "Facility user apna name, mobile, email aur password update kar sakta hai.",
-                "Password must include uppercase, lowercase, digit, special character and minimum 8 characters.": "Password mein uppercase, lowercase, digit, special character aur minimum 8 characters hone chahiye.",
-                "Profile fields are saved securely.": "Profile details securely save hote hain.",
-                "Shows facility details from master data and allows update where permitted.": "Facility details master data se dikhte hain, aur allowed fields update kiye ja sakte hain.",
-                "State, district, block and facility type are shown as names.": "State, district, block aur facility type names ke form mein dikhte hain.",
-                "Geo coordinates can be captured from current location.": "Geo coordinates current location se capture kiye ja sakte hain.",
-                "NIN number is checked for duplicate before update.": "NIN number update se pehle duplicate check hota hai.",
-                "Errors & Messages": "Errors aur Messages",
-                "Errors and Messages": "Errors aur Messages",
-                "If any page shows an error or warning, use this list to understand the reason and the next action.": "Agar kisi page par error ya warning aaye, to is list se reason aur next step samajh sakte hain.",
-                "Message / Error": "Message / Error",
-                "Meaning": "Meaning",
-                "What user should do": "User kya kare",
-                "Validation failed": "Validation failed",
-                "Required information is missing or wrong, for example facility ID, assessment ID, department, month or mandatory field.": "Koi required detail missing ya wrong hai, jaise facility ID, assessment ID, department, month ya mandatory field.",
-                "Check the selected facility, active assessment, department and form fields, then try again.": "Selected facility, active assessment, department aur form fields check karke dobara try karein.",
-                "Facility ID is required": "Facility ID is required",
-                "The page could not identify the logged-in facility.": "Page logged-in facility ko identify nahi kar pa raha hai.",
-                "Refresh once. If it still appears, logout and login again so facility session loads properly.": "Ek baar refresh karein. Agar fir bhi aaye to logout karke dobara login karein, taki facility session properly load ho.",
-                "No active assessment": "No active assessment",
-                "No active assessment is available for checklist, department, KPI or Outcome workflow.": "Checklist, department, KPI ya Outcome flow ke liye active assessment available nahi hai.",
-                "Create a new assessment or continue the existing active assessment from Assessment List.": "Naya assessment create karein ya Assessment List se existing active assessment continue karein.",
-                "ACTIVE assessment already exists": "ACTIVE assessment already exists",
-                "A new assessment cannot be created while another assessment is active.": "Jab ek assessment active hai tab naya assessment create nahi hoga.",
-                "Complete or cancel the current assessment before creating a new one.": "Naya assessment banane se pehle current assessment complete ya cancel karein.",
-                "Already completed": "Already completed",
-                "All checkpoints, action plans, closures, KPI or Outcome indicators are already entered for the selected scope.": "Selected scope ke liye checkpoints, action plans, closures, KPI ya Outcome indicators already entered hain.",
-                "Use Edit/Update if changes are needed, otherwise move to the next department, month or report.": "Agar change chahiye to Edit/Update use karein, warna next department, month ya report par jayein.",
-                "No data found": "No data found",
-                "No record exists for the selected filter, department, month or assessment.": "Selected filter, department, month ya assessment ke liye record available nahi hai.",
-                "Change the filter or complete the related entry first.": "Filter change karein ya pehle related entry complete karein.",
-                "Save failed": "Save failed",
-                "The entered data could not be saved because of server, database or validation issue.": "Server, database ya validation issue ke karan data save nahi ho paya.",
-                "Check required fields and internet/server connection, then save again. If repeated, contact support with page name and time.": "Required fields aur internet/server connection check karke fir save karein. Repeat ho to page name aur time ke saath support ko batayein.",
-                "404 Not Found": "404 Not Found",
-                "The page or API URL is not available at the requested path.": "Requested path par page ya API URL available nahi hai.",
-                "Open the page from the sidebar/menu instead of browser refresh on a wrong route. If API is missing, inform administrator.": "Wrong route par browser refresh karne ke bajay sidebar/menu se page open karein. API missing ho to administrator ko batayein.",
-                "500 Internal Server Error": "500 Internal Server Error",
-                "Server-side code failed while loading or saving data.": "Data load ya save karte time server-side code fail hua.",
-                "Try once again. If it continues, share the page name, action and time with the technical team.": "Ek baar fir try karein. Agar issue rahe, page name, action aur time technical team ko share karein.",
-                "Session expired / Unauthorized": "Session expired / Unauthorized",
-                "Login session is missing or user is not allowed for that action.": "Login session missing hai ya user ko us action ki permission nahi hai.",
-                "Login again. Use only pages assigned to the facility user role.": "Dobara login karein. Sirf facility user role wale pages use karein.",
-                "Duplicate NIN number": "Duplicate NIN number",
-                "The entered NIN number is already mapped with another facility.": "Entered NIN number kisi aur facility ke saath already mapped hai.",
-                "Verify the NIN number before updating Facility Profile.": "Facility Profile update karne se pehle NIN number verify karein.",
-                "Weak password": "Weak password",
-                "Password does not match strength rule.": "Password strength rule match nahi kar raha hai.",
-                "Use at least 8 characters with uppercase, lowercase, digit and special character.": "Minimum 8 characters use karein, jisme uppercase, lowercase, digit aur special character ho.",
-                "Captcha failed": "Captcha failed",
-                "Captcha answer is wrong or expired on login.": "Login par captcha answer wrong hai ya expire ho gaya hai.",
-                "Enter the latest captcha shown on screen and login again.": "Screen par jo latest captcha hai wahi enter karke login karein.",
-                "Upload failed / invalid file": "Upload failed / invalid file",
-                "Evidence file type, size or upload process is not accepted.": "Evidence file ka type, size ya upload process accepted nahi hua.",
-                "Upload a valid image, PDF, Word, Excel or camera image. Remove wrong file and upload again if needed.": "Valid image, PDF, Word, Excel ya camera image upload karein. Wrong file ho to remove karke dobara upload karein.",
-                "Location permission denied": "Location permission denied",
-                "Browser did not allow current location for facility geo coordinates.": "Browser ne facility geo coordinates ke liye current location allow nahi ki.",
-                "Allow location permission in browser and try capture location again.": "Browser mein location permission allow karke capture location dobara try karein.",
-                "NaN / blank progress": "NaN / blank progress",
-                "Score or progress cannot be calculated because total checkpoints or completed score is missing.": "Total checkpoints ya completed score missing hone ke karan score/progress calculate nahi ho pa raha.",
-                "Complete checklist entries first, then refresh dashboard/report.": "Pehle checklist entries complete karein, phir dashboard/report refresh karein.",
-                "When reporting an issue, mention page name, selected assessment, department/month, exact message and the time when the error appeared.": "Issue report karte time page name, selected assessment, department/month, exact message aur error ka time zaroor batayein.",
-                "Recommended SaQshi workflow": "SaQshi ka suggested workflow",
-                "Create": "Create",
-                "Activate": "Activate",
-                "Assessor Info": "Assessor Info",
-                "Checklist": "Checklist",
-                "Create assessment when no active assessment exists.": "Jab active assessment na ho tab assessment create karein.",
-                "Activate applicable facility departments.": "Facility ke applicable departments activate karein.",
-                "Fill assessor and assessee details department-wise.": "Department-wise assessor aur assessee details fill karein.",
-                "Score checkpoints as 0, 1 or 2.": "Checkpoints ko 0, 1 ya 2 score dein.",
-                "Review non-compliance and partial compliance gaps.": "Non-compliance aur partial compliance gaps review karein.",
-                "Prepare action plan, owner and target date.": "Action plan, owner aur target date prepare karein.",
-                "Update closure, revised score and optional evidence.": "Closure, revised score aur optional evidence update karein.",
-                "Review dashboard and download reports.": "Dashboard review karein aur reports download karein.",
-                "Fill monthly performance indicators.": "Monthly performance indicators fill karein.",
-                "For best results, complete checklist first, then CQI action plan and gap closure, then generate final reports.": "Best result ke liye pehle checklist complete karein, phir CQI action plan aur gap closure karein, uske baad final reports generate karein.",
-                "User": "User",
-                "Developer": "Developer",
-                "User Guide": "User Guide",
-                "Developer Guide": "Developer Guide",
-                "Developer Overview": "Developer Overview",
-                "Tech Specs": "Tech Specs",
-                "SaQshi Developer Guide": "SaQshi Developer Guide",
-                "Technical specification, architecture, API and UI reference for developers maintaining the facility-user application.": "Facility-user application maintain karne wale developers ke liye technical specification, architecture, API aur UI reference.",
-                "Technical Specification": "Technical Specification",
-                "Technology Used": "Technology Used",
-                "Frontend: HTML, CSS and vanilla JavaScript page bundles.": "Frontend: HTML, CSS aur vanilla JavaScript page bundles.",
-                "Backend: PHP versioned REST-style APIs under": "Backend: PHP versioned REST-style APIs yahan:",
-                "Data: MySQL tables, JSON framework/master files and uploaded evidence files.": "Data: MySQL tables, JSON framework/master files aur uploaded evidence files.",
-                "Reports: PHP Excel generation for scorecard, progress, KPI and Outcome downloads.": "Reports: scorecard, progress, KPI aur Outcome downloads ke liye PHP Excel generation.",
-                "Security: session auth, CSRF support, captcha login, password hashing and encryption helpers.": "Security: session auth, CSRF support, captcha login, password hashing aur encryption helpers.",
-                "Framework and Master Data": "Framework aur Master Data",
-                "NQAS/SaQshi checklist framework is loaded from": "NQAS/SaQshi checklist framework yahan se load hota hai:",
-                "Departments, assessment methods, facility types and facility masters are under": "Departments, assessment methods, facility types aur facility masters yahan hain:",
-                "KPI, Outcome, formula, target and validation metadata are under": "KPI, Outcome, formula, target aur validation metadata yahan hain:",
-                "Architecture": "Architecture",
-                "The application is organized as a lightweight facility-user portal with shared UI components, page-level modules and PHP service-backed APIs.": "Application ek lightweight facility-user portal ki tarah organized hai, jisme shared UI components, page-level modules aur PHP service-backed APIs hain.",
-                "UI Layer": "UI Layer",
-                "API and Service Layer": "API aur Service Layer",
-                "UI Page": "UI Page",
-                "HTML/CSS/JS bundle handles screen and events.": "HTML/CSS/JS bundle screen aur events handle karta hai.",
-                "API Helper": "API Helper",
-                "JS calls versioned API endpoint.": "JS versioned API endpoint call karta hai.",
-                "PHP Service": "PHP Service",
-                "Validation, business rule and DB/config access.": "Validation, business rule aur DB/config access handle hota hai.",
-                "Response": "Response",
-                "JSON response updates UI state and messages.": "JSON response UI state aur messages update karta hai.",
-                "API Reference": "API Reference",
-                "UI Reference": "UI Reference",
-                "This section explains the main API and UI files used by the facility-user workflow.": "Is section mein facility-user workflow ke main API aur UI files ka use explain kiya gaya hai.",
-                "How pages are organized": "Pages ka structure",
-                "How APIs are organized": "API ka structure",
-                "Each feature page normally has four files:": "Har feature page mein normally chaar files hoti hain:",
-                "Shared layout and navigation are loaded from": "Shared layout aur navigation yahan se load hote hain:",
-                "Facility-user pages are kept under": "Facility-user pages yahan rakhe gaye hain:",
-                "Versioned endpoints are grouped under": "Versioned endpoints yahan group kiye gaye hain:",
-                "Shared helpers are under": "Shared helpers yahan hain:",
-                "and business services under": "aur business services yahan hain:",
-                "JSON masters and framework data are under": "JSON masters aur framework data yahan hain:",
-                "Main API endpoints used by assessment, CQI, performance, reports, login and facility profile pages.": "Assessment, CQI, performance, reports, login aur facility profile pages mein use hone wale main API endpoints.",
-                "API file / link": "API file / link",
-                "Area": "Area",
-                "Auth": "Auth",
-                "Assessment master": "Assessment master",
-                "Department activation": "Department activation",
-                "Assessor info": "Assessor info",
-                "Checklist": "Checklist",
-                "CQI": "CQI",
-                "Evidence files": "Evidence files",
-                "Dashboard": "Dashboard",
-                "Performance": "Performance",
-                "Facility user": "Facility user",
-                "Framework and masters": "Framework aur masters",
-                "Core and services": "Core aur services",
-                "Login, logout, current user/session check and captcha generation.": "Login, logout, current user/session check aur captcha generation ke liye.",
-                "Create, list, detect active, cancel and complete facility assessments.": "Facility assessments create, list, active detect, cancel aur complete karne ke liye.",
-                "Load applicable departments and save activated/inactive status for current assessment.": "Applicable departments load karne aur current assessment ke activated/inactive status save karne ke liye.",
-                "Get and save assessor, assessee, assessment date and assessment type department-wise.": "Department-wise assessor, assessee, assessment date aur assessment type get/save karne ke liye.",
-                "Load checkpoints one by one, save 0/1/2 responses and calculate completion progress.": "Checkpoints one-by-one load karne, 0/1/2 response save karne aur progress calculate karne ke liye.",
-                "Show gaps, save action plans, update closure, revised score, responsible person and target date.": "Gaps dikhane, action plans save karne, closure, revised score, responsible person aur target date update karne ke liye.",
-                "Upload and delete optional evidence files such as image, camera image, PDF, Word or Excel.": "Image, camera image, PDF, Word ya Excel jaise optional evidence files upload/delete karne ke liye.",
-                "Supplies main dashboard cards, baseline/final score, charts, outcome month status and checkpoint status.": "Main dashboard cards, baseline/final score, charts, outcome month status aur checkpoint status provide karta hai.",
-                "Downloads standard checklist scorecard and checkpoint progress/action-plan Excel reports.": "Standard checklist scorecard aur checkpoint progress/action-plan Excel reports download karne ke liye.",
-                "Loads KPI/Outcome indicators, saves monthly entries and provides month-wise trend data and report downloads.": "KPI/Outcome indicators load karta hai, monthly entries save karta hai aur month-wise trend/report download data deta hai.",
-                "Loads and updates logged-in user profile and facility profile with duplicate NIN check and geo coordinates.": "Logged-in user profile aur facility profile update karta hai, duplicate NIN check aur geo coordinates ke saath.",
-                "Loads framework, department, area of concern, subtype, checkpoint and master reference data.": "Framework, department, area of concern, subtype, checkpoint aur master reference data load karta hai.",
-                "Shared response format, validation, encryption/decryption, performance calculations and formula handling.": "Shared response format, validation, encryption/decryption, performance calculations aur formula handling ke liye.",
-                "Main UI pages and shared assets used in the facility-user application.": "Facility-user application mein use hone wale main UI pages aur shared assets.",
-                "UI files": "UI files",
-                "Layout and shell": "Layout aur shell",
-                "Main dashboard": "Main dashboard",
-                "Facility user profile": "Facility user profile",
-                "Documentation": "Documentation",
-                "Shared UI assets": "Shared UI assets",
-                "Application frame, sidebar, header, footer, routing and component loading.": "Application frame, sidebar, header, footer, routing aur component loading ke liye.",
-                "Professional login page with captcha and authentication flow.": "Captcha aur authentication flow wala professional login page.",
-                "Facility dashboard with assessment counts, baseline/final score, charts, progress and shortcuts.": "Facility dashboard jisme assessment counts, baseline/final score, charts, progress aur shortcuts hote hain.",
-                "Create/list assessments, activate departments, capture assessor info and complete checklist checkpoint by checkpoint.": "Assessment create/list, department activation, assessor info capture aur checkpoint-by-checkpoint checklist complete karne ke liye.",
-                "Gap review, action-plan entry/update and gap closure with revised score and evidence.": "Gap review, action-plan entry/update aur revised score/evidence ke saath gap closure ke liye.",
-                "KPI/Outcome monthly entry, dashboard cards, charts, trend options and Excel downloads.": "KPI/Outcome monthly entry, dashboard cards, charts, trend options aur Excel downloads ke liye.",
-                "Report shortcuts, scorecard download and progress/action-plan download.": "Report shortcuts, scorecard download aur progress/action-plan download ke liye.",
-                "Logged-in user profile update and facility profile update.": "Logged-in user profile aur facility profile update ke liye.",
-                "User and developer documentation with search, workflow, error reference and language toggle.": "Search, workflow, error reference aur language toggle ke saath user/developer documentation.",
-                "Shared theme, compact layout, API helper, upload helper, form validation and reusable UI styling.": "Shared theme, compact layout, API helper, upload helper, form validation aur reusable UI styling ke liye.",
-                "When adding a new page, keep the same page bundle pattern: HTML for markup, JS for API/state, CSS for local styling and JSON for metadata/sidebar configuration.": "Naya page add karte time same bundle pattern rakhein: HTML markup ke liye, JS API/state ke liye, CSS local styling ke liye aur JSON metadata/sidebar configuration ke liye.",
-                "Back to top": "Top par jayein",
-                "No documentation section matched your search.": "Is search se koi documentation section nahi mila."
-            }
-        };
 
         function normalize(value) {
             return String(value || "").toLowerCase().trim();
@@ -782,6 +586,7 @@
                     section.classList.remove("sq-doc-hidden");
                     return;
                 }
+
                 section.classList.remove("sq-doc-guide-hidden");
                 const match = !term || normalize(section.textContent).includes(term);
                 section.classList.toggle("sq-doc-hidden", !match);
@@ -822,6 +627,7 @@
                 const target = hash && !["#user-guide", "#developer-guide"].includes(hash)
                     ? document.querySelector(hash)
                     : null;
+
                 if (target && target.dataset.guide === activeGuide) {
                     target.scrollIntoView({ behavior: "smooth", block: "start" });
                 } else {
@@ -830,45 +636,7 @@
             }
         }
 
-        function textNodes(root) {
-            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-                acceptNode(node) {
-                    return normalize(node.nodeValue)
-                        ? NodeFilter.FILTER_ACCEPT
-                        : NodeFilter.FILTER_REJECT;
-                }
-            });
-            const nodes = [];
-            while (walker.nextNode()) nodes.push(walker.currentNode);
-            return nodes;
-        }
-
-        function applyLanguage() {
-            const lang = language.value;
-            const dict = translations[lang] || {};
-
-            textNodes(document.body).forEach(function (node) {
-                if (!node.parentElement || node.parentElement.id === "docLanguage") return;
-                if (!originalText.has(node)) {
-                    originalText.set(node, node.nodeValue);
-                }
-                const original = originalText.get(node);
-                node.nodeValue = lang === "en" ? original : (dict[original.trim()] || original);
-            });
-
-            if (lang === "hi") {
-                search.placeholder = "Yahan search karein...";
-                search.setAttribute("aria-label", "Yahan search karein");
-            } else {
-                search.placeholder = "Search documentation...";
-                search.setAttribute("aria-label", "Search documentation");
-            }
-
-            filterDocs();
-        }
-
         search.addEventListener("input", filterDocs);
-        language.addEventListener("change", applyLanguage);
         tabs.forEach(function (tab) {
             tab.addEventListener("click", function () {
                 window.setTimeout(function () { applyGuide(true); }, 0);
@@ -880,3 +648,4 @@
 </script>
 </body>
 </html>
+
