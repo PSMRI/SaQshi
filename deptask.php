@@ -86,7 +86,15 @@ if (!empty($_SESSION['assperiod'])) {
                                 <!-- Name -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold text-primary small">Assessment Name</label>
-                                    <input type="text" name="ass_name" class="form-control form-control-sm" required>
+                                    <?php
+$assessmentName = date('Ymd') . "_Assessment";
+?>
+                                   <input
+    type="text"
+    class="form-control"
+    name="ass_name"
+    value="<?= $assessmentName; ?>"
+    readonly>
                                 </div>
 
                                 <!-- Start Date -->

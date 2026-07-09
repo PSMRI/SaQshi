@@ -97,7 +97,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rt']) && $_POST['rt']
         } else {
             echo "<div class='alert alert-danger'>No records found.</div>";
         }
-    } else {
+    }  elseif ($F == 1) {
+        $query = "CALL chckpi_rpt(?)";
+        $stmt2 = $con->prepare($query);
+        $stmt2->bind_param("i", $Fa);
+        $stmt2->execute();
+        $result = $stmt2->get_result();
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $metric_name = $row['metric_name'];
+                $month_in = $row['month_in'];
+                $metric_value = $row['metric_value'];
+                if (!in_array($month_in, $months)) {
+                    $months[] = $month_in;
+                }
+                $month_wise_data[$metric_name][$month_in] = $metric_value;
+                $indicators[$metric_name] = $metric_name;
+            }
+        } else {
+            echo "<div class='alert alert-danger'>No records found.</div>";
+        }
+    }else {
         echo "<div class='alert alert-danger'>No records found.</div>";
     }
 

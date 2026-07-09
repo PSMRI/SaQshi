@@ -213,21 +213,49 @@ $pbar = ($progress < 34) ? "bg-danger" : (($progress < 67) ? "bg-warning" : "bg-
             <?php endif; ?>
 
             <!-- BUTTONS -->
+            <?php
+            $isLastCheckpoint = ($idx >= $total - 1);
+           $assessmentCompleted =
+    !empty($_SESSION['ASSESSMENT_COMPLETED']) &&
+    $isLastCheckpoint &&
+    isset($_SESSION['JUST_COMPLETED']);
+            ?>
+
             <div class="d-flex justify-content-between mt-4">
 
                 <?php if ($idx > 0): ?>
                     <button type="button" class="btn btn-secondary px-4" onclick="doAction('back')">
                         <i class="bi bi-arrow-left-circle me-1"></i> Back
                     </button>
+                <?php else: ?>
+                    <div></div>
                 <?php endif; ?>
 
-                <button type="button" class="btn btn-warning px-4" onclick="doAction('skip')">
-                    <i class="bi bi-skip-forward-fill me-1"></i> Skip
-                </button>
+                <?php if (!$assessmentCompleted): ?>
 
-                <button type="button" class="btn btn-success px-4" onclick="saveAction()">
-                    <i class="bi bi-check-circle-fill me-1"></i> Save & Next
-                </button>
+                    <?php if (!$isLastCheckpoint): ?>
+                        <button type="button" class="btn btn-warning px-4" onclick="doAction('skip')">
+                            <i class="bi bi-skip-forward-fill me-1"></i> Skip
+                        </button>
+                    <?php else: ?>
+                        <div></div>
+                    <?php endif; ?>
+
+                    <button type="button" class="btn btn-success px-4" onclick="saveAction()">
+                        <i class="bi bi-check-circle-fill me-1"></i>
+                        <?= $isLastCheckpoint ? 'Save' : 'Save & Next'; ?>
+                    </button>
+
+                <?php else: ?>
+
+                    <div></div>
+
+                    <div class="text-success fw-bold fs-5">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Assessment Completed
+                    </div>
+
+                <?php endif; ?>
 
             </div>
 

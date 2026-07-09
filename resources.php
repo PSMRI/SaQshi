@@ -72,13 +72,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $file_name = $_POST['file_name'];
     $facility_type = $_POST['facility_type'];
 $facility_filetype=$_POST['file_type'];
-    $new_name = time() . "_" . basename($_FILES['file']['name']);
-    $target = $upload_dir . $new_name;
+   $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png'];
 
-    if (!move_uploaded_file($_FILES['file']['tmp_name'], $target)) {
-        echo "error:File move failed";
-        exit;
-    }
+$originalName = $_FILES['file']['name'];
+$tmpName      = $_FILES['file']['tmp_name'];
+
+$extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+if (!in_array($extension, $allowedExtensions)) {
+    echo "error:Invalid file type. Only pdf,doc,docx,xls,xlsx,jpg,jpeg,png files type are allowed.";
+    exit;
+}
+
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+$mime  = finfo_file($finfo, $tmpName);
+finfo_close($finfo);
+
+$allowedMimeTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'image/jpeg',
+    'image/png'
+];
+
+if (!in_array($mime, $allowedMimeTypes)) {
+    echo "error:Invalid file content type.";
+    exit;
+}
+
+$new_name = time() . "_" . preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($originalName));
+$target = $upload_dir . $new_name;
+
+if (!move_uploaded_file($tmpName, $target)) {
+    echo "error:File move failed";
+    exit;
+}
 
     $stmt = $con->prepare("INSERT INTO files (file_name,file_path,facility_type,file_type) VALUES (?,?,?,?)");
     $stmt->bind_param("ssss", $file_name, $target, $facility_type,$facility_filetype);

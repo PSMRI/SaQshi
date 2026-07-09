@@ -84,7 +84,9 @@ if (
 
     http_response_code(500);
 
-    exit("Database configuration error.");
+    $con = null;
+$GLOBALS['con'] = null;
+return;
 }
 
 /* =====================================================
@@ -123,15 +125,12 @@ $connected = @mysqli_real_connect(
 ===================================================== */
 
 if (!$connected) {
+    error_log("DB Connection Failed: " . mysqli_connect_error());
 
-    error_log(
-        "DB Connection Failed: " .
-        mysqli_connect_error()
-    );
+    $con = null;
+    $GLOBALS['con'] = null;
 
-    http_response_code(500);
-
-    exit("Database unavailable.");
+    return;
 }
 
 /* =====================================================

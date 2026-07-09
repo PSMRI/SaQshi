@@ -135,7 +135,7 @@ if (
    SESSION TIMEOUT
 ===================================================== */
 
-$SESSION_TIMEOUT = 1800;
+$SESSION_TIMEOUT = 600;
 
 if (
     isset($_SESSION['LAST_ACTIVITY']) &&

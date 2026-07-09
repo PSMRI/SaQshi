@@ -10,7 +10,7 @@
         <div class="card">
             <div class="card-body">
                 <form method="post">
-                  <?= csrf(); ?>
+                    <?= csrf(); ?>
                     <div class="row align-items-end">
                         <div class="col-auto">
                             <label for="date1" class="form-label">Select Month</label>
@@ -57,7 +57,7 @@
                 echo "<div class='alert alert-danger'>Kindly select a valid month.</div>";
             } else {
                 $fac_id = $_SESSION['u_facilityid'];
-                $check_query = "SELECT COUNT(chc_kpi_id) AS total FROM chc_kpi_in WHERE chc_kpi_date = ? AND chc_kpi_fac_id = ?";
+                $check_query = "SELECT COUNT(dh_kpi_id) AS total FROM chc_kpi_in WHERE dh_kpi_date = ? AND dh_kpi_fac_id = ?";
                 $stmt1 = $con->prepare($check_query);
                 $stmt1->bind_param("si", $new_date1, $fac_id);
                 $stmt1->execute();
@@ -93,38 +93,38 @@
                     $total = mysqli_num_rows($q3);
 
                     echo '<form method="post">';
-              echo csrf(); 
+                    echo csrf();
                     while ($row = mysqli_fetch_array($q3)) {
                         $q++;
-                        $readonly = ($row['chc_kpi_d'] === 'N/A') ? 'readonly' : '';
+                        $readonly = ($row['dh_kpi_d'] === 'N/A') ? 'readonly' : '';
                         $isLast = ($q == $total);
                         $inputNumId = $q * 2 - 1;
                         $inputDenId = $q * 2;
-                       
+
 
                         echo "<div class='card mb-3 outcome-card' id='card$q' style='" . ($q > 1 ? "display:none;" : "") . "'>
                         <div class='card-body'>
-                            <h6 class='card-title text-primary'><i class='bi bi-bar-chart-fill me-2'></i>KPI Indicator: {$row['chc_kpitext']}</h6>
+                            <h6 class='card-title text-primary'><i class='bi bi-bar-chart-fill me-2'></i>KPI Indicator: {$row['dh_kpitext']}</h6>
                             <div class='alert alert-primary py-2 px-3 small d-flex align-items-center'>
                                 <i class='bi bi-info-circle-fill me-2'></i>
-                                <div><strong>Expected:</strong> <span class='text-warning'><b>Numerator:</b></span> <b>{$row['chc_kpi_n']}</b>,  <span class='text-warning'><b>Denominator:</b></span> <b>{$row['chc_kpi_d']}</b></div>
+                                <div><strong>Expected:</strong> <span class='text-warning'><b>Numerator:</b></span> <b>{$row['dh_kpi_n']}</b>,  <span class='text-warning'><b>Denominator:</b></span> <b>{$row['dh_kpi_d']}</b></div>
                             </div>
                             <div class='row g-2'>";
 
-                      
-                            echo "<div class='col-md-4'>
-                            <input type='number' class='form-control' name='input$inputNumId' id='input$inputNumId' placeholder='Numerator' oninput='calculateResult($q)'>
-                        </div>
-                        <div class='col-md-4'>
-                            <input type='number' class='form-control' name='input$inputDenId' id='input$inputDenId' placeholder='Denominator' oninput='calculateResult($q)' $readonly>
-                        </div>";
-                        
 
                         echo "<div class='col-md-4'>
-                        <input type='text' class='form-control' name='result$q' id='result$q' readonly placeholder='Result'>
+                            <input type='number' step='any' class='form-control' name='input$inputNumId' id='input$inputNumId' placeholder='Numerator' oninput='calculateResult($q)'>
+                        </div>
+                        <div class='col-md-4'>
+                            <input type='number' step='any' class='form-control' name='input$inputDenId' id='input$inputDenId' placeholder='Denominator' oninput='calculateResult($q)' $readonly>
+                        </div>";
+
+
+                        echo "<div class='col-md-4'>
+                        <input type='text' step='any' class='form-control' name='result$q' id='result$q' readonly placeholder='Result'>
                     </div>
                     </div>
-                    <input type='hidden' name='out_come_id$q' value='{$row['chc_kpi_id']}'>
+                    <input type='hidden' name='out_come_id$q' value='{$row['dh_kpi_id']}'>
                     <div class='mt-3 d-flex justify-content-between'>";
                         echo ($q > 1) ? "<button type='button' class='btn btn-secondary btn-sm' onclick='showPreviousCard($q)'><i class='bi bi-arrow-left'></i> Back</button>" : "<div></div>";
                         echo $isLast
@@ -147,21 +147,21 @@
 
             $sql = "
 SELECT
-    k.chc_kpi_id,
-    k.chc_kpitext,
-    k.chc_kpi_n,
-    k.chc_kpi_d,
+    k.dh_kpi_id,
+    k.dh_kpitext,
+    k.dh_kpi_n,
+    k.dh_kpi_d,
 
-    COALESCE(i.chc_kpi_value,0) AS phc_kpi_value,
-    COALESCE(i.chc_kpi_n,0) AS chc_kpi_num,
-    COALESCE(i.chc_kpi_d,0) AS chc_kpi_deno
+    COALESCE(i.dh_kpi_value,0) AS dh_kpi_value,
+    COALESCE(i.dh_kpi_num,0) AS dh_kpi_num,
+    COALESCE(i.dh_kpi_deno,0) AS dh_kpi_deno
 
 FROM chckpi k
 
 LEFT JOIN chc_kpi_in i
-ON k.chc_kpi_id = i.chc_kpi_id
-AND i.chc_kpi_date = '$date1'
-AND i.chc_kpi_fac_id = '$fac_id'
+ON k.dh_kpi_id = i.dh_kpi_id
+AND i.dh_kpi_date = '$date1'
+AND i.dh_kpi_fac_id = '$fac_id'
 ";
 
             $result = mysqli_query($con, $sql);
@@ -183,18 +183,18 @@ value='$date1'>";
             while ($row = mysqli_fetch_assoc($result)) {
                 $q++;
 
-                $readonly = ($row['chc_kpi_d'] == 'N/A') ? 'readonly' : '';
+                $readonly = ($row['dh_kpi_d'] == 'N/A') ? 'readonly' : '';
 
                 $inputNumId = $q * 2 - 1;
                 $inputDenId = $q * 2;
 
-              
 
-                $value = $row['chc_kpi_value'] ?? '';
 
-                $num = $row['chc_kpi_num'] ?? '';
+                $value = $row['dh_kpi_value'] ?? '';
 
-                $den = $row['chc_kpi_deno'] ?? '';
+                $num = $row['dh_kpi_num'] ?? '';
+
+                $den = $row['dh_kpi_deno'] ?? '';
 
                 /*
 Fallback for old records
@@ -223,7 +223,7 @@ style='" . ($q > 1 ? "display:none;" : "") . "'>
 
 <h6 class='card-title text-primary'>
 <i class='bi bi-bar-chart-fill me-2'></i>
-KPI Indicator: {$row['chc_kpitext']}
+KPI Indicator: {$row['dh_kpitext']}
 </h6>
 
 <div class='alert alert-primary py-2'>
@@ -231,23 +231,23 @@ KPI Indicator: {$row['chc_kpitext']}
 <strong>Expected:</strong>
 
 <b>Numerator:</b>
-{$row['chc_kpi_n']}
+{$row['dh_kpi_n']}
 
 <b>Denominator:</b>
-{$row['chc_kpi_d']}
+{$row['dh_kpi_d']}
 
 </div>
 
 <div class='row g-2'>";
 
-               
 
-                    echo "
+
+                echo "
 
 <div class='col-md-4'>
 
 <input
-type='number'
+type='number' step='any'
 class='form-control'
 name='input$inputNumId'
 id='input$inputNumId'
@@ -260,7 +260,7 @@ oninput='calculateResult($q)'>
 <div class='col-md-4'>
 
 <input
-type='number'
+type='number' step='any'
 class='form-control'
 name='input$inputDenId'
 id='input$inputDenId'
@@ -270,14 +270,14 @@ oninput='calculateResult($q)'
 $readonly>
 
 </div>";
-                
+
 
                 echo "
 
 <div class='col-md-4'>
 
 <input
-type='text'
+type='text' step='any'
 class='form-control'
 name='result$q'
 id='result$q'
@@ -291,7 +291,7 @@ readonly>
 <input
 type='hidden'
 name='kpi$q'
-value='{$row['chc_kpi_id']}'>
+value='{$row['dh_kpi_id']}'>
 
 <div class='mt-3 d-flex justify-content-between'>";
 
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             $result = mysqli_query(
                 $con,
-                "SELECT chc_kpi_id FROM chckpi"
+                "SELECT dh_kpi_id FROM chckpi"
             );
 
             $i = 0;
@@ -379,7 +379,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 $stmt = $con->prepare(
                     "CALL update_chckpi(?,?,?,?,?,?)"
                 );
-
+                if (!$stmt) {
+                    die("Prepare failed: " . $con->error);
+                }
                 $stmt->bind_param(
                     "issdsi",
                     $kpiid,
@@ -407,53 +409,52 @@ KPI updated successfully
         ?>
         <?php
         if (isset($_POST['postsubmit3'])) {
-            $date1 = $_SESSION['new_date1'];
-            $fac_id = $_SESSION['u_facilityid'];
+           $date1 = $_SESSION['new_date1'];
+    $fac_id = $_SESSION['u_facilityid'];
 
-            $result = mysqli_query($con, "SELECT chc_kpi_id FROM chckpi");
-            $success = true;
-            $errorMessages = [];
-            $index = 0;
+    $result = mysqli_query($con, "SELECT dh_kpi_id FROM chckpi");
 
-            while ($row = mysqli_fetch_assoc($result)) {
-                $index++;
-                $kpi_id = $row['chc_kpi_id'];
-                $key = "result$index";
-                $value = $_POST[$key] ?? 0;
+    $success = true;
+    $errorMessages = [];
+    $index = 0;
 
-                $num = $_POST['input' . ($index * 2 - 1)] ?? 0;
+    while ($row = mysqli_fetch_assoc($result)) {
 
-                $den = $_POST['input' . ($index * 2)] ?? 0;
+        $index++;
 
-                if ($value !== null) {
+        $kpi_id = $row['dh_kpi_id'];
+        $value  = $_POST['result' . $index] ?? 0;
+        $num    = $_POST['input' . ($index * 2 - 1)] ?? 0;
+        $den    = $_POST['input' . ($index * 2)] ?? 0;
 
-                    $stmt = $con->prepare(
-                        "CALL insert_chckpi(?, ?, ?, ?, ?, ?)"
-                    );
+        $stmt = $con->prepare(
+            "CALL insert_chcKPI(?, ?, ?, ?, ?, ?)"
+        );
 
-                    $stmt->bind_param(
-                        "idddsi",
-                        $kpi_id,
-                        $value,
-                        $num,
-                        $den,
-                        $date1,
-                        $fac_id
-                    );
+        if (!$stmt) {
+            die("Prepare failed: " . $con->error);
+        }
 
-                    if (!$stmt->execute()) {
+        $stmt->bind_param(
+            "issssi",
+            $kpi_id,
+            $value,
+            $num,
+            $den,
+            $date1,
+            $fac_id
+        );
 
-                        $success = false;
+        if (!$stmt->execute()) {
+            $success = false;
+            $errorMessages[] = "Error inserting KPI ID {$kpi_id}: " . $stmt->error;
+        }
 
-                        $errorMessages[] =
-                            "Error inserting for KPI ID: {$kpi_id}";
-                    }
+        $stmt->close();
 
-                    $stmt->close();
-
-                    while (mysqli_next_result($con));
-                }
-            }
+        while (mysqli_next_result($con));
+    }
+            
 
             echo $success ? "<div class='alert alert-success'>Outcome Values inserted successfully!</div>"
                 : "<div class='alert alert-danger'>There was an error while inserting data.</div>";

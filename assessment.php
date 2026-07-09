@@ -118,7 +118,10 @@ $_SESSION['Means']        = $suffix ? "Means_of_Verification_$suffix" : "Means_o
                         </div>
 
                     </div>
-
+                    <?php
+// New assessment started
+unset($_SESSION['ASSESSMENT_COMPLETED']);
+unset($_SESSION['JUST_COMPLETED']); ?>
                     <button type="submit" class="btn btn-primary btn-sm mt-3">
                         <i class="bi bi-search me-1"></i> Load Checklist
                     </button>

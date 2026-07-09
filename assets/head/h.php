@@ -237,9 +237,9 @@ if (
 						<li class="nav-item">
 							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Documents & Letters</span></a>
 						</li>
-						<li class="nav-item">
+						<!--li class="nav-item">
 							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
-						</li>
+						</li-->
 						<li class="nav-item">
 							<a href="feedback.php" class="nav-link position-relative">
 								<span class="pcoded-micon">
@@ -281,9 +281,9 @@ if (
 						<li class="nav-item">
 							<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Docs & Letters </span></a>
 						</li>
-						<li class="nav-item">
+						<!--li class="nav-item">
 							<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
-						</li>
+						</li-->
 						<li class="nav-item">
 							<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
 						</li>
@@ -298,9 +298,9 @@ if (
 				<li class="nav-item">
 					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Docs & Letters </span></a>
 				</li>
-				<li class="nav-item">
+				<!--li class="nav-item">
 					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
-				</li>
+				</li-->
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
 				</li>
@@ -372,9 +372,9 @@ if (
 				<li class="nav-item">
 					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Docs & Letters </span></a>
 				</li>
-				<li class="nav-item">
+				<!--li class="nav-item">
 					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
-				</li>
+				</li-->
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
 				</li>
@@ -395,9 +395,9 @@ if (
 				<li class="nav-item">
 					<a href="pages-faq.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-file-text"></i></span><span class="pcoded-mtext">Forms, Docs & Letters </span></a>
 				</li>
-				<li class="nav-item">
+				<!--li class="nav-item">
 					<a href="chattest.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Ask me</span></a>
-				</li>
+				</li-->
 				<li class="nav-item">
 					<a href="feedback.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-align-justify"></i></span><span class="pcoded-mtext">Feedback</span></a>
 				</li>
@@ -523,17 +523,17 @@ if (
 					?>
 
 
-					<div class="dropdown">
+					<!--div class="dropdown">
 						<a class="dropdown-toggle" href="#" data-toggle="dropdown">
 							<i class="icon feather icon-bell"></i>
 							<span class="badge badge-pill badge-danger"><?php echo $notif_count; ?></span>
 						</a>
 						<div class="dropdown-menu dropdown-menu-right notification">
-							<div class="noti-head">
+							<!--div class="noti-head">
 								<h6 class="d-inline-block m-b-0">Notifications</h6>
 
-							</div>
-							<ul class="noti-body">
+							</div-->
+							<!--ul class="noti-body">
 								<li class="n-title">
 									<p class="m-b-0">LATEST</p>
 								</li>
@@ -563,7 +563,7 @@ if (
 							</div>
 						</div>
 					</div>
-				</li>
+				</li-->
 
 				<li>
 					<div class="dropdown drp-user">
@@ -604,34 +604,7 @@ if (
 		</div>
 	</header>
 
-	<script>
-		(function() {
-
-			const badge = document.getElementById('feedbackBadge');
-			if (!badge) return; // no badge on this page
-
-			function checkFeedbackNotification() {
-				fetch('assets/get/unread_feedback_count.php') // ✅ FIXED PATH
-					.then(res => res.json())
-					.then(data => {
-						if (data.count > 0) {
-							badge.innerText = data.count;
-							badge.style.display = 'inline-block';
-						} else {
-							badge.style.display = 'none';
-						}
-					})
-					.catch(err => console.error('Feedback notification error', err));
-			}
-
-			// check immediately
-			checkFeedbackNotification();
-
-			// check every 10 seconds
-			setInterval(checkFeedbackNotification, 10000);
-
-		})();
-	</script>
+	
 
 
 

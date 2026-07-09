@@ -144,6 +144,8 @@ if ($action == "save") {
         $_SESSION['MSG'] = "🎉 Assessment Completed! All $total checkpoints completed.";
 
         // Stay on last question
+         $_SESSION['ASSESSMENT_COMPLETED'] = 1;
+         $_SESSION['JUST_COMPLETED'] = 1;
         $_SESSION['IDX'] = $idx;
 
         include "compliance_view.php";
@@ -184,6 +186,9 @@ elseif ($action == "back") {
 
     if ($idx > 0) {
         $idx--;
+
+        unset($_SESSION['ASSESSMENT_COMPLETED']);
+
         $_SESSION['MSG'] = "⬅ Moved Back";
     }
 }
