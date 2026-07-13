@@ -12,12 +12,11 @@ The project includes an OSI-style permissive license at the repository root, con
 
 The main gaps before public release are:
 
-- The root license is **MIT**, but many UI/API headers and footer metadata say **Apache-2.0**.
-- `SECURITY.md` is missing.
-- `NOTICE` or third-party attribution documentation is missing.
-- Dependency/license inventory is not yet documented.
-- `README.md` is too minimal for a public developer onboarding page.
 - Local `.env` exists and must stay untracked and never be committed.
+- Third-party dependency/license inventory exists, but exact versions/licenses under `ui/` and `api/` still need final owner verification before a public release.
+- Database setup/migration documentation exists, but a full sanitized base schema file still needs to be added if it is not already managed elsewhere.
+
+License inconsistency was fixed on 2026-07-13 by aligning SaQshi-owned UI/config headers and visible license metadata to the root **MIT** license. See `docs/compliance/license_consistency_before_after.md`.
 
 ## Source Criteria Used
 
@@ -25,24 +24,24 @@ This checklist is based on generally accepted open-source release expectations a
 
 - OSI Open Source Definition: `https://opensource.org/osd`
 - MIT License text currently present in this repository: `LICENSE.txt`
-- Apache License 2.0 reference, because many source headers currently mention Apache-2.0: `https://www.apache.org/licenses/LICENSE-2.0`
+- License consistency fix record: `docs/compliance/license_consistency_before_after.md`
 
 ## Current Verdict
 
 | Area | Verdict |
 |---|---|
 | Can this be open source? | **Yes** |
-| Is the license currently clear and consistent? | **Partial** |
+| Is the license currently clear and consistent? | **Done for SaQshi-owned UI/config files** |
 | Is it safe to publish immediately? | **Partial / Not recommended until gaps are fixed** |
-| Biggest blocker | MIT root license conflicts with Apache-2.0 source headers/footer |
-| Security-publication status | `.env` is ignored and not tracked, but `SECURITY.md` is missing |
+| Biggest blocker | Security policy, third-party attribution, README, release docs |
+| Security-publication status | `.env` is ignored and not tracked; `SECURITY.md` now exists |
 
 ## OSI Open Source Criteria Checklist
 
 | # | Criterion | Status | Evidence / Notes |
 |---:|---|---|---|
 | 1 | Free redistribution allowed | Done | `LICENSE.txt` uses MIT text, which permits use, copy, modification, merge, publication, distribution, sublicense, and sale. |
-| 2 | Source code available | Done | Repository contains PHP API source, UI HTML/CSS/JS, config JSON, docs, and scripts. |
+| 2 | Source code available | Done | Repository contains PHP API source, UI HTML/CSS/JS, config JSON and docs. |
 | 3 | Derived works allowed | Done | MIT license permits modification and sublicensing. |
 | 4 | Integrity of author's source code | Done | MIT has no restrictive patch-only requirement. |
 | 5 | No discrimination against persons or groups | Done | MIT does not discriminate. |
@@ -57,13 +56,13 @@ This checklist is based on generally accepted open-source release expectations a
 | Item | Status | Evidence | Required Action |
 |---|---|---|---|
 | Root license file | Done | `LICENSE.txt` exists. | Confirm final license choice. |
-| License consistency | Partial | Root license is MIT; many files and UI footer mention Apache-2.0. | Choose one license and align file headers, footer metadata, README, and docs. |
-| README | Partial | `README.md` only contains `https://saqshi.readme.io/`. | Add local overview, setup, requirements, configuration, database setup, testing, API docs, and contribution links. |
+| License consistency | Done | Root license is MIT; SaQshi-owned UI/config headers and visible footer/login metadata now use MIT. | Continue to avoid changing third-party/vendor license notices. |
+| README | Done | `README.md` now includes overview, modules, setup, environment, database, API, testing, release docs and license details. | Keep synchronized with major architecture changes. |
 | Contribution guide | Partial | `CONTRIBUTING.md` exists but is very short. | Add branch workflow, coding standards, test expectations, issue/PR process. |
 | Code of conduct | Done | `CODE_OF_CONDUCT.md` exists. | Keep updated with contact/escalation details. |
-| Security policy | Missing | `SECURITY.md` not found. | Add vulnerability reporting process, supported versions, disclosure policy. |
-| Notice/attribution file | Missing | `NOTICE` not found. | Add third-party attribution, especially if Apache-2.0 is selected or bundled libraries require notices. |
-| Third-party dependency inventory | Partial | Bundled assets include Font Awesome references; no central dependency/license inventory found. | Add `docs/compliance/third_party_licenses.md` or SBOM. |
+| Security policy | Done | `SECURITY.md` exists. | Replace placeholder security contact before public release. |
+| Notice/attribution file | Done | `NOTICE` exists and points to third-party attribution inventory. | Keep updated before releases. |
+| Third-party dependency inventory | Partial | `docs/compliance/third_party_licenses.md` exists; exact versions/licenses under `ui/` and `api/` still need final owner verification. | Verify bundled/CDN dependencies before public release. |
 | Environment sample | Done | `.env.example` exists. | Keep secrets out of examples. |
 | Real secrets excluded | Done | `.gitignore` excludes `.env`, `.env.*`, keys, logs, uploads. Git does not list `.env` as tracked. | Continue checking before every release. |
 | Generated/private storage excluded | Done | `.gitignore` excludes `api/storage/events/*.log`, `api/storage/logs/*.log`, `api/storage/keys/`, `uploads/`. | Good. |
@@ -71,10 +70,10 @@ This checklist is based on generally accepted open-source release expectations a
 | Testing documentation | Done | Test plan, black-box/white-box, VAPT, load testing, WCAG docs exist under `docs/testing`. | Keep results updated with each release. |
 | Accessibility statement | Done | `docs/testing/saqshi_wcag_web_platform_compliance.md` exists. | Add manual screen-reader/keyboard results when completed. |
 | Security review notes | Done | `docs/security/sql_injection_security_review.md` exists. | Keep remediation status current. |
-| Database migration/install docs | Missing / Unknown | No migration guide found in this review. | Add schema import, migration order, seed data, and rollback notes. |
+| Database migration/install docs | Partial | `docs/database/database_setup_and_migration.md` exists; full sanitized base schema file still needs confirmation. | Add/confirm base schema and seed strategy. |
 | Public issue templates | Missing / Unknown | `.github` directory not found in quick scan. | Add bug report, feature request, security advisory templates. |
 | Release/versioning policy | Partial | UI/footer mentions version, docs contain versions, but no release policy found. | Add semantic versioning and changelog policy. |
-| Changelog | Missing / Unknown | No `CHANGELOG.md` found in quick scan. | Add release history and migration notes. |
+| Changelog | Done | `CHANGELOG.md` exists. | Update for every release. |
 | Governance/maintainers | Missing / Unknown | No maintainers/governance file found. | Add maintainers, review rules, decision process. |
 | Trademark/branding policy | Missing | SaQshi name/logo usage is not defined. | Add `TRADEMARK.md` or branding section if public reuse matters. |
 | Data/privacy guidance | Partial | App handles facility/user/health quality data; security docs exist, but public privacy guidance not found. | Add privacy and deployment hardening guide. |
@@ -93,63 +92,62 @@ This checklist is based on generally accepted open-source release expectations a
 | Large config data | Partial | Large JSON config files are present; public data ownership/licensing should be confirmed. |
 | Healthcare data caution | Partial | No real patient data should be included in public repo. Facility master data licensing should be confirmed. |
 
-## Required Fixes Before Public Release
+## Current Release Actions Before Public Release
 
-### 1. Decide Final License
+### 1. Keep License Consistent
 
-Pick one:
+Final selected license: **MIT**, matching `LICENSE.txt`.
 
-- **MIT**: matches current `LICENSE.txt`; simpler and permissive.
-- **Apache-2.0**: matches many file headers and footer text; includes explicit patent license and NOTICE conventions.
+Already aligned:
 
-After selecting, update:
-
-- `LICENSE.txt`
-- Source file headers
+- SaQshi-owned source headers in `ui/`
+- `ui/config/app.json`
 - `ui/components/footer/footer.js`
-- Login/footer visible license text
-- README license section
-- Any generated docs mentioning license
+- `ui/components/footer/footer.html`
+- `ui/pages/login/login.html`
 
-### 2. Add `SECURITY.md`
+Remaining release rules:
 
-Minimum content:
+- Do not rewrite third-party/vendor license notices.
+- Keep README, footer metadata and source headers aligned to MIT.
 
-- How to report vulnerabilities.
-- What information to include.
-- Expected response timeline.
-- Supported versions.
-- Request not to disclose publicly until reviewed.
+### 2. Finalize Security Contact
 
-### 3. Add Third-Party Attribution
+`SECURITY.md` now exists. Before public release:
 
-Create one of:
+- Replace placeholder `security@saqshi.org` if a different official contact is required.
+- Confirm supported versions.
+- Confirm vulnerability triage owner.
+
+### 3. Verify Third-Party Attribution
+
+Created:
 
 - `NOTICE`
 - `docs/compliance/third_party_licenses.md`
-- `SBOM` file
 
-Include bundled libraries/assets such as icons, fonts, maps, spreadsheet/report libraries, and any copied templates.
+Before public release:
 
-### 4. Expand `README.md`
+- Verify exact versions/licenses for bundled files under `ui/` and `api/`.
+- Decide whether to add an SBOM.
+- Confirm CDN dependencies or vendor exact local copies.
+- Keep OpenStreetMap attribution visible where maps are shown.
 
-Recommended sections:
+### 4. Keep `README.md` Updated
 
-- What SaQshi is.
-- Features.
-- Architecture.
-- Requirements.
-- Installation.
-- `.env` configuration.
-- Database setup.
-- Running locally.
-- API docs and Postman links.
-- Testing.
-- Security.
-- Contributing.
-- License.
+`README.md` has been expanded. Keep it updated when:
 
-### 5. Add Release Safety Checklist
+- API paths change.
+- Setup requirements change.
+- Database setup changes.
+- New modules are added.
+- Release process changes.
+
+### 5. Use Release Safety Checklist
+
+Created:
+
+- `docs/compliance/release_checklist.md`
 
 Before pushing publicly:
 
@@ -162,8 +160,21 @@ Before pushing publicly:
 - Update OpenAPI/Postman docs.
 - Update changelog.
 
+### 6. Complete Database Release Package
+
+Created:
+
+- `docs/database/database_setup_and_migration.md`
+
+Still required:
+
+- Confirm/add sanitized base schema.
+- Confirm seed data strategy.
+- Confirm migration tracking strategy.
+- Confirm no production data is committed.
+
 ## Final Recommendation
 
-SaQshi should be treated as **open-source eligible but not yet public-release complete**.
+SaQshi should be treated as **open-source eligible and much closer to public-release ready**.
 
-The next best step is to fix the license inconsistency first. Once the root license, source headers, visible footer text, and README all say the same thing, the project will have a much cleaner open-source foundation.
+The next best step is to verify third-party dependency licenses and add/confirm a sanitized base database schema so a new developer can install SaQshi from the repository without private database files.
