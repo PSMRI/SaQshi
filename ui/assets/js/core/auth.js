@@ -5,7 +5,7 @@
  * Project   : SaQshi Open Source
  * Component : Authentication Helper
  * Depends   : SQ, SQ.api
- * License   : Apache-2.0
+ * License   : MIT
  * ==========================================================
  */
 

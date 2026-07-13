@@ -5,7 +5,7 @@
  * Project   : SaQshi Open Source
  * Component : Header
  * File      : header.js
- * License   : Apache-2.0
+ * License   : MIT
  * ==========================================================
  *
  * Responsibilities:

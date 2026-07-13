@@ -5,7 +5,7 @@
  * Project : SaQshi Open Source
  * File    : app.js
  * Purpose : Main frontend bootstrap file
- * License : Apache-2.0
+ * License : MIT
  * ==========================================================
  *
  * This file initializes:

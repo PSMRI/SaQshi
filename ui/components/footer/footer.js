@@ -5,7 +5,7 @@
  * Project   : SaQshi Open Source
  * Component : Footer
  * File      : footer.js
- * License   : Apache-2.0
+ * License   : MIT
  * ==========================================================
  *
  * Responsibilities
@@ -42,7 +42,7 @@
 
         environment: "Development",
 
-        license: "Apache-2.0",
+        license: "MIT",
 
         supportEmail: "support@saqshi.org"
 

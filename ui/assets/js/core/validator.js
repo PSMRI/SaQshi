@@ -5,7 +5,7 @@
  * Project  : SaQshi Open Source
  * Module   : Form Validation Service
  * File     : validator.js
- * License  : Apache-2.0
+ * License  : MIT
  * ==========================================================
  *
  * PURPOSE

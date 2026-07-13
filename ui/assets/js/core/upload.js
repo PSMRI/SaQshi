@@ -5,7 +5,7 @@
  * Project  : SaQshi Open Source
  * Module   : File Upload & Management Service
  * File     : upload.js
- * License  : Apache-2.0
+ * License  : MIT
  * ==========================================================
  *
  * PURPOSE

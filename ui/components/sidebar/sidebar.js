@@ -5,7 +5,7 @@
  * Project   : SaQshi Open Source
  * Component : Sidebar
  * File      : sidebar.js
- * License   : Apache-2.0
+ * License   : MIT
  * ==========================================================
  *
  * FEATURES

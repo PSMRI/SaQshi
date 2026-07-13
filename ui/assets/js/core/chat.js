@@ -5,7 +5,7 @@
  * Project  : SaQshi Open Source
  * Module   : Frontend Chat / AI Assistant UI
  * File     : chat.js
- * License  : Apache-2.0
+ * License  : MIT
  * ==========================================================
  *
  * PURPOSE

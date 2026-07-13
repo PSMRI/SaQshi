@@ -5,7 +5,7 @@
  * Project  : SaQshi Open Source
  * Module   : HTML/CSS/JS Component Loader
  * File     : component-loader.js
- * License  : Apache-2.0
+ * License  : MIT
  * ==========================================================
  *
  * PURPOSE

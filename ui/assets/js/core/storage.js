@@ -5,7 +5,7 @@
  * Project  : SaQshi Open Source
  * Module   : Browser Storage Service
  * File     : storage.js
- * License  : Apache-2.0
+ * License  : MIT
  * ==========================================================
  *
  * PURPOSE
