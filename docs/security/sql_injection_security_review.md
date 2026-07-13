@@ -23,6 +23,20 @@ Reviewed API PHP files for:
 |---|---|---|---|
 | SQLI-001 | `api/assessment/v1/action_plan.php` | Dynamic `IN ($ids)` query for action-plan suggestions | Rectified |
 
+## Rectification Update
+
+Updated on: 2026-07-13
+
+The confirmed SQL injection hardening item has been updated in code after documentation.
+
+| ID | File | Before | After | Verification |
+|---|---|---|---|---|
+| SQLI-001 | `api/assessment/v1/action_plan.php` | `checkpoint_id IN ($ids)` built as a SQL string | `checkpoint_id IN (?, ?, ...)` generated with placeholders and bound values | `php -l api\assessment\v1\action_plan.php` passed |
+
+### Current Status
+
+SQLI-001 is closed. The action-plan suggestion query no longer places checkpoint IDs directly into the SQL string. The query now binds all checkpoint IDs and the framework code through a prepared statement.
+
 ## SQLI-001: Dynamic IN Clause in Action Plan Suggestions
 
 ### File
@@ -58,6 +72,15 @@ WHERE checkpoint_id IN (?, ?, ...)
 ```
 
 The checkpoint IDs and framework code are bound through `mysqli::prepare()` and `bind_param()`.
+
+Implementation detail:
+
+```php
+$suggestionCheckpointIds = array_map('intval', array_keys($checkpointIds));
+$suggestionPlaceholders = implode(',', array_fill(0, count($suggestionCheckpointIds), '?'));
+$suggestionTypes = str_repeat('i', count($suggestionCheckpointIds)) . 's';
+$stmtSuggestions->bind_param($suggestionTypes, ...$suggestionParams);
+```
 
 ### Validation
 
@@ -97,4 +120,3 @@ Expected result:
 - Add automated Semgrep or similar static checks for SQL injection patterns.
 - Add security test cases to Postman for invalid IDs, malicious strings and unauthorized scope access.
 - Keep production PHP configured with `display_errors = Off`.
-

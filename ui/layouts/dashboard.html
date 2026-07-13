@@ -32,6 +32,14 @@ The actual page HTML is injected into:
 
 <div class="sq-layout">
 
+    <a
+        class="sq-skip-link"
+        href="#sq-page-content">
+
+        Skip to main content
+
+    </a>
+
     <!-- ==========================================
          Global Components
     =========================================== -->
@@ -75,6 +83,7 @@ The actual page HTML is injected into:
         <!-- Main -->
 
         <main
+            id="sq-main"
             class="sq-layout-main">
 
             <!-- ===============================
@@ -130,7 +139,8 @@ The actual page HTML is injected into:
 
             <section
                 id="sq-page-content"
-                class="sq-page-content">
+                class="sq-page-content"
+                tabindex="-1">
 
                 <!--
 

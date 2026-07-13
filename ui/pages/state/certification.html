@@ -6,8 +6,8 @@
             <p>Latest facility certification status from certification history.</p>
         </div>
         <div class="sq-state-filters">
-            <input type="search" class="sq-form-control" id="stateCertSearch" placeholder="Search facility, district, NIN">
-            <select class="sq-form-control" id="stateCertFilter">
+            <input type="search" class="sq-form-control" id="stateCertSearch" placeholder="Search facility, district, NIN" aria-label="Search Facility, District, NIN">
+            <select class="sq-form-control" id="stateCertFilter" aria-label="State Cert Filter">
                 <option value="">All Status</option>
                 <option value="CERTIFIED">Certified</option>
                 <option value="CONDITIONAL">Conditional</option>
@@ -63,45 +63,45 @@
                     <input type="hidden" id="stateCertFacId">
                     <div>
                         <label class="sq-form-label">Facility Name</label>
-                        <input class="sq-form-control" type="text" id="stateCertFacilityName" readonly>
+                        <input class="sq-form-control" type="text" id="stateCertFacilityName" readonly aria-label="State Cert Facility Name">
                     </div>
                     <div>
                         <label class="sq-form-label">NIN Number</label>
-                        <input class="sq-form-control" type="text" id="stateCertFacilityNin" readonly>
+                        <input class="sq-form-control" type="text" id="stateCertFacilityNin" readonly aria-label="State Cert Facility Nin">
                     </div>
                     <div>
                         <label class="sq-form-label">Certification Type</label>
-                        <select class="sq-form-control" id="stateCertType" required>
+                        <select class="sq-form-control" id="stateCertType" required aria-label="State Cert Type">
                             <option value="STATE">STATE</option>
                             <option value="NATIONAL">NATIONAL</option>
                         </select>
                     </div>
                     <div>
                         <label class="sq-form-label">Assessment Mode</label>
-                        <select class="sq-form-control" id="stateCertAssessmentMode" required>
+                        <select class="sq-form-control" id="stateCertAssessmentMode" required aria-label="State Cert Assessment Mode">
                             <option value="PHYSICAL">PHYSICAL</option>
                             <option value="VIRTUAL">VIRTUAL</option>
                         </select>
                     </div>
                     <div>
                         <label class="sq-form-label">Certification Date</label>
-                        <input class="sq-form-control" type="date" id="stateCertDate" required>
+                        <input class="sq-form-control" type="date" id="stateCertDate" required aria-label="State Cert Date">
                     </div>
                     <div>
                         <label class="sq-form-label">Applied Date</label>
-                        <input class="sq-form-control" type="date" id="stateCertAppliedDate">
+                        <input class="sq-form-control" type="date" id="stateCertAppliedDate" aria-label="State Cert Applied Date">
                     </div>
                     <div>
                         <label class="sq-form-label">Status</label>
-                        <select class="sq-form-control" id="stateCertEditStatus" required></select>
+                        <select class="sq-form-control" id="stateCertEditStatus" required aria-label="State Cert Edit Status"></select>
                     </div>
                     <div>
                         <label class="sq-form-label">Score</label>
-                        <input class="sq-form-control" type="number" min="0" max="100" step="0.01" id="stateCertScore" required>
+                        <input class="sq-form-control" type="number" min="0" max="100" step="0.01" id="stateCertScore" required aria-label="State Cert Score">
                     </div>
                     <div class="sq-state-cert-form-wide">
                         <label class="sq-form-label">Remarks</label>
-                        <textarea class="sq-form-control" id="stateCertRemarks" rows="3"></textarea>
+                        <textarea class="sq-form-control" id="stateCertRemarks" rows="3" aria-label="State Cert Remarks"></textarea>
                     </div>
                 </form>
             </div>

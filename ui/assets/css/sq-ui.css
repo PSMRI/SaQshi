@@ -56,11 +56,45 @@ html {
     scroll-behavior: smooth;
 }
 
+html[data-font-size="small"] {
+    font-size: 15px;
+}
+
+html[data-font-size="normal"],
+html:not([data-font-size]) {
+    font-size: 16px;
+}
+
+html[data-font-size="large"] {
+    font-size: 18px;
+}
+
+html[data-font-size="xlarge"] {
+    font-size: 20px;
+}
+
 body {
     background: var(--sq-bg-body);
     color: var(--sq-text-primary);
     font-family: var(--sq-font-family-sans);
     font-size: 12px;
+}
+
+html[data-font-size="small"] body {
+    font-size: 12px;
+}
+
+html[data-font-size="normal"] body,
+html:not([data-font-size]) body {
+    font-size: 12px;
+}
+
+html[data-font-size="large"] body {
+    font-size: 14px;
+}
+
+html[data-font-size="xlarge"] body {
+    font-size: 16px;
 }
 
 /* ==========================================================
@@ -252,6 +286,61 @@ textarea.sq-form-control {
 /* ==========================================================
    Accessibility Defaults
 ========================================================== */
+
+.sq-skip-link {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 10000;
+    transform: translateY(-150%);
+    border: 2px solid var(--sq-color-primary, #2563eb);
+    border-radius: 0.5rem;
+    background: var(--sq-bg-surface, #ffffff);
+    color: var(--sq-color-primary, #2563eb);
+    padding: 0.55rem 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: var(--sq-shadow-lg, 0 10px 20px rgba(15, 23, 42, 0.16));
+}
+
+.sq-skip-link:focus,
+.sq-skip-link:focus-visible {
+    transform: translateY(0);
+    outline: var(--sq-focus-ring-width) solid var(--sq-focus-ring-color);
+    outline-offset: var(--sq-focus-ring-offset);
+}
+
+html[data-screen-reader-mode="true"] {
+    --sq-focus-ring-width: 4px;
+    --sq-focus-ring-color: #f59e0b;
+}
+
+html[data-screen-reader-mode="true"] body {
+    line-height: 1.6;
+}
+
+html[data-screen-reader-mode="true"] a {
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+}
+
+html[data-screen-reader-mode="true"] :focus-visible {
+    outline-color: #f59e0b;
+    outline-width: 4px;
+    outline-offset: 3px;
+}
+
+html[data-screen-reader-mode="true"] .sq-card,
+html[data-screen-reader-mode="true"] .sq-panel,
+html[data-screen-reader-mode="true"] .sq-table,
+html[data-screen-reader-mode="true"] .sq-form-control,
+html[data-screen-reader-mode="true"] .sq-input,
+html[data-screen-reader-mode="true"] .sq-select,
+html[data-screen-reader-mode="true"] textarea,
+html[data-screen-reader-mode="true"] input,
+html[data-screen-reader-mode="true"] select {
+    border-color: var(--sq-color-gray-700, #334155) !important;
+}
 
 :focus-visible {
     outline: var(--sq-focus-ring-width) solid var(--sq-focus-ring-color);

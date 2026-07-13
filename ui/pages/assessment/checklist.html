@@ -54,28 +54,28 @@ License : Apache-2.0
             <div class="sq-filter-grid">
                 <div class="sq-form-group">
                     <label for="deptSelect">Department</label>
-                    <select id="deptSelect" class="sq-form-control">
+                    <select id="deptSelect" class="sq-form-control" aria-label="Dept Select">
                         <option value="">Loading departments...</option>
                     </select>
                 </div>
 
                 <div class="sq-form-group">
                     <label for="concernSelect">Area of Concern</label>
-                    <select id="concernSelect" class="sq-form-control" disabled>
+                    <select id="concernSelect" class="sq-form-control" disabled aria-label="Concern Select">
                         <option value="">Select department first</option>
                     </select>
                 </div>
 
                 <div class="sq-form-group">
                     <label for="subtypeSelect">Subtype</label>
-                    <select id="subtypeSelect" class="sq-form-control" disabled>
+                    <select id="subtypeSelect" class="sq-form-control" disabled aria-label="Subtype Select">
                         <option value="">Select concern first</option>
                     </select>
                 </div>
 
                 <div class="sq-form-group">
                     <label for="methodSelect">Assessment Method</label>
-                    <select id="methodSelect" class="sq-form-control" disabled>
+                    <select id="methodSelect" class="sq-form-control" disabled aria-label="Method Select">
                         <option value="">All methods</option>
                     </select>
                 </div>
@@ -124,7 +124,7 @@ License : Apache-2.0
                 <legend>Compliance Score</legend>
 
                 <label class="sq-score-option sq-score-zero">
-                    <input type="radio" name="response_value" value="0">
+                    <input type="radio" name="response_value" value="0" aria-label="Response Value 0">
                     <span>
                         <strong>0</strong>
                         Non Compliance
@@ -132,7 +132,7 @@ License : Apache-2.0
                 </label>
 
                 <label class="sq-score-option sq-score-one">
-                    <input type="radio" name="response_value" value="1">
+                    <input type="radio" name="response_value" value="1" aria-label="Response Value 1">
                     <span>
                         <strong>1</strong>
                         Partial Compliance
@@ -140,7 +140,7 @@ License : Apache-2.0
                 </label>
 
                 <label class="sq-score-option sq-score-two">
-                    <input type="radio" name="response_value" value="2">
+                    <input type="radio" name="response_value" value="2" aria-label="Response Value 2">
                     <span>
                         <strong>2</strong>
                         Fully Compliance

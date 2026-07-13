@@ -431,6 +431,13 @@
                 }
             }
 
+            document.dispatchEvent(new CustomEvent("sq:page-ready", {
+                detail: {
+                    route: name,
+                    manifest: manifest
+                }
+            }));
+
         } catch (error) {
             console.error("[SQ Router Error]", error);
 

@@ -390,6 +390,94 @@
 }
 
 /* ==========================================================
+   Accessibility Menu
+========================================================== */
+
+.sq-accessibility-menu {
+    position: relative;
+}
+
+.sq-accessibility-trigger-mark {
+    font-weight: 800;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.sq-accessibility-dropdown {
+    min-width: 260px;
+    padding: 0.7rem;
+}
+
+.sq-accessibility-section {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.sq-accessibility-label {
+    color: var(--sq-text-secondary);
+    font-size: var(--sq-font-size-sm);
+    font-weight: var(--sq-font-weight-semibold);
+}
+
+.sq-accessibility-controls {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
+}
+
+.sq-accessibility-controls button,
+.sq-accessibility-toggle,
+.sq-accessibility-speech button {
+    min-height: 36px;
+    border: 1px solid var(--sq-border);
+    border-radius: var(--sq-radius-md);
+    background: var(--sq-bg-surface);
+    color: var(--sq-text-primary);
+    cursor: pointer;
+    font-weight: var(--sq-font-weight-semibold);
+}
+
+.sq-accessibility-controls button:hover,
+.sq-accessibility-toggle:hover,
+.sq-accessibility-speech button:hover {
+    border-color: var(--sq-color-primary);
+    color: var(--sq-color-primary);
+}
+
+.sq-accessibility-controls button:focus-visible,
+.sq-accessibility-toggle:focus-visible,
+.sq-accessibility-speech button:focus-visible {
+    outline: var(--sq-focus-ring-width) solid var(--sq-focus-ring-color);
+    outline-offset: var(--sq-focus-ring-offset);
+}
+
+.sq-accessibility-controls button.is-active,
+.sq-accessibility-toggle.is-active {
+    background: var(--sq-color-primary);
+    border-color: var(--sq-color-primary);
+    color: #ffffff;
+}
+
+.sq-accessibility-toggle {
+    width: 100%;
+    margin-top: 0.6rem;
+    padding: 0 0.65rem;
+    text-align: left;
+}
+
+.sq-accessibility-speech {
+    display: grid;
+    grid-template-columns: 1fr 0.7fr;
+    gap: 0.35rem;
+    margin-top: 0.45rem;
+}
+
+.sq-accessibility-speech button {
+    padding: 0 0.65rem;
+    text-align: center;
+}
+
+/* ==========================================================
    Dark Theme
 ========================================================== */
 
@@ -423,6 +511,20 @@
 
 [data-theme="dark"] .sq-dropdown-menu {
     background: var(--sq-bg-surface);
+}
+
+[data-theme="dark"] .sq-accessibility-controls button,
+[data-theme="dark"] .sq-accessibility-toggle,
+[data-theme="dark"] .sq-accessibility-speech button {
+    background: #0f172a;
+    border-color: var(--sq-border);
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .sq-accessibility-controls button.is-active,
+[data-theme="dark"] .sq-accessibility-toggle.is-active {
+    background: var(--sq-color-primary);
+    color: #ffffff;
 }
 
 /* ==========================================================

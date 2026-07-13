@@ -1,7 +1,13 @@
 # SaQshi VAPT Report and Security Test Cases
 
 Version: 1.0  
-Updated: 2026-07-13  
+Updated: 2026-07-13
+
+Security update note, 2026-07-13:
+
+- SQLI-001 was documented and rectified in `api/assessment/v1/action_plan.php`.
+- The previous dynamic `checkpoint_id IN ($ids)` action-plan suggestion query now uses prepared placeholders and bound parameters.
+- Detailed record: `docs/security/sql_injection_security_review.md`.
 Assessment type: Safe local static VAPT review and test-case preparation  
 Scope: `api`, `ui`, authentication, session, role scope, file upload, reports, monitoring APIs, documentation
 
@@ -139,4 +145,3 @@ Overall posture: **Improving, but release should require closure of high-risk it
 | Upload review | Completed | Extension and MIME checks exist; production hardening recommended. |
 | Scope review | Completed | Shared state bootstrap applies role scope. |
 | Active exploit testing | Not performed | Requires explicit test environment and approval. |
-

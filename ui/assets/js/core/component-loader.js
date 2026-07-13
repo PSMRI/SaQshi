@@ -51,7 +51,7 @@
 
     const CONFIG = {
         basePath: "/ui/components",
-        assetVersion: "20260710-3",
+        assetVersion: "20260713-a11y-speech-2",
         attribute: "data-component",
         cache: false,
         debug: true,
