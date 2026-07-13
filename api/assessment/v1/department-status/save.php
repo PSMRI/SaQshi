@@ -144,6 +144,13 @@ try {
     }
 
     if (($result['status'] ?? '') === 'success') {
+        Event::dispatch('department.activation.saved', [
+            'assessment_id' => $assPeriod,
+            'fac_id' => $facId,
+            'saved_by' => $userId,
+            'data' => $result['data'] ?? []
+        ]);
+
         Response::success(
             $result['message'],
             $result['data'] ?? []

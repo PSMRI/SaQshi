@@ -19,9 +19,18 @@ try {
     $payload = json_decode(file_get_contents('php://input') ?: '{}', true);
     $payload = is_array($payload) ? $payload : [];
 
+    $result = OutcomeService::save($con, $payload, SessionManager::userId(), SessionManager::facilityId());
+
+    Event::dispatch('performance.outcome.saved', [
+        'fac_id' => SessionManager::facilityId(),
+        'user_id' => SessionManager::userId(),
+        'payload' => $payload,
+        'result' => $result
+    ]);
+
     Response::success(
         'Outcome saved successfully',
-        OutcomeService::save($con, $payload, SessionManager::userId(), SessionManager::facilityId())
+        $result
     );
 } catch (Throwable $e) {
     Response::serverError($e->getMessage());

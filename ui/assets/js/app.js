@@ -134,13 +134,11 @@
     }
 
     function initChat() {
-        if (SQ.chat) {
-            SQ.chat.config({
-                title: "Ask SaQshi",
-                subtitle: "Assessment & quality assistant",
-                endpoint: "/ai/v1/chat.php"
-            });
-        }
+        /*
+         * Chat assistant is loaded as ui/components/chat-assistant.
+         * Do not initialize the legacy SQ.chat floating widget here,
+         * otherwise two floating help buttons appear on every page.
+         */
     }
 
     function protectPage() {

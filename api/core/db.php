@@ -1,6 +1,12 @@
 <?php
-$con = mysqli_connect("192.168.20.42:3306","sarbsoft_sarbsoft_nqaadmin","!@#897manish","sarbsoft_nqa_up");
-if (!$con) {
-	die("Connection failed: " . mysqli_connect_error());
-}
-    ?>
+
+/*!
+ * ==========================================================
+ * SaQshi Open Source
+ * Core Database Connection Alias
+ * db.php
+ * Version 1.0.0 | Updated 2026-07-10
+ * ==========================================================
+ */
+
+require_once dirname(__DIR__) . '/assets/conn/db.php';

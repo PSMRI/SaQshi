@@ -294,6 +294,16 @@ try {
 
     $countRow = $stmt->get_result()->fetch_assoc();
 
+    Event::dispatch('checklist.response.saved', [
+        'assessment_id' => $assessmentId,
+        'dept_id' => $deptId,
+        'checkpoint_id' => $checkpointId,
+        'response_value' => $responseValue,
+        'score' => $score,
+        'fac_id' => $facId,
+        'updated_by' => $userId
+    ]);
+
     Response::success(
         'Response saved successfully',
         [

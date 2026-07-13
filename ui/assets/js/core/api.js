@@ -21,7 +21,7 @@
         csrfEndpoint: "/auth/v1/csrf.php",
         timeout: 30000,
         csrfKey: "sq_csrf_token",
-        debug: true
+        debug: false
     };
 
     function normalizeEndpoint(endpoint) {
@@ -131,9 +131,13 @@
 
         return {
             status: response.ok ? "success" : "error",
-            message: text || response.statusText,
+            message: response.ok
+                ? (text || response.statusText)
+                : "Something went wrong while processing your request. Please try again.",
             data: null,
-            errors: null
+            errors: response.ok ? null : {
+                http_status: response.status
+            }
         };
     }
 
@@ -189,6 +193,22 @@
         );
     }
 
+    function redactSensitive(value) {
+        if (!value || typeof value !== "object" || value instanceof FormData) {
+            return value;
+        }
+
+        const copy = Array.isArray(value) ? value.slice() : Object.assign({}, value);
+
+        ["password", "passwd", "pwd", "confirm_password", "old_password", "new_password", "captcha"].forEach(function (key) {
+            if (Object.prototype.hasOwnProperty.call(copy, key)) {
+                copy[key] = "***REDACTED***";
+            }
+        });
+
+        return copy;
+    }
+
     async function doFetch(method, endpoint, data, options, retrying = false) {
         const controller = new AbortController();
         const timeout = options.timeout || API.timeout;
@@ -220,7 +240,7 @@
                 : buildUrl(endpoint, options.params || {});
 
             if (API.debug) {
-                console.log("[SQ API]", method, url, data || "");
+                console.log("[SQ API]", method, url, redactSensitive(data) || "");
             }
 
             const response = await fetch(url, fetchOptions);

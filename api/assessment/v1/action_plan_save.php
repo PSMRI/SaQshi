@@ -382,6 +382,18 @@ try {
         }
     }
 
+    Event::dispatch('gap.action_plan.saved', [
+        'assessment_id' => $assessmentId,
+        'dept_id' => $deptId,
+        'checkpoint_id' => $checkpointId,
+        'fac_id' => $facId,
+        'score' => (float)$gap['score'],
+        'achievability' => $achievability,
+        'priority' => $priority,
+        'status' => $status,
+        'updated_by' => $userId
+    ]);
+
     Response::success(
         'Action plan saved successfully',
         [

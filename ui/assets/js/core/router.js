@@ -401,7 +401,34 @@
             const module = SQ[moduleName] || SQ[name];
 
             if (module && typeof module.init === "function") {
-                await module.init();
+                try {
+                    await module.init();
+                } catch (initError) {
+                    console.error("[SQ Page Init Error]", initError);
+
+                    const message =
+                        initError?.message ||
+                        "Unable to load page data right now. Please refresh or try again after some time.";
+
+                    const notice = document.createElement("div");
+                    notice.className = "sq-alert sq-alert-warning sq-mb-3";
+                    notice.innerHTML = `
+                        <div class="sq-alert-content">
+                            <div class="sq-alert-title">Page data could not be loaded</div>
+                            <div class="sq-alert-text">${escapeHtml(message)}</div>
+                        </div>
+                    `;
+
+                    const pageContent = document.querySelector(CONFIG.contentSelector);
+
+                    if (pageContent) {
+                        pageContent.prepend(notice);
+                    }
+
+                    if (SQ.notification && typeof SQ.notification.warning === "function") {
+                        SQ.notification.warning("Page opened, but some data could not be loaded.");
+                    }
+                }
             }
 
         } catch (error) {

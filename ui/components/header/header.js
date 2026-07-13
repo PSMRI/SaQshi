@@ -141,9 +141,16 @@
         }
 
         btn.addEventListener("click", function () {
-            if (SQ.chat && SQ.chat.toggle) {
-                SQ.chat.toggle();
+            if (SQ.aiChatAssistant && SQ.aiChatAssistant.open) {
+                SQ.aiChatAssistant.open();
+                return;
             }
+
+            window.setTimeout(function () {
+                if (SQ.aiChatAssistant && SQ.aiChatAssistant.open) {
+                    SQ.aiChatAssistant.open();
+                }
+            }, 150);
         });
     }
 

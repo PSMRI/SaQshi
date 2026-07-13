@@ -42,6 +42,66 @@
         return document.getElementById("captchaQuestion");
     }
 
+    function pemToArrayBuffer(pem) {
+        const base64 = String(pem || "")
+            .replace(/-----BEGIN PUBLIC KEY-----/g, "")
+            .replace(/-----END PUBLIC KEY-----/g, "")
+            .replace(/\s+/g, "");
+        const binary = window.atob(base64);
+        const bytes = new Uint8Array(binary.length);
+
+        for (let i = 0; i < binary.length; i += 1) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+
+        return bytes.buffer;
+    }
+
+    function arrayBufferToBase64(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = "";
+
+        bytes.forEach(function (byte) {
+            binary += String.fromCharCode(byte);
+        });
+
+        return window.btoa(binary);
+    }
+
+    async function encryptPassword(plainPassword) {
+        if (!window.crypto || !window.crypto.subtle) {
+            throw new Error("Secure password encryption is not available in this browser. Please use HTTPS or localhost.");
+        }
+
+        const keyResponse = await SQ.api.get("/auth/v1/login_key.php", {}, {
+            loader: false,
+            showError: false,
+            redirectOnUnauthorized: false
+        });
+
+        const publicKeyPem = keyResponse.data?.public_key || "";
+
+        if (!publicKeyPem) {
+            throw new Error("Login security key could not be loaded. Please try again.");
+        }
+
+        const publicKey = await window.crypto.subtle.importKey(
+            "spki",
+            pemToArrayBuffer(publicKeyPem),
+            { name: "RSA-OAEP", hash: "SHA-1" },
+            false,
+            ["encrypt"]
+        );
+
+        const encrypted = await window.crypto.subtle.encrypt(
+            { name: "RSA-OAEP" },
+            publicKey,
+            new TextEncoder().encode(plainPassword)
+        );
+
+        return arrayBufferToBase64(encrypted);
+    }
+
     function setButtonLoading(isLoading) {
         const btn = button();
 
@@ -134,9 +194,10 @@
             }
         }
 
+        const plainPassword = password().value;
         const payload = {
             username: username().value.trim(),
-            password: password().value,
+            password_enc: "",
             captcha: captcha().value.trim()
         };
 
@@ -148,9 +209,10 @@
             }
 
             let response;
+            payload.password_enc = await encryptPassword(plainPassword);
 
-            if (SQ.auth && SQ.auth.login) {
-                response = await SQ.auth.login(payload.username, payload.password, payload.captcha);
+            if (SQ.auth && SQ.auth.loginEncrypted) {
+                response = await SQ.auth.loginEncrypted(payload.username, payload.password_enc, payload.captcha);
             } else {
                 response = await SQ.api.post(
                     "/auth/v1/login.php",
@@ -174,7 +236,9 @@
                 SQ.notification.success(response.message || "Login successful");
             }
 
-            window.location.href = "/ui/dashboard.html";
+            window.location.href = Number(user && user.role_id) === 9
+                ? "/ui/dashboard.html?route=state/dashboard"
+                : "/ui/dashboard.html";
 
         } catch (error) {
             console.error(error);

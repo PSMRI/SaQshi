@@ -194,6 +194,16 @@ try {
         Response::serverError('Assessment completion failed: ' . $stmt->error);
     }
 
+    Event::dispatch('assessment.completed', [
+        'assessment_id' => $assessmentId,
+        'assessment_name' => $assessment['assessment_name'],
+        'framework_code' => $assessment['framework_code'],
+        'fac_id' => $facId,
+        'total_active_departments' => $totalActive,
+        'completed_departments' => $completedCount,
+        'completed_by' => $userId
+    ]);
+
     Response::success(
         'Assessment completed successfully',
         [

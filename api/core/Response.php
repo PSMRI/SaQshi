@@ -81,6 +81,13 @@ class Response
     public static function serverError(
         string $message = 'Internal server error'
     ): void {
-        self::send('error', $message, null, null, 500);
+        if (class_exists('ErrorHandler')) {
+            ErrorHandler::log($message);
+            self::send('error', ErrorHandler::friendlyMessage(), null, [
+                'request_id' => ErrorHandler::requestId()
+            ], 500);
+        }
+
+        self::send('error', 'Something went wrong while processing your request. Please try again.', null, null, 500);
     }
 }

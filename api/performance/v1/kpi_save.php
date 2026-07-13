@@ -19,9 +19,18 @@ try {
     $payload = json_decode(file_get_contents('php://input') ?: '{}', true);
     $payload = is_array($payload) ? $payload : [];
 
+    $result = KPIService::save($con, $payload, SessionManager::userId(), SessionManager::facilityId());
+
+    Event::dispatch('performance.kpi.saved', [
+        'fac_id' => SessionManager::facilityId(),
+        'user_id' => SessionManager::userId(),
+        'payload' => $payload,
+        'result' => $result
+    ]);
+
     Response::success(
         'KPI saved successfully',
-        KPIService::save($con, $payload, SessionManager::userId(), SessionManager::facilityId())
+        $result
     );
 } catch (Throwable $e) {
     Response::serverError($e->getMessage());

@@ -22,6 +22,10 @@ try {
     $facilityTypeId = (int)($_GET['facility_type_id'] ?? $facility['fac_type_id'] ?? 0);
     $departmentId = (int)($_GET['department_id'] ?? $_GET['dept_id'] ?? 0);
     $indicatorType = (string)($_GET['indicator_type'] ?? '');
+    $rule = PerformanceService::facilityTypeRule($facilityTypeId);
+    if (strtoupper($indicatorType) === 'KPI' && (!$rule['kpi_applicable'] || $rule['block_kpi_entry'])) {
+        $indicatorType = 'OUTCOME';
+    }
     $activeAssessment = PerformanceService::activeAssessment($con, $facId);
     $activeDepartments = PerformanceService::activeDepartmentIds($con, $facId);
     $items = IndicatorService::list($facilityTypeId, $departmentId, $indicatorType);
@@ -34,6 +38,8 @@ try {
 
     Response::success('Indicator list loaded', [
         'facility' => $facility,
+        'rule' => $rule,
+        'effective_indicator_type' => strtoupper($indicatorType),
         'active_assessment' => $activeAssessment,
         'active_department_ids' => $activeDepartments,
         'items' => $items

@@ -135,11 +135,30 @@
     }
 
     function renderFacility() {
+        const rule = state.rule || {};
         $("kpiFacilityContext").innerHTML = `
             <div><span>Facility</span><strong>${esc(state.facility?.fac_name || "-")}</strong></div>
             <div><span>Facility Type</span><strong>${esc(state.facility?.facility_type || "-")}</strong></div>
             <div><span>Selected KPI</span><strong>${state.items.length}</strong></div>
+            ${rule.outcome_treated_as_kpi ? `<div><span>Rule</span><strong>Outcome as KPI</strong></div>` : ""}
         `;
+    }
+
+    function renderRuleBlock() {
+        const rule = state.rule || {};
+        const blocked = rule.kpi_applicable === false || rule.block_kpi_entry === true;
+        const message = rule.message || "KPI entry is not applicable for this facility type.";
+
+        if ($("kpiCompleteMessage")) {
+            $("kpiCompleteMessage").hidden = !blocked;
+            $("kpiCompleteMessage").innerHTML = blocked
+                ? `<strong>${esc(message)}</strong><br><span>Please use Outcome Indicators for this facility type.</span>`
+                : `<strong>All KPI indicators are already entered for this month.</strong>`;
+        }
+        if ($("kpiWizard")) $("kpiWizard").hidden = blocked;
+        if ($("kpiHistoryRows") && blocked) $("kpiHistoryRows").innerHTML = "KPI is not applicable for this facility type.";
+
+        return blocked;
     }
 
     function renderHistory() {
@@ -270,6 +289,7 @@
         });
 
         state.facility = response?.data?.facility || {};
+        state.rule = response?.data?.rule || {};
         state.allItems = response?.data?.items || [];
 
         if (!deptId) {
@@ -284,6 +304,9 @@
         state.editMode = false;
 
         renderFacility();
+        if (renderRuleBlock()) {
+            return;
+        }
         await loadHistory();
         showItem();
     }

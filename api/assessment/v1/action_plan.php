@@ -420,7 +420,8 @@ try {
     $suggestionMap = [];
 
     if (!empty($checkpointIds)) {
-        $ids = implode(',', array_map('intval', array_keys($checkpointIds)));
+        $suggestionCheckpointIds = array_map('intval', array_keys($checkpointIds));
+        $suggestionPlaceholders = implode(',', array_fill(0, count($suggestionCheckpointIds), '?'));
 
         $sqlSuggestions = "
             SELECT
@@ -435,7 +436,7 @@ try {
                 created_by,
                 created_on
             FROM assessment_action_plan_library
-            WHERE checkpoint_id IN ($ids)
+            WHERE checkpoint_id IN ($suggestionPlaceholders)
               AND (
                     framework_code IS NULL
                     OR framework_code = ''
@@ -451,7 +452,11 @@ try {
             Response::serverError('Action plan suggestion prepare failed: ' . $con->error);
         }
 
-        $stmtSuggestions->bind_param('s', $frameworkCode);
+        $suggestionTypes = str_repeat('i', count($suggestionCheckpointIds)) . 's';
+        $suggestionParams = $suggestionCheckpointIds;
+        $suggestionParams[] = $frameworkCode;
+
+        $stmtSuggestions->bind_param($suggestionTypes, ...$suggestionParams);
         $stmtSuggestions->execute();
 
         $suggestionResult = $stmtSuggestions->get_result();

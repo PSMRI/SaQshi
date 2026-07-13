@@ -218,6 +218,10 @@
         const panel = document.querySelector("#sq-chat-panel");
         const toggle = document.querySelector("#sq-chat-toggle");
 
+        if (!panel || !toggle) {
+            return;
+        }
+
         panel.hidden = false;
         panel.classList.add("is-open");
         toggle.setAttribute("aria-expanded", "true");
@@ -236,6 +240,11 @@
     function closeChat() {
         const panel = document.querySelector("#sq-chat-panel");
         const toggle = document.querySelector("#sq-chat-toggle");
+
+        if (!panel || !toggle) {
+            isOpen = false;
+            return;
+        }
 
         panel.classList.remove("is-open");
         panel.hidden = true;
@@ -419,7 +428,9 @@
     };
 
     document.addEventListener("DOMContentLoaded", function () {
-        createWidget();
+        if (document.body && document.body.hasAttribute("data-enable-legacy-chat")) {
+            createWidget();
+        }
     });
 
 })(window, document);

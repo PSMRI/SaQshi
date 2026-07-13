@@ -46,6 +46,13 @@ class KPIService
         PerformanceService::ensureTable($con);
 
         $deptId = (int)($payload['department_id'] ?? $payload['dept_id'] ?? 0);
+        $facilityTypeId = (int)($payload['facility_type_id'] ?? $payload['fac_type_id'] ?? 0);
+        if ($facilityTypeId <= 0) {
+            $facility = PerformanceService::facilityMeta($facilityId);
+            $facilityTypeId = (int)($facility['fac_type_id'] ?? 0);
+        }
+        PerformanceService::assertIndicatorAllowed($facilityTypeId, $type);
+
         $indicatorId = (int)($payload['indicator_id'] ?? 0);
         $month = (int)($payload['month'] ?? date('n'));
         $year = (int)($payload['year'] ?? date('Y'));

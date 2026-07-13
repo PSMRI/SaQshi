@@ -197,6 +197,53 @@
 
     }
 
+    function applyRoleVisibility() {
+
+        const user =
+            SQ.auth &&
+            typeof SQ.auth.getUser === "function"
+                ? SQ.auth.getUser()
+                : null;
+
+        const roleId = Number(user && user.role_id);
+        const isMonitoringRole = [4, 5, 8, 9].indexOf(roleId) !== -1;
+        const monitoringLabel =
+            roleId === 5 ? "Regional Monitoring" :
+            roleId === 4 ? "District Monitoring" :
+            roleId === 8 ? "Block Monitoring" :
+            "State Monitoring";
+        const dashboardLabel =
+            roleId === 5 ? "Regional Dashboard" :
+            roleId === 4 ? "District Dashboard" :
+            roleId === 8 ? "Block Dashboard" :
+            "State Dashboard";
+
+        document
+            .querySelectorAll("[data-state-only]")
+            .forEach(function (item) {
+                item.hidden = !isMonitoringRole;
+            });
+
+        document
+            .querySelectorAll("[data-facility-only]")
+            .forEach(function (item) {
+                item.hidden = isMonitoringRole;
+            });
+
+        document
+            .querySelectorAll("[data-monitoring-title]")
+            .forEach(function (item) {
+                item.textContent = monitoringLabel;
+            });
+
+        document
+            .querySelectorAll("[data-monitoring-dashboard-label]")
+            .forEach(function (item) {
+                item.textContent = dashboardLabel;
+            });
+
+    }
+
     /* ======================================================
        Overlay
     ====================================================== */
@@ -314,6 +361,8 @@
         bindAccordion();
 
         ensureAssessorInfoLink();
+
+        applyRoleVisibility();
 
         activeMenu();
 

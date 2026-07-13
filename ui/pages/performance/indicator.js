@@ -20,6 +20,8 @@
         savedMap: {},
         selectedIndex: 0,
         facility: null,
+        rule: null,
+        effectiveIndicatorType: "",
         editMode: false
     };
 
@@ -56,6 +58,10 @@
 
     function indicatorType() {
         return $("indicatorTypeFilter")?.value || "OUTCOME";
+    }
+
+    function effectiveIndicatorType() {
+        return state.effectiveIndicatorType || indicatorType();
     }
 
     function selectedPeriod() {
@@ -119,7 +125,7 @@
     function savedKey(indicatorId) {
         const period = selectedPeriod();
         const deptId = $("indicatorDepartmentFilter")?.value || "";
-        return [deptId, indicatorId, period.month, period.year, indicatorType()].join("|");
+        return [deptId, indicatorId, period.month, period.year, effectiveIndicatorType()].join("|");
     }
 
     function buildSavedMap() {
@@ -153,6 +159,7 @@
             <div><span>Facility</span><strong>${esc(state.facility?.fac_name || "-")}</strong></div>
             <div><span>Facility Type</span><strong>${esc(state.facility?.facility_type || "-")}</strong></div>
             <div><span>Assessment</span><strong>${esc(assessmentText)}</strong></div>
+            ${state.rule?.outcome_treated_as_kpi ? `<div><span>Rule</span><strong>Outcome as KPI</strong></div>` : ""}
         `;
     }
 
@@ -163,7 +170,7 @@
             String(row.dept_id || row.department_id || "") === String(deptId)
             && num(row.entry_month) === period.month
             && num(row.entry_year) === period.year
-            && String(row.indicator_type || "").toUpperCase() === indicatorType()
+            && String(row.indicator_type || "").toUpperCase() === effectiveIndicatorType()
         );
 
         $("indicatorHistoryRows").innerHTML = rows.length
@@ -277,7 +284,7 @@
         const period = selectedPeriod();
         const deptId = $("indicatorDepartmentFilter")?.value || "";
         const response = await SQ.api.get("/performance/v1/indicator_history.php", {
-            indicator_type: indicatorType(),
+            indicator_type: effectiveIndicatorType(),
             month: period.month,
             year: period.year,
             department_id: deptId
@@ -296,6 +303,11 @@
         }, { loader: false, showError: false });
 
         state.facility = response?.data?.facility || {};
+        state.rule = response?.data?.rule || {};
+        state.effectiveIndicatorType = response?.data?.effective_indicator_type || indicatorType();
+        if ($("indicatorTypeFilter") && $("indicatorTypeFilter").value !== state.effectiveIndicatorType) {
+            $("indicatorTypeFilter").value = state.effectiveIndicatorType;
+        }
         state.activeAssessment = response?.data?.active_assessment || null;
         state.activeDepartmentIds = response?.data?.active_department_ids || [];
         state.allItems = response?.data?.items || [];
@@ -327,7 +339,7 @@
 
         const period = selectedPeriod();
         const payload = {
-            indicator_type: indicatorType(),
+            indicator_type: effectiveIndicatorType(),
             indicator_id: num($("indicatorId").value),
             indicator_code: $("indicatorCode").value,
             indicator_name: $("indicatorName").value,

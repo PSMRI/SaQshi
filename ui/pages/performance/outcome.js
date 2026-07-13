@@ -135,10 +135,12 @@
     }
 
     function renderFacility() {
+        const rule = state.rule || {};
         $("outcomeFacilityContext").innerHTML = `
             <div><span>Facility</span><strong>${esc(state.facility?.fac_name || "-")}</strong></div>
             <div><span>Facility Type</span><strong>${esc(state.facility?.facility_type || "-")}</strong></div>
             <div><span>Selected Indicators</span><strong>${state.items.length}</strong></div>
+            ${rule.outcome_treated_as_kpi ? `<div><span>Rule</span><strong>Outcome as KPI</strong></div>` : ""}
         `;
     }
 
@@ -269,6 +271,7 @@
         });
 
         state.facility = response?.data?.facility || {};
+        state.rule = response?.data?.rule || {};
         state.allItems = response?.data?.items || [];
 
         if (!deptId) {

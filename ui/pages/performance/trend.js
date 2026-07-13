@@ -16,7 +16,9 @@
         facility: {},
         summary: {},
         monthStatus: [],
-        trends: { KPI: [], OUTCOME: [] }
+        trends: { KPI: [], OUTCOME: [], EFFECTIVE: [] },
+        effectiveLabel: "Performance",
+        effectiveType: "KPI"
     };
 
     function $(id) {
@@ -86,9 +88,8 @@
             ? state.monthStatus.slice(-12).map(row => `
                 <div class="sq-trend-month-card">
                     <strong>${esc(shortMonth(row.period))}</strong>
-                    <span>KPI <b>${esc(row.kpi_entries || 0)}</b></span>
-                    <span>Outcome <b>${esc(row.outcome_entries || 0)}</b></span>
-                    <a href="${esc(indicatorEntryUrl("OUTCOME", "", row.period))}">Edit month</a>
+                    <span>${esc(state.effectiveLabel || "Performance")} <b>${esc(row.total_entries || 0)}</b></span>
+                    <a href="${esc(indicatorEntryUrl(state.effectiveType || "OUTCOME", "", row.period))}">Edit month</a>
                 </div>
             `).join("")
             : `<div class="sq-trend-empty">No month-wise performance entries available.</div>`;
@@ -184,7 +185,8 @@
         setText("trendTotalEntries", state.summary?.total_entries || 0);
         setText("trendLatestPeriod", state.summary?.latest_period ? shortMonth(state.summary.latest_period) : "-");
         renderMonthStatus();
-        renderCharts("trendOutcomeCharts", state.trends.OUTCOME || []);
+        setText("trendEffectiveTitle", `${state.effectiveLabel || "Performance"} Trends`);
+        renderCharts("trendOutcomeCharts", state.trends.EFFECTIVE || state.trends.OUTCOME || []);
         renderCharts("trendKpiCharts", state.trends.KPI || []);
     }
 
@@ -197,7 +199,8 @@
     }
 
     function downloadExcel(type) {
-        const series = state.trends[type] || [];
+        const requestedType = type === "EFFECTIVE" ? (state.effectiveType || "OUTCOME") : type;
+        const series = type === "EFFECTIVE" ? (state.trends.EFFECTIVE || []) : (state.trends[type] || []);
         if (!series.length) {
             if (SQ.toast) SQ.toast(`No ${type} trend data to download.`, "warning");
             return;
@@ -206,7 +209,7 @@
         const periods = [...new Set(series.flatMap(item => (item.points || []).map(point => point.period)))].sort();
         const colCount = Math.max(4, 3 + periods.length);
         const reportTime = new Date().toLocaleString();
-        const title = `${type} Performance Trend`;
+        const title = `${type === "EFFECTIVE" ? state.effectiveLabel : requestedType} Performance Trend`;
         const dataRows = series.map(item => {
             const latest = (item.points || [])[item.points.length - 1] || {};
             const byPeriod = new Map((item.points || []).map(point => [point.period, point]));
@@ -270,7 +273,7 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `${type.toLowerCase()}_performance_trend_${new Date().toISOString().slice(0, 10)}.xls`;
+        link.download = `${String(type === "EFFECTIVE" ? state.effectiveLabel : requestedType).toLowerCase().replace(/[^a-z0-9]+/g, "_")}_performance_trend_${new Date().toISOString().slice(0, 10)}.xls`;
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -285,7 +288,10 @@
         state.facility = response?.data?.facility || {};
         state.summary = response?.data?.summary || {};
         state.monthStatus = response?.data?.month_status || [];
-        state.trends = response?.data?.indicator_trends || { KPI: [], OUTCOME: [] };
+        state.trends = response?.data?.indicator_trends || { KPI: [], OUTCOME: [], EFFECTIVE: [] };
+        state.effectiveType = response?.data?.effective_indicator_type || "KPI";
+        state.effectiveLabel = response?.data?.effective_indicator_label || state.effectiveType || "Performance";
+        if ($("btnDownloadOutcomeTrend")) $("btnDownloadOutcomeTrend").textContent = `${state.effectiveLabel} Excel`;
         renderAll();
     }
 
@@ -295,7 +301,7 @@
         $("btnTrendRefresh")?.addEventListener("click", loadTrend);
         $("trendAllIndicators")?.addEventListener("change", loadTrend);
         $("trendChartStyle")?.addEventListener("change", renderAll);
-        $("btnDownloadOutcomeTrend")?.addEventListener("click", () => downloadExcel("OUTCOME"));
+        $("btnDownloadOutcomeTrend")?.addEventListener("click", () => downloadExcel("EFFECTIVE"));
         $("btnDownloadKpiTrend")?.addEventListener("click", () => downloadExcel("KPI"));
         loadTrend().catch(console.error);
     }

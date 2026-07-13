@@ -185,6 +185,17 @@ try {
 
     $assessmentId = (int)$stmt->insert_id;
 
+    Event::dispatch('assessment.created', [
+        'assessment_id' => $assessmentId,
+        'assessment_name' => $assessmentName,
+        'framework_code' => $frameworkCode,
+        'fac_id' => $facId,
+        'start_date' => $startDate,
+        'end_date' => $endDate,
+        'status' => 'ACTIVE',
+        'created_by' => $userId
+    ]);
+
     Response::success(
         'Assessment created successfully',
         [

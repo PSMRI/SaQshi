@@ -72,6 +72,81 @@ class PerformanceService
         return is_array($data) ? $data : $fallback;
     }
 
+    public static function rulesConfig(): array
+    {
+        return self::readJson(__DIR__ . '/../config/performance/rules.json', [
+            'default_rule' => [
+                'kpi_applicable' => true,
+                'outcome_applicable' => true,
+                'outcome_treated_as_kpi' => false,
+                'block_kpi_entry' => false,
+                'message' => ''
+            ],
+            'facility_type_rules' => []
+        ]);
+    }
+
+    public static function facilityTypeRule(int $facilityTypeId): array
+    {
+        $config = self::rulesConfig();
+        $rule = $config['default_rule'] ?? [];
+
+        foreach (($config['facility_type_rules'] ?? []) as $item) {
+            if ((int)($item['fac_type_id'] ?? 0) === $facilityTypeId) {
+                $rule = array_merge($rule, $item);
+                break;
+            }
+        }
+
+        return [
+            'fac_type_id' => $facilityTypeId,
+            'kpi_applicable' => (bool)($rule['kpi_applicable'] ?? true),
+            'outcome_applicable' => (bool)($rule['outcome_applicable'] ?? true),
+            'outcome_treated_as_kpi' => (bool)($rule['outcome_treated_as_kpi'] ?? false),
+            'block_kpi_entry' => (bool)($rule['block_kpi_entry'] ?? false),
+            'message' => (string)($rule['message'] ?? '')
+        ];
+    }
+
+    public static function assertIndicatorAllowed(int $facilityTypeId, string $indicatorType): array
+    {
+        $type = strtoupper(trim($indicatorType));
+        $rule = self::facilityTypeRule($facilityTypeId);
+
+        if ($type === 'KPI' && (!$rule['kpi_applicable'] || $rule['block_kpi_entry'])) {
+            Response::validation([
+                'indicator_type' => $rule['message'] ?: 'KPI entry is not applicable for this facility type.'
+            ]);
+        }
+
+        if ($type === 'OUTCOME' && !$rule['outcome_applicable']) {
+            Response::validation([
+                'indicator_type' => 'Outcome entry is not applicable for this facility type.'
+            ]);
+        }
+
+        return $rule;
+    }
+
+    public static function configuredIndicatorCount(string $indicatorType, int $facilityTypeId = 0, int $departmentId = 0): int
+    {
+        $type = strtoupper(trim($indicatorType));
+        $path = $type === 'KPI'
+            ? __DIR__ . '/../config/performance/kpi.json'
+            : __DIR__ . '/../config/performance/outcome.json';
+
+        $config = self::readJson($path, []);
+        return count(self::flattenIndicators($config, $type, $facilityTypeId, $departmentId));
+    }
+
+    public static function effectivePerformanceType(int $facilityTypeId): string
+    {
+        $rule = self::facilityTypeRule($facilityTypeId);
+        return (!empty($rule['outcome_treated_as_kpi']) || empty($rule['kpi_applicable']) || !empty($rule['block_kpi_entry']))
+            ? 'OUTCOME'
+            : 'KPI';
+    }
+
     public static function facilityMeta(int $facId): array
     {
         $path = __DIR__ . '/../config/masters/facilities.json';
@@ -397,19 +472,28 @@ class PerformanceService
     public static function dashboard(mysqli $con, int $facId, array $filters = []): array
     {
         self::ensureTable($con);
+        $facility = self::facilityMeta($facId);
+        $facilityTypeId = (int)($facility['fac_type_id'] ?? 0);
+        $rule = self::facilityTypeRule($facilityTypeId);
+        $effectiveType = self::effectivePerformanceType($facilityTypeId);
         $summary = self::summary($con, $facId);
         $showAll = !empty($filters['all_indicators']) || (($filters['scope'] ?? '') === 'all');
         $trendLimit = $showAll ? 0 : 8;
+        $effectiveSeries = self::indicatorTrends($con, $facId, ['indicator_type' => $effectiveType, 'limit' => $trendLimit])['series'];
 
         return [
-            'facility' => self::facilityMeta($facId),
+            'facility' => $facility,
+            'rule' => $rule,
+            'effective_indicator_type' => $effectiveType,
+            'effective_indicator_label' => $effectiveType === 'OUTCOME' && !empty($rule['outcome_treated_as_kpi']) ? 'Outcome as KPI' : $effectiveType,
             'summary' => $summary,
-            'month_status' => self::monthlyStatus($con, $facId, []),
+            'month_status' => self::monthlyStatus($con, $facId, ['indicator_type' => $effectiveType]),
             'indicator_trends' => [
-                'KPI' => self::indicatorTrends($con, $facId, ['indicator_type' => 'KPI', 'limit' => $trendLimit])['series'],
-                'OUTCOME' => self::indicatorTrends($con, $facId, ['indicator_type' => 'OUTCOME', 'limit' => $trendLimit])['series']
+                'KPI' => $effectiveType === 'KPI' ? $effectiveSeries : [],
+                'OUTCOME' => $effectiveType === 'OUTCOME' ? $effectiveSeries : self::indicatorTrends($con, $facId, ['indicator_type' => 'OUTCOME', 'limit' => $trendLimit])['series'],
+                'EFFECTIVE' => $effectiveSeries
             ],
-            'trend' => self::trend($con, $facId, [])['series']
+            'trend' => self::trend($con, $facId, ['indicator_type' => $effectiveType])['series']
         ];
     }
 

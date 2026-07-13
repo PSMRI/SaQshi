@@ -3,7 +3,7 @@
 
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
-    const state = { open: false, sending: false, history: [] };
+    const state = { open: false, sending: false, history: [], initialized: false };
 
     function $(id) { return document.getElementById(id); }
     function esc(value) {
@@ -86,6 +86,8 @@
         });
     }
     function init() {
+        if (state.initialized || !$("sqAiChat")) return;
+        state.initialized = true;
         bind();
         render();
         loadHistory();
@@ -96,4 +98,9 @@
     document.addEventListener("sq:component-loaded", function (event) {
         if (event.detail?.name === "chat-assistant") init();
     });
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
 })(window, document);

@@ -112,6 +112,40 @@
         return response;
     }
 
+    async function loginEncrypted(username, passwordEnc, captcha = "") {
+        if (!username || !passwordEnc) {
+            throw {
+                status: "error",
+                message: "Username and password are required"
+            };
+        }
+
+        await loadCsrf();
+
+        const response = await SQ.api.post(
+            "/auth/v1/login.php",
+            {
+                username: username,
+                password_enc: passwordEnc,
+                captcha: captcha
+            },
+            {
+                loaderText: "Signing in..."
+            }
+        );
+
+        const user =
+            response.data?.user ||
+            response.user ||
+            null;
+
+        if (user) {
+            saveUser(user);
+        }
+
+        return response;
+    }
+
     async function logout() {
         try {
             await SQ.api.post(
@@ -267,6 +301,7 @@
 
         loadCsrf: loadCsrf,
         login: login,
+        loginEncrypted: loginEncrypted,
         logout: logout,
         me: me,
         requireAuth: requireAuth,

@@ -24,23 +24,34 @@
     <!-- Core JS -->
     <script src="/ui/assets/js/sq-ui.js?v=20260702-13"></script>
     <script src="/ui/assets/js/core/storage.js"></script>
-    <script src="/ui/assets/js/core/api.js?v=20260702-13"></script>
-    <script src="/ui/assets/js/core/auth.js?v=20260702-14"></script>
+    <script src="/ui/assets/js/core/api.js?v=20260710-3"></script>
+    <script src="/ui/assets/js/core/auth.js?v=20260710-3"></script>
     <script src="/ui/assets/js/core/validator.js"></script>
     <script src="/ui/assets/js/core/upload.js?v=20260704-2"></script>
-    <script src="/ui/assets/js/core/router.js?v=20260702-13"></script>
+    <script src="/ui/assets/js/core/pagination.js?v=20260713-1"></script>
+    <script src="/ui/assets/js/core/router.js?v=20260710-4"></script>
     <script src="/ui/assets/js/core/chat.js"></script>
-    <script src="/ui/assets/js/core/component-loader.js?v=20260704-5"></script>
+    <script src="/ui/assets/js/core/component-loader.js?v=20260710-3"></script>
     <script src="/ui/assets/js/app.js?v=20260702-13"></script>
 
     <!-- Page Bootstrap -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             if (window.SQ && SQ.router) {
+                const user =
+                    SQ.auth && SQ.auth.getUser
+                        ? SQ.auth.getUser()
+                        : null;
+                const requestedRoute = SQ.router.currentRouteFromUrl
+                    ? SQ.router.currentRouteFromUrl()
+                    : "dashboard";
+                const monitoringRoles = [4, 5, 8, 9];
+                const route = monitoringRoles.indexOf(Number(user && user.role_id)) !== -1 && requestedRoute === "dashboard"
+                    ? "state/dashboard"
+                    : requestedRoute;
+
                 SQ.router.navigate(
-                    SQ.router.currentRouteFromUrl
-                        ? SQ.router.currentRouteFromUrl()
-                        : "dashboard",
+                    route,
                     {},
                     {
                         history: false

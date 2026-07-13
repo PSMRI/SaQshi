@@ -51,7 +51,7 @@
 
     const CONFIG = {
         basePath: "/ui/components",
-        assetVersion: "20260704-5",
+        assetVersion: "20260710-3",
         attribute: "data-component",
         cache: false,
         debug: true,

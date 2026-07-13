@@ -21,6 +21,7 @@ try {
     $facility = PerformanceService::facilityMeta($facId);
     $facilityTypeId = (int)($_GET['facility_type_id'] ?? $facility['fac_type_id'] ?? 0);
     $departmentId = (int)($_GET['department_id'] ?? $_GET['dept_id'] ?? $_GET['fac_dept_id'] ?? 0);
+    $rule = PerformanceService::facilityTypeRule($facilityTypeId);
     $activeAssessment = PerformanceService::activeAssessment($con, $facId);
     $activeDepartments = PerformanceService::activeDepartmentIds($con, $facId);
     $items = PerformanceService::filterByDepartmentIds(
@@ -34,6 +35,8 @@ try {
 
     Response::success('Outcome list loaded', [
         'facility' => $facility,
+        'rule' => $rule,
+        'effective_indicator_type' => 'OUTCOME',
         'active_assessment' => $activeAssessment,
         'active_department_ids' => $activeDepartments,
         'items' => $items

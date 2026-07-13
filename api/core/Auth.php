@@ -46,7 +46,11 @@ class Auth
 
         $user = $this->findUser($username);
 
-        if (!$user || (int)($user['is_active'] ?? 0) !== 1) {
+        if (
+            !$user ||
+            (int)($user['is_active'] ?? 0) !== 1 ||
+            (array_key_exists('role_status', $user) && (int)($user['role_status'] ?? 0) !== 1)
+        ) {
             $this->recordAttempt($username, 'FAILED');
             return $this->error('Invalid username or password');
         }
@@ -116,7 +120,8 @@ class Auth
                 u.dist_id,
                 u.block_id,
                 u.division_id,
-                r.role_name
+                r.role_name,
+                r.role_status
             FROM s_user u
             LEFT JOIN u_role r
                 ON r.role_id = u.role_id_fk
@@ -175,7 +180,8 @@ class Auth
                 u.dist_id,
                 u.block_id,
                 u.division_id,
-                r.role_name
+                r.role_name,
+                r.role_status
             FROM s_user u
             LEFT JOIN u_role r
                 ON r.role_id = u.role_id_fk
@@ -370,11 +376,19 @@ class Auth
 
     private function loginAttemptTableExists(): bool
     {
+        static $exists = null;
+
+        if ($exists !== null) {
+            return $exists;
+        }
+
         $result = $this->db->query(
             "SHOW TABLES LIKE 'login_attempts'"
         );
 
-        return $result && $result->num_rows > 0;
+        $exists = $result && $result->num_rows > 0;
+
+        return $exists;
     }
 
     public static function hashPassword(string $password): string

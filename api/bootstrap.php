@@ -21,11 +21,17 @@ date_default_timezone_set('Asia/Kolkata');
 
 require_once __DIR__ . '/core/Security.php';
 require_once __DIR__ . '/core/Response.php';
+require_once __DIR__ . '/core/ErrorHandler.php';
+require_once __DIR__ . '/core/Env.php';
 require_once __DIR__ . '/core/SessionManager.php';
 require_once __DIR__ . '/core/Csrf.php';
+require_once __DIR__ . '/core/Event.php';
 
 Security::headers();
+ErrorHandler::register();
+Env::load();
 SessionManager::start();
+Event::traceRequest();
 
 /*
 |--------------------------------------------------------------------------

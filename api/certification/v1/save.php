@@ -9,6 +9,12 @@ certificationHandle(function () use ($con) {
 
     $row = CertificationService::save($con, certificationPayload());
 
+    Event::dispatch('certification.updated', [
+        'fac_id' => SessionManager::facilityId(),
+        'user_id' => SessionManager::userId(),
+        'certification' => $row
+    ]);
+
     respond([
         'status' => 'success',
         'message' => 'Certification saved successfully',

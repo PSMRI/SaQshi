@@ -13,7 +13,8 @@
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
     const state = {
-        trends: { KPI: [], OUTCOME: [] }
+        trends: { KPI: [], OUTCOME: [], EFFECTIVE: [] },
+        effectiveLabel: "KPI"
     };
 
     function setText(id, value) {
@@ -56,8 +57,7 @@
             ? rows.slice(-12).map(row => `
                 <div class="sq-performance-month-card">
                     <strong>${esc(shortMonth(row.period))}</strong>
-                    <span>KPI <b>${esc(row.kpi_entries || 0)}</b></span>
-                    <span>Outcome <b>${esc(row.outcome_entries || 0)}</b></span>
+                    <span>${esc(state.effectiveLabel || "Performance")} <b>${esc(row.total_entries || 0)}</b></span>
                     <em>Total ${esc(row.total_entries || 0)}</em>
                 </div>
             `).join("")
@@ -143,7 +143,7 @@
     }
 
     function renderTrendSections() {
-        renderCharts("perfOutcomeCharts", state.trends.OUTCOME || []);
+        renderCharts("perfOutcomeCharts", state.trends.EFFECTIVE || state.trends.OUTCOME || []);
         renderCharts("perfKpiCharts", state.trends.KPI || []);
     }
 
@@ -155,11 +155,14 @@
         const monthStatus = response?.data?.month_status || [];
         const trends = response?.data?.indicator_trends || {};
         state.trends = trends;
+        state.effectiveLabel = response?.data?.effective_indicator_label || response?.data?.effective_indicator_type || "Performance";
 
         setText("perfTotalMonths", summary.total_months || 0);
         setText("perfTotalEntries", summary.total_entries || 0);
-        setText("perfKpiIndicators", summary.kpi_indicators || 0);
+        setText("perfKpiIndicators", summary.kpi_indicators || summary.outcome_indicators || 0);
         setText("perfOutcomeIndicators", summary.outcome_indicators || 0);
+        setText("perfKpiIndicatorLabel", state.effectiveLabel === "Outcome as KPI" ? "Outcome as KPI Indicators" : "KPI Indicators");
+        setText("perfOutcomeIndicatorLabel", "Outcome Indicators");
         setText("perfLatestPeriod", `Latest period: ${summary.latest_period ? shortMonth(summary.latest_period) : "-"}`);
 
         renderMonthStatus(monthStatus);
