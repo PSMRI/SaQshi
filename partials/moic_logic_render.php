@@ -1,18 +1,49 @@
 <?php
+if (!function_exists('clean_sp_buffers_safe')) {
+    function clean_sp_buffers_safe($con): void
+    {
+        if (!($con instanceof mysqli)) {
+            return;
+        }
+
+        while ($con->more_results()) {
+            if (!$con->next_result()) {
+                break;
+            }
+
+            $extraResult = $con->store_result();
+
+            if ($extraResult instanceof mysqli_result) {
+                $extraResult->free();
+            }
+        }
+    }
+}
+
 if (isset($_POST['submit1'])) {
-    $_SESSION['FDepartment'] = $_SESSION['dept_id1'];
-    $_SESSION['concern'] = $_POST['Concern'];
-    $_SESSION['period'] = $_POST['Period'];
+    $_SESSION['FDepartment'] = (int) ($_SESSION['dept_id1'] ?? 0);
+    $_SESSION['concern'] = (int) ($_POST['Concern'] ?? 0);
+    $_SESSION['period'] = (int) ($_POST['Period'] ?? 0);
 
-    $C  = $_SESSION['concern'];
-    $F  = $_SESSION['FDepartment'];
-    $Fa = $_SESSION['u_facilityid'];
-    $p  = $_SESSION['period'];
+    $C  = (int) $_SESSION['concern'];
+    $F  = (int) $_SESSION['FDepartment'];
+    $Fa = (int) ($_SESSION['u_facilityid'] ?? 0);
+    $p  = (int) $_SESSION['period'];
 
-    if ($p == 0) {
+    if ($p <= 0) {
         echo '<div class="alert alert-danger mt-3">Kindly select assessment period.</div>';
         return;
     }
+
+    if ($C <= 0) {
+        echo '<div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle me-1"></i>
+                No Action Plan is available for the selected assessment cycle.
+              </div>';
+        return;
+    }
+
+    clean_sp_buffers_safe($con);
 
     $_SESSION['q1'] = "CALL moic_action_plan($Fa,$p,$F,$C)";
     $query = $con->query($_SESSION['q1']);
@@ -154,70 +185,112 @@ if (isset($_POST['submit1'])) {
 
 <?php
         }
-        mysqli_free_result($query);
-        $con->next_result();
     } else {
-        echo '<div class="alert alert-warning mt-3">No compliance found.</div>';
+        echo '<div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle me-1"></i>
+                No pending Action Plan is available for the selected assessment cycle.
+              </div>';
     }
+
+    if ($query instanceof mysqli_result) {
+        $query->free();
+    }
+
+    clean_sp_buffers_safe($con);
+
 } elseif (isset($_POST['submit2'])) {
   //echo '<div class="alert alert-success mt-3"><i class="bi bi-check-circle-fill me-2"></i>Action plan saved successfully!</div>';
   ?>
   <!-- post submit2 -->
   <?php
   // include('conn.php');
-  $q = $_POST['csqa_id1'];
-  $id = $_POST['csqa_id'];
-  $p = $_SESSION['period'];
-  $pri = $_POST['Priority'];
-  $moic_compliance = $_POST['f'];
+  $q = $_SESSION['q1'] ?? '';
+  $id = (int) ($_POST['csqa_id'] ?? 0);
+  $p = (int) ($_SESSION['period'] ?? 0);
+  $pri = (int) ($_POST['Priority'] ?? 0);
+  $moic_compliance = (int) ($_POST['f'] ?? 0);
+
+  if ($q === '' || $id <= 0 || $p <= 0) {
+      echo '<div class="alert alert-danger mt-3">
+              Invalid Action Plan request. Please select the assessment cycle again.
+            </div>';
+      return;
+  }
 
   if ($moic_compliance == 2) {
     $ass_id = $id;
     $facid = $_SESSION['u_facilityid'];
-    $insertfeedback = "call moic_nonach(2,$ass_id,$facid,$p,$pri)";
+    $insertfeedback = "CALL moic_nonach(2,$ass_id,$facid,$p,$pri)";
     $queryinsert = $con->query($insertfeedback);
-    if ($queryinsert) {
-      // echo '<button type="button" class="btn btn-success">Compliance status updated!</button>';
 
-  ?>
-      <p>
-        <button addEventListener="function()" type="button" class="btn btn-success"><?php echo "Compliance action plane status updated..!"; ?><i class="bi bi-check-circle"></i></button>
-      </p>
-    <?php
-
+    if (!$queryinsert) {
+        throw new Exception("Unable to update non-achievable Action Plan: " . $con->error);
     }
-    //  mysqli_free_result($queryinsert);
-    // $con->next_result();
+
+    if ($queryinsert instanceof mysqli_result) {
+        $queryinsert->free();
+    }
+
+    clean_sp_buffers_safe($con);
+
+    echo '<div class="alert alert-success mt-3">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            Action Plan status updated successfully.
+          </div>';
   } else {
-    $com = $_POST['comment'];
-    $date = $_POST['todate'];
-    $dres = $_POST['res'];
-    if ($dres == '' || $date == '' || $dres == '0' || empty($com)) {
-      echo "Please Select responsible Person/Nodal and Date";
-    ?>
+    $com  = trim($_POST['comment'] ?? '');
+    $date = trim($_POST['todate'] ?? '');
+    $dres = trim($_POST['res'] ?? '');
 
-    <?php exit;
+    if ($dres === '' || $date === '' || $dres === '0' || $com === '') {
+        echo '<div class="alert alert-warning mt-3">
+                Please select the responsible person/nodal officer, date, and Action Plan.
+              </div>';
+        return;
     }
-    ?>
-    <?php
-    $com = $_POST['comment'];
-    $p = $_SESSION['period'];
-    $ass_id = $_POST['csqa_id'];
-    $facid = $_SESSION['u_facilityid'];
-    $insertfeedback1 = "call moic_achiv(1,$ass_id, $facid,$p,'$dres','$date','$com',$pri)";
-    $queryinsert1 = $con->query($insertfeedback1);
-    // $queryinsert1 = mysqli_query($con, $insertfeedback1);
-   // if ($queryinsert1) {
-      // echo '<button type="button" class="btn btn-success">Compliance status updated!</button>';
 
-   // ?>
-     
-    <?php //}
-    // mysqli_free_result($queryinsert1);
-    // $con->next_result();
+    $p      = (int) ($_SESSION['period'] ?? 0);
+    $ass_id = (int) ($_POST['csqa_id'] ?? 0);
+    $facid  = (int) ($_SESSION['u_facilityid'] ?? 0);
+
+    $dresEsc = $con->real_escape_string($dres);
+    $dateEsc = $con->real_escape_string($date);
+    $comEsc  = $con->real_escape_string($com);
+
+    $insertfeedback1 = "CALL moic_achiv(
+        1,
+        $ass_id,
+        $facid,
+        $p,
+        '$dresEsc',
+        '$dateEsc',
+        '$comEsc',
+        $pri
+    )";
+
+    $queryinsert1 = $con->query($insertfeedback1);
+
+    if (!$queryinsert1) {
+        throw new Exception(
+            "Unable to save achievable Action Plan: " . $con->error
+        );
+    }
+
+    if ($queryinsert1 instanceof mysqli_result) {
+        $queryinsert1->free();
+    }
+
+    clean_sp_buffers_safe($con);
   }
-  //$query = mysqli_query($con, $q);
+
+  clean_sp_buffers_safe($con);
+
   $queryd = $con->query($q);
+
+  if (!$queryd) {
+      throw new Exception("Unable to load the next Action Plan: " . $con->error);
+  }
+
   if ($queryd->num_rows > 0) {
     while ($row = mysqli_fetch_array($queryd)) {
     ?>
@@ -353,9 +426,19 @@ if (isset($_POST['submit1'])) {
 
     <?php
     }
+  } else {
+      echo '<div class="alert alert-success mt-3">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              Action Plan completed successfully. No pending Action Plan remains for the selected assessment cycle.
+            </div>';
   }
-  mysqli_free_result($queryd);
-  $con->next_result();
+
+  if ($queryd instanceof mysqli_result) {
+      $queryd->free();
+  }
+
+  clean_sp_buffers_safe($con);
+
 } elseif (isset($_POST['submit3'])) {
   $F = $_SESSION['dept_id1'];
   $Fa = $_SESSION['u_facilityid'];
@@ -450,11 +533,15 @@ function exportToExcel() {
 
 <?php
     }
-   mysqli_free_result($query);
-    $con->next_result();
   } else {
     echo '<div class="alert alert-warning mt-3"><i class="bi bi-info-circle me-1"></i>No filled action plan available.</div>';
   }
+
+  if ($query instanceof mysqli_result) {
+      $query->free();
+  }
+
+  clean_sp_buffers_safe($con);
 }
 ?>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -531,4 +618,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
-<?php include("assets/head/f.php"); ?>

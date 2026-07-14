@@ -19,7 +19,7 @@ if (!empty($_POST["cid"])) {
                            $con->next_result();
     }elseif($result->num_rows==0){
       
-        echo  '<option value="0">-Select-</option>';
+        echo  '<option value="0">--No Action Plan to work--</option>';
         
     }
 } 
