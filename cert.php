@@ -9,9 +9,10 @@ $errorMsg = "";
    PROCESS FORM SUBMISSION (POST)
 ----------------------------------------------*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['postsubmit'])) {
-$fac_nin_raw = $_POST['fac_nin'] ?? '';
+   csrf(); 
+  $fac_nin_raw = $_POST['fac_nin'] ?? '';
 
-$fac_nin = (is_numeric($fac_nin_raw) && $fac_nin_raw !== '')
+  $fac_nin = (is_numeric($fac_nin_raw) && $fac_nin_raw !== '')
     ? (int)$fac_nin_raw
     : 0;
   // Collect POST safely
@@ -374,7 +375,7 @@ while ($f = $resF->fetch_assoc()) {
 
 
         <form id="certForm" method="post" class="row g-3">
-
+ <?= csrf(); ?>
           <input type="hidden" id="fac_id" name="fac_id">
           <input type="hidden" id="fac_nin" name="fac_nin">
 
@@ -498,10 +499,10 @@ while ($f = $resF->fetch_assoc()) {
 
       </div>
       <b>
-      <div class="alert alert-warning d-flex align-items-center mb-3">
-  <strong class="me-2">⚠️ Important:</strong>
-  Facility registration is mandatory before certification details can be entered.
-</div>
+        <div class="alert alert-warning d-flex align-items-center mb-3">
+          <strong class="me-2">⚠️ Important:</strong>
+          Facility registration is mandatory before certification details can be entered.
+        </div>
     </div>
   </div>
 </div>

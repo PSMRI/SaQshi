@@ -23,6 +23,7 @@
                             <div class="tab-pane fade show active health-block pt-3" id="health-block">
                                 <!-- Facility Addition Form -->
                                 <form enctype="multipart/form-data" method="POST" action="#">
+                                     <?= csrf(); ?>
                                     <!-- Select District -->
                                     <div class="row mb-3">
                                         <label for="District1" class="col-md-4 col-lg-3 col-form-label">Select District</label>
@@ -94,6 +95,7 @@
 
                                 <?php
                                 if (isset($_POST['postsubmit'])) {
+                                     csrf(); 
                                     // Check if the NIN is already used
                                     $nin = mysqli_real_escape_string($con, $_POST['nin_no']);
                                     $checkNinQuery = "SELECT COUNT(*) AS nin_count FROM facilities WHERE NIN_no = '$nin'";

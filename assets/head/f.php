@@ -1,5 +1,5 @@
-<!-- ADD THIS at the top of your JS includes -->
-<script src="assets/datatables/jquery-3.6.0.min.js"></script>
+<!-- Keep the patched jQuery version ahead of dependent UI plugins. -->
+<script src="assets/js/jquery-3.7.1.min.js"></script>
 
 <script src="assets/js/vendor-all.min.js"></script>
 <script src="assets/js/plugins/bootstrap.min.js"></script>

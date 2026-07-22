@@ -1,6 +1,10 @@
 <?php
+// This page handles a POST before rendering the shared header, so initialise
+// the session and CSRF guard before accepting the department selection.
+require_once("assets/conn/session.php");
+require_once("assets/security/security.php");
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['department_id']) && !empty($_POST['department_id'])) {
-   session_start();
    $_SESSION['dept_id1'] = $_POST['department_id'];
    $_SESSION['dept_name1'] = $_POST['department_name'];  // Save department name
    header("Location: " . $_SERVER['PHP_SELF']);
@@ -269,6 +273,7 @@ $stmt->close();
 <div id="departmentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="departmentModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered" role="document">
       <form method="post">
+         <?= csrf(); ?>
          <div class="modal-content">
             <div class="modal-header">
                <h5 class="modal-title" id="departmentModalLabel">

@@ -359,13 +359,13 @@ if (
 					</ul>
 
 				</li>
-				<li class="nav-item pcoded-hasmenu">
+				<!--li class="nav-item pcoded-hasmenu">
 					<a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Message</span></a>
 					<ul class="pcoded-submenu">
 						<li><a href="email_inbox.php"><span class="pcoded-micon"><i class="bi bi-person-vcard"></i></span><span class="pcoded-mtext">Send message</span></a></li>
 					</ul>
 
-				</li>
+				</li-->
 				<li class="nav-item pcoded-menu-caption">
 					<label>Resources</label>
 				</li>
@@ -594,7 +594,7 @@ if (
 							</div>
 							<ul class="pro-body">
 								<li><a href="users-profile.php" class="dropdown-item"><i class="feather icon-user"></i> Change Password</a></li>
-								<li><a href="email_inbox.php" class="dropdown-item"><i class="feather icon-mail"></i> My Messages</a></li>
+								<!--li><a href="email_inbox.php" class="dropdown-item"><i class="feather icon-mail"></i> My Messages</a></li-->
 								<li><a href="logout.php" class="dropdown-item"><i class="feather icon-lock"></i>Log out</a></li>
 							</ul>
 						</div>

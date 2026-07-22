@@ -137,8 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $con instanceof mysqli) {
             $lockStmt = safePrepare($con, "
                 SELECT COUNT(*) total
                 FROM login_attempts
-                WHERE username = ?
-                AND ip_address = ?
+                WHERE (username = ? OR ip_address = ?)
                 AND status = 'FAILED'
                 AND attempt_time >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)
             ");

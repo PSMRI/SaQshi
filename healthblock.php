@@ -11,6 +11,7 @@
                 <div class="card">
                     <div class="card-body">
                         <form class="row align-items-center" enctype="multipart/form-data" method="post" action="">
+                            <?= csrf(); ?>
                             <!-- Select District -->
                             <div class="col-auto">
 
@@ -55,7 +56,7 @@
         </div>
         <?php
         if (isset($_POST['postsubmit'])) {
-
+csrf();
             // Get the posted values
             $dist = $_POST["District1"];
             $block = $_POST["healthblock1"];

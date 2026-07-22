@@ -35,18 +35,26 @@ header("Cross-Origin-Resource-Policy: same-origin");
 
 header("X-Permitted-Cross-Domain-Policies: none");
 
+// Do not allow a page-specific include to accidentally make authenticated
+// responses readable by arbitrary origins.  Public APIs that genuinely need
+// CORS must opt in with an explicit allow-list at the endpoint/proxy layer.
+header_remove("Access-Control-Allow-Origin");
+
 header(
     "Strict-Transport-Security: max-age=31536000; includeSubDomains"
 );
 
 $csp =
     "default-src 'self'; " .
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com; " .
+    // Inline scripts are still used throughout the legacy UI.  Keep this
+    // temporary compatibility allowance, but never permit string evaluation.
+    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com; " .
     "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://unpkg.com; " .
     "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; " .
     "img-src 'self' data: blob: https://maps.gstatic.com https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://unpkg.com; " .
     "connect-src 'self' https://maps.gstatic.com https://*.tile.openstreetmap.org https://tile.openstreetmap.org; " .
     "frame-ancestors 'none'; " .
+    "form-action 'self'; " .
     "object-src 'none'; " .
     "base-uri 'self';";
 
@@ -269,14 +277,6 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 /* =====================================================
    CLICKJACKING FRAME BREAK
 ===================================================== */
-
-echo '
-<script>
-if (window.top !== window.self) {
-    window.top.location = window.self.location;
-}
-</script>
-';
 
 /* =====================================================
    SECURITY READY
