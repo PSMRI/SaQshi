@@ -41,7 +41,7 @@ $dept_name = $_SESSION['dept_name1'] ?? '';  // For showing in header
                             <input type="month"
                                 class="form-control"
                                 name="date1"
-                                value="<?= $_POST['date1'] ?? date('Y-m'); ?>"
+                                value="<?= htmlspecialchars((string)($_POST['date1'] ?? date('Y-m')), ENT_QUOTES, 'UTF-8'); ?>"
                                 required>
                         </div>
                         <div class="col-auto">

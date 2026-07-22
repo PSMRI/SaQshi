@@ -331,6 +331,13 @@ while ($f = $resF->fetch_assoc()) {
   document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("certForm");
 
+    document.getElementById("district").addEventListener("change", function() {
+      loadBlocks(this.value);
+    });
+    document.getElementById("block").addEventListener("change", function() {
+      loadFacilities(this.value);
+    });
+    document.getElementById("facility").addEventListener("change", setFacilityData);
     document.getElementById("date_of_ass").addEventListener("change", validateDatesLive);
     document.getElementById("cert_issue").addEventListener("change", function() {
       validateDatesLive();
@@ -382,7 +389,7 @@ while ($f = $resF->fetch_assoc()) {
           <!-- DISTRICT -->
           <div class="col-md-3">
             <label>District</label>
-            <select name="dist" class="form-control form-control-sm" onchange="loadBlocks(this.value)" required>
+            <select id="district" name="dist" class="form-control form-control-sm" required>
               <option value="">Select District</option>
               <?php foreach ($districts as $id => $name): ?>
                 <option value="<?= $id ?>"><?= $name ?></option>
@@ -393,7 +400,7 @@ while ($f = $resF->fetch_assoc()) {
           <!-- BLOCK -->
           <div class="col-md-3">
             <label>Block</label>
-            <select id="block" name="block" class="form-control form-control-sm" onchange="loadFacilities(this.value)" required>
+            <select id="block" name="block" class="form-control form-control-sm" required>
               <option value="">Select Block</option>
             </select>
           </div>
@@ -401,7 +408,7 @@ while ($f = $resF->fetch_assoc()) {
           <!-- FACILITY -->
           <div class="col-md-3">
             <label>Facility</label>
-            <select id="facility" name="fac_name" class="form-control form-control-sm" onchange="setFacilityData()" required>
+            <select id="facility" name="fac_name" class="form-control form-control-sm" required>
               <option value="">Select Facility</option>
             </select>
           </div>

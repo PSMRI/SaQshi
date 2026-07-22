@@ -275,7 +275,7 @@ $is_admin    = ($_SESSION['userrole'] ?? '') === 9;
 
                 <!-- HEADER -->
                 <div class="chat-header" id="chatTitle">
-                    <span class="back-btn" onclick="goBack()">←</span>
+                    <span class="back-btn chat-back-btn">←</span>
                     <div class="header-avatar">?</div>
                     <span>Select facility to start chat</span>
                     <span id="typingIndicator"></span>
@@ -337,7 +337,7 @@ function openChat(fid, name) {
     const avatar = (fid === 0) ? "📢" : name.charAt(0).toUpperCase();
 
     $("#chatTitle").html(`
-        <span class="back-btn" onclick="goBack()">←</span>
+        <span class="back-btn chat-back-btn">←</span>
         <div class="header-avatar">${avatar}</div>
         <span>${name}</span>
         <span id="typingIndicator"></span>
@@ -361,6 +361,8 @@ function goBack() {
     activeFacility = null;
     $(".chat-container").removeClass("chat-open");
 }
+
+$(document).on("click", ".chat-back-btn", goBack);
 
 /* =========================
    LOAD MESSAGES
@@ -418,7 +420,8 @@ $("#sendMessageForm").on("submit", function (e) {
         send_message: 1,
         sender:   myFacility,
         receiver: activeFacility,
-        message:  msg
+        message:  msg,
+        csrf_token: "<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
     })
     .done(() => $("#messageBox").val(""))
     .fail(() => alert("Message send failed"))
@@ -435,7 +438,8 @@ $("#messageBox").on("input", function () {
     $.post("assets/get/chat_backend.php", {
         typing: 1,
         sender: myFacility,
-        receiver: activeFacility
+        receiver: activeFacility,
+        csrf_token: "<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
     });
 });
 
@@ -472,6 +476,7 @@ $("#fileInput").on("change", function () {
     fd.append("chat_file", file);
     fd.append("sender",   myFacility);
     fd.append("receiver", activeFacility);
+    fd.append("csrf_token", "<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>");
 
     $.ajax({
         url: "assets/get/upload_chat_file.php",

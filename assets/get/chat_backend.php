@@ -5,6 +5,27 @@ include(__DIR__ . "/../../assets/conn/session.php");
 $myId    = (int)($_SESSION['u_facilityid'] ?? 0); // 0 = admin
 $isAdmin = ($myId === 0);
 
+function requireChatIdentity(int $sender): void
+{
+    $sessionFacility = (int)($_SESSION['u_facilityid'] ?? -1);
+    if ($sender !== $sessionFacility) {
+        http_response_code(403);
+        exit('UNAUTHORIZED_SENDER');
+    }
+}
+
+function requireChatCsrf(): void
+{
+    if (
+        empty($_POST['csrf_token']) ||
+        empty($_SESSION['csrf_token']) ||
+        !hash_equals($_SESSION['csrf_token'], (string)$_POST['csrf_token'])
+    ) {
+        http_response_code(403);
+        exit('INVALID_CSRF');
+    }
+}
+
 /* ============================================================
    1) LOAD FACILITY LIST (WITH UNREAD COUNTS)
 ============================================================ */
@@ -124,6 +145,7 @@ if (isset($_GET['load_messages'])) {
     $sender   = (int)$_GET['sender'];
     $receiver = (int)$_GET['receiver'];
     $lastID   = (int)($_GET['last_id'] ?? 0);
+    requireChatIdentity($sender);
 
     /* ---- MARK NORMAL MESSAGES AS READ ---- */
     mysqli_query($con, "
@@ -187,9 +209,12 @@ if (isset($_GET['load_messages'])) {
 ============================================================ */
 if (isset($_POST['send_message'])) {
 
+    requireChatCsrf();
+
     $sender   = (int)$_POST['sender'];
     $receiver = (int)$_POST['receiver'];
     $msg      = trim($_POST['message'] ?? '');
+    requireChatIdentity($sender);
 
     if ($msg === '') exit("EMPTY");
 
@@ -209,8 +234,11 @@ if (isset($_POST['send_message'])) {
 ============================================================ */
 if (isset($_POST['typing'])) {
 
+    requireChatCsrf();
+
     $sender   = (int)$_POST['sender'];
     $receiver = (int)$_POST['receiver'];
+    requireChatIdentity($sender);
 
     if ($sender === 0 || $receiver === 0) exit;
 
@@ -225,6 +253,7 @@ if (isset($_GET['get_typing'])) {
 
     $sender   = (int)$_GET['sender'];
     $receiver = (int)$_GET['receiver'];
+    requireChatIdentity($sender);
 
     if ($sender === 0 || $receiver === 0) exit;
 

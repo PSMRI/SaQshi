@@ -1,6 +1,8 @@
 <?php
-include("assets/conn/db.php");
-//session_start();
+// This endpoint mutates and serves documents before the layout include is
+// rendered.  Initialise authentication and CSRF protection first.
+require_once("assets/conn/session.php");
+require_once("assets/security/security.php");
 
 /* =========================
    🔹 DOWNLOAD (UNCHANGED)
@@ -52,7 +54,10 @@ if (isset($_POST['delete_id'])) {
    🔹 UPLOAD (ADDED FIXED)
 ========================= */
 $upload_dir = "assets/doc/";
-if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+if (!is_dir($upload_dir) && !mkdir($upload_dir, 0750, true)) {
+    http_response_code(500);
+    exit('Unable to initialize the upload directory.');
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -69,9 +74,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $file_name = $_POST['file_name'];
-    $facility_type = $_POST['facility_type'];
-$facility_filetype=$_POST['file_type'];
+    if ($_FILES['file']['size'] > 10 * 1024 * 1024) {
+        echo "error:File size must not exceed 10 MB.";
+        exit;
+    }
+
+    $file_name = trim($_POST['file_name'] ?? '');
+    $facility_type = trim($_POST['facility_type'] ?? '');
+    $facility_filetype = trim($_POST['file_type'] ?? '');
    $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png'];
 
 $originalName = $_FILES['file']['name'];
@@ -115,6 +125,7 @@ if (!move_uploaded_file($tmpName, $target)) {
     $stmt->bind_param("ssss", $file_name, $target, $facility_type,$facility_filetype);
 
     if (!$stmt->execute()) {
+        @unlink($target);
         echo "error:File upload failed";
         exit;
     }
@@ -200,6 +211,7 @@ include("assets/head/h.php");
         <div class="card mb-3">
             <div class="card-body">
                 <form id="uploadForm" method="POST" enctype="multipart/form-data" class="row">
+                    <?= csrf(); ?>
 
                     <div class="col-md-3">
                         <input type="text" name="file_name" class="form-control" placeholder="File Name" required>
@@ -392,6 +404,7 @@ include("assets/head/h.php");
 
             let formData = new FormData();
             formData.append("delete_id", id);
+            formData.append("csrf_token", "<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>");
 
             xhr.onload = function() {
 

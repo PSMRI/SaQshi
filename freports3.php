@@ -95,7 +95,7 @@ include("assets/head/h.php");
               <script>
                 $("#Period option").each(function(index) {
                   var item = $(this).val();
-                  if (item == "<?php echo $_POST['Period'] ?>") {
+                  if (item == <?php echo json_encode((string)($_POST['Period'] ?? '')); ?>) {
                     $(this).prop('selected', true);
                   }
                 });
@@ -103,7 +103,7 @@ include("assets/head/h.php");
               <script>
                 $("#rt option").each(function(index) {
                   var item = $(this).val();
-                  if (item == "<?php echo $_POST['rt'] ?>") {
+                  if (item == <?php echo json_encode((string)($_POST['rt'] ?? '')); ?>) {
                     $(this).prop('selected', true);
                   }
                 });
@@ -111,7 +111,7 @@ include("assets/head/h.php");
               <script>
                 $("#Facility_Department option").each(function(index) {
                   var item = $(this).val();
-                  if (item == "<?php echo $_POST['Facility_Department'] ?>") {
+                  if (item == <?php echo json_encode((string)($_POST['Facility_Department'] ?? '')); ?>) {
                     $(this).prop('selected', true);
                   }
                 });

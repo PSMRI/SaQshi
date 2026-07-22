@@ -15,7 +15,7 @@ include(__DIR__ . "/../../assets/conn/session.php");
 	<!-- Favicon icon -->
 	<link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 	<script src="assets/js/plugins/min.js"></script>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" integrity="sha512-0yYhCyiMB+6XOis4qvWA42kPkKb54+uMaOhbsta6m+aQ7cZOm5hzERPrRkkknlpEdoxVCwYui+yM0jRazpDFuA==" crossorigin="anonymous">
 	<link rel="stylesheet" href="assets/datatables/leaflet.css" />
 	<script src="assets/datatables/leaflet.js"></script>
 	<link rel="stylesheet" href="assets/css/style.css">

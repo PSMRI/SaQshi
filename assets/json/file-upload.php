@@ -1,10 +1,8 @@
 <?php
-$ds= DIRECTORY_SEPARATOR;  //1
-$storeFolder = 'uploads';   //2
-if (!empty($_FILES)) {
-    $tempFile = $_FILES['file']['tmp_name'];          //3             
-    $targetPath = dirname( __FILE__ ) . $ds. $storeFolder . $ds;  //4
-    $targetFile =  $targetPath. $_FILES['file']['name'];  //5
-    move_uploaded_file($tempFile,$targetFile); //6
-}
-?> 
+// Legacy unauthenticated uploader.  It accepted arbitrary filenames and
+// content directly into a web-accessible directory.  No active caller uses
+// this endpoint; retain the file only to return an explicit safe response.
+http_response_code(410);
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode(['error' => 'This upload endpoint is disabled.']);
+exit;

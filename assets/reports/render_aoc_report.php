@@ -2,17 +2,6 @@
 $summary = $_SESSION['summary'];
 $aocData = $_SESSION['aocData'];
 ?>
-<pre>
-<?php
-print_r($summary);
-print_r($aocData);
-echo "<pre>";
-print_r($_POST);
-echo "</pre>";
-?>
-</pre>
-
-
 <div class="card mb-4">
   <div class="card-body">
     <h5 class="text-center fw-bold mb-3 text-primary"><?= $_SESSION['facname'] ?> - Area of Concern wise Scores</h5>

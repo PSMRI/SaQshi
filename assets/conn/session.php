@@ -49,7 +49,7 @@ ini_set(
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    'secure' => isset($_SERVER['HTTPS']),
+    'secure' => $isHttps,
     'httponly' => true,
     'samesite' => 'Strict'
 ]);
@@ -125,7 +125,7 @@ if (
     session_destroy();
 
     header(
-        "Location: login.php"
+        "Location: /login.php"
     );
 
     exit;
@@ -150,7 +150,7 @@ if (
     session_destroy();
 
     header(
-        "Location: login.php?timeout=1"
+        "Location: /login.php?timeout=1"
     );
 
     exit;
@@ -187,7 +187,7 @@ if (
     session_destroy();
 
     header(
-        "Location: login.php?security=ip"
+        "Location: /login.php?security=ip"
     );
 
     exit;
@@ -208,7 +208,7 @@ if (
     session_destroy();
 
     header(
-        "Location: login.php?security=ua"
+        "Location: /login.php?security=ua"
     );
 
     exit;

@@ -19,11 +19,11 @@
                             $selected_month = date('Y-m');
 
                             if (isset($_POST['date1'])) {
-                                $selected_month = $_POST['date1'];
+                                $selected_month = trim((string)$_POST['date1']);
                             } elseif (isset($_POST['edit_month'])) {
-                                $selected_month = $_POST['edit_month'];
+                                $selected_month = trim((string)$_POST['edit_month']);
                             } elseif (isset($_POST['edit_date'])) {
-                                $selected_month = $_POST['edit_date'];
+                                $selected_month = trim((string)$_POST['edit_date']);
                             } elseif (isset($_SESSION['new_date1'])) {
                                 $selected_month = $_SESSION['new_date1'];
                             }

@@ -21,7 +21,7 @@
 <script src="assets/datatables/dataTables.buttons.min.js"></script>
 <script src="assets/datatables/buttons.html5.min.js"></script>
 <script src="assets/datatables/buttons.print.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous"></script>
  </body>
 
 </html>
