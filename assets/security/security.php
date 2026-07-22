@@ -38,6 +38,40 @@ if (!defined('SAQSHI_CSP_NONCE_BUFFER')) {
         // Keep IE conditional comments intact, but remove ordinary comments
         // from responses generated through the shared application shell.
         $html = preg_replace('/<!--(?!\[if)[\s\S]*?-->/i', '', $html);
+        // Prefer vetted local copies of common libraries over CDN scripts.
+        // This also removes cross-domain JavaScript inclusion from legacy
+        // report/dashboard fragments that still emit their own script tags.
+        $html = str_ireplace([
+            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+            'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+            'https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js',
+            'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js',
+            'https://code.jquery.com/jquery-3.6.0.min.js',
+            'https://code.jquery.com/jquery-3.7.1.min.js',
+            'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+            'https://cdn.jsdelivr.net/npm/apexcharts',
+            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js',
+            'https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js',
+            'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js',
+        ], [
+            '/assets/js/html2canvas.min.js',
+            '/assets/js/jspdf.umd.min.js',
+            '/assets/js/xlsx.full.min.js',
+            '/assets/js/xlsx.full.min.js',
+            '/assets/js/xlsx.full.min.js',
+            '/assets/js/xlsx.full.min.js',
+            '/assets/js/jquery-3.7.1.min.js',
+            '/assets/js/jquery-3.7.1.min.js',
+            '/assets/datatables/leaflet.js',
+            '/assets/js/plugins/apexcharts.min.js',
+            '/assets/js/bootstrap-5.3.0.bundle.min.js',
+            '/assets/js/bootstrap-5.3.0.bundle.min.js',
+            '/assets/datatables/jquery.dataTables.min.js',
+            '/assets/datatables/jquery.dataTables.min.js',
+        ], $html);
         $html = preg_replace_callback(
             '/<script\\b([^>]*)>/i',
             static function (array $match) use ($nonceAttribute): string {
@@ -58,6 +92,44 @@ if (!defined('SAQSHI_CSP_NONCE_BUFFER')) {
             },
             $html
         );
+        // CSP nonces do not apply to style attributes. Convert safe legacy
+        // inline declarations into generated nonce-protected CSS classes so
+        // removing style-src unsafe-inline does not change page layout.
+        $generatedStyles = [];
+        $html = preg_replace_callback(
+            '/<([a-z][a-z0-9:-]*)([^>]*?)\\sstyle\\s*=\\s*(["\\\'])(.*?)\\3([^>]*)>/is',
+            static function (array $match) use (&$generatedStyles): string {
+                $style = trim($match[4]);
+                if ($style === '' || preg_match('/[<>{}]|expression\\s*\\(|javascript\\s*:/i', $style)) {
+                    return $match[0];
+                }
+                $className = 'csp-style-' . substr(hash('sha256', $style), 0, 16);
+                $generatedStyles[$className] = $style;
+                $attributes = $match[2] . $match[5];
+                if (preg_match('/\\bclass\\s*=\\s*(["\\\'])(.*?)\\1/is', $attributes)) {
+                    $attributes = preg_replace(
+                        '/\\bclass\\s*=\\s*(["\\\'])(.*?)\\1/is',
+                        'class="$2 ' . $className . '"',
+                        $attributes,
+                        1
+                    );
+                } else {
+                    $attributes .= ' class="' . $className . '"';
+                }
+                return '<' . $match[1] . $attributes . '>';
+            },
+            $html
+        );
+        if ($generatedStyles) {
+            $rules = '';
+            foreach ($generatedStyles as $className => $style) {
+                $rules .= '.' . $className . '{' . $style . '}';
+            }
+            $styleBlock = '<style' . $nonceAttribute . '>' . $rules . '</style>';
+            $html = stripos($html, '</head>') !== false
+                ? preg_replace('/<\\/head>/i', $styleBlock . '</head>', $html, 1)
+                : $styleBlock . $html;
+        }
         return preg_replace(
             '/<form\\b(?=[^>]*\\bmethod\\s*=\\s*["\\\']?post\\b)([^>]*)>/i',
             '<form$1>' . $csrfField,

@@ -1,3 +1,11 @@
+<?php
+// Public landing page: apply the same response security policy without the
+// authenticated session/authorization bootstrap.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once __DIR__ . '/assets/security/security.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -268,8 +276,8 @@
 
     <!-- Side Buttons -->
     <button id="requestDemoBtn" data-bs-toggle="modal" data-bs-target="#demoModal">Request Demo</button>
-    <button id="loginBtn" onclick="window.location.href='login.php'">Login</button>
-    <button id="linkedinBtn" onclick="window.open('https://www.linkedin.com/search/results/all/?keywords=%23SaQshi','_blank')">
+    <button id="loginBtn" type="button">Login</button>
+    <button id="linkedinBtn" type="button">
         <i class="fab fa-linkedin"></i> LinkedIn
     </button>
 
@@ -423,6 +431,12 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             document.documentElement.classList.add("loaded");
+            document.getElementById("loginBtn")?.addEventListener("click", () => {
+                window.location.assign("login.php");
+            });
+            document.getElementById("linkedinBtn")?.addEventListener("click", () => {
+                window.open("https://www.linkedin.com/search/results/all/?keywords=%23SaQshi", "_blank", "noopener");
+            });
         });
 
         /* Animate on Scroll */

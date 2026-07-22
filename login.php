@@ -56,6 +56,11 @@ session_set_cookie_params([
 ]);
 
 session_start();
+
+// Reuse the nonce-based CSP and response hardening for the public login page.
+// This layer does not perform authorization; it is safe before authentication.
+require_once __DIR__ . '/assets/security/security.php';
+
 $error = '';
 $con = null;
 
