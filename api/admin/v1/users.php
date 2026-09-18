@@ -206,8 +206,16 @@ try {
 
     $errors = [];
 
-    if ($firstName === '') {
-        $errors['f_name'] = 'First name is required';
+    if (!Security::isValidPersonName($firstName, true)) {
+        $errors['f_name'] = 'Enter a valid first name using letters, spaces, apostrophes, hyphens or periods only';
+    }
+
+    if (!Security::isValidPersonName($middleName)) {
+        $errors['m_name'] = 'Enter a valid middle name using letters, spaces, apostrophes, hyphens or periods only';
+    }
+
+    if (!Security::isValidPersonName($lastName)) {
+        $errors['l_name'] = 'Enter a valid last name using letters, spaces, apostrophes, hyphens or periods only';
     }
 
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {

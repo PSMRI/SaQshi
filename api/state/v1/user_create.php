@@ -29,7 +29,9 @@ try {
     $allowedRoles = [1, 4, 5, 8];
     if (!in_array($roleId, $allowedRoles, true)) Response::validation(['role_id' => 'Select a valid user role.']);
     if ($roleId !== 1) {
-        if ($firstName === '' || !preg_match('/^[A-Za-z .\'-]{2,100}$/', $firstName)) Response::validation(['first_name' => 'Enter a valid first name.']);
+        if (!Security::isValidPersonName($firstName, true)) Response::validation(['first_name' => 'Enter a valid first name.']);
+        if (!Security::isValidPersonName($middleName)) Response::validation(['middle_name' => 'Enter a valid middle name.']);
+        if (!Security::isValidPersonName($lastName)) Response::validation(['last_name' => 'Enter a valid last name.']);
         if (!preg_match('/^[A-Za-z0-9_.@-]{3,100}$/', $username)) Response::validation(['username' => 'Use 3-100 letters, numbers, dot, underscore, @ or hyphen.']);
         $passwordErrors = Auth::passwordPolicyErrors($password, [$username]);
         if ($passwordErrors) Response::validation(['password' => Auth::passwordPolicyMessage($passwordErrors)]);

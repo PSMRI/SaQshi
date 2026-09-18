@@ -17,6 +17,21 @@
 class Security
 {
     /**
+     * Validates a human profile name before it is encrypted and persisted.
+     * Unicode letters are supported; markup, numbers, and control characters
+     * are deliberately excluded from identity fields.
+     */
+    public static function isValidPersonName(string $value, bool $required = false): bool
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return !$required;
+        }
+
+        return preg_match("/^[\\p{L}][\\p{L} .'-]{0,99}$/u", $value) === 1;
+    }
+
+    /**
      * Apply secure HTTP headers.
      */
     public static function headers(): void

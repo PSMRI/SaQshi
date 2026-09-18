@@ -22,6 +22,9 @@ $mobile = trim((string)($input['mob_no'] ?? ''));
 $password = (string)($input['password'] ?? '');
 if ($userId <= 0 || $username === '' || $firstName === '') Response::validation(['profile' => 'User ID, username and first name are required.']);
 if (!preg_match('/^[A-Za-z0-9_.@-]{3,100}$/', $username)) Response::validation(['u_name' => 'Use 3-100 letters, numbers, dot, underscore, @ or hyphen.']);
+if (!Security::isValidPersonName($firstName, true)) Response::validation(['f_name' => 'Enter a valid first name.']);
+if (!Security::isValidPersonName($middleName)) Response::validation(['m_name' => 'Enter a valid middle name.']);
+if (!Security::isValidPersonName($lastName)) Response::validation(['l_name' => 'Enter a valid last name.']);
 if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) Response::validation(['mail_id' => 'Enter a valid email address.']);
 if ($mobile !== '' && !preg_match('/^[0-9+\-\s]{7,20}$/', $mobile)) Response::validation(['mob_no' => 'Enter a valid mobile number.']);
 if ($password !== '') {

@@ -2484,11 +2484,18 @@ class StateDashboardService
 
         foreach ($rows as &$row) {
             $row = Crypto::decryptFields($row, ['f_name', 'm_name', 'l_name', 'mail_id', 'mob_no']);
-            $row['full_name'] = trim(implode(' ', array_filter([
+            $nameParts = array_values(array_filter([
                 (string)($row['f_name'] ?? ''),
                 (string)($row['m_name'] ?? ''),
                 (string)($row['l_name'] ?? '')
-            ], static fn(string $value): bool => $value !== '')));
+            ], static fn(string $value): bool => $value !== ''));
+            // Legacy/test records may contain invalid profile text. Do not
+            // promote it as a display name; the UI will fall back to u_name.
+            $row['full_name'] = $nameParts && array_reduce(
+                $nameParts,
+                static fn(bool $valid, string $value): bool => $valid && Security::isValidPersonName($value),
+                true
+            ) ? implode(' ', $nameParts) : '';
         }
         unset($row);
 
