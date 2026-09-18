@@ -145,8 +145,8 @@ APP_DEBUG=false
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=saqshi
-DB_USERNAME=saqshi_user
-DB_PASSWORD=change_me
+DB_USERNAME=<DB_USERNAME>
+DB_PASSWORD=<DB_PASSWORD>
 DB_CONNECT_TIMEOUT=5
 
 SAQSHI_FIELD_ENCRYPTION_KEY=change_to_long_random_secret
@@ -204,4 +204,3 @@ For large state deployments:
 - Monitor slow state dashboard and report queries.
 - Consider read replicas or summary tables if reporting load becomes high.
 - Consider object storage for evidence uploads.
-

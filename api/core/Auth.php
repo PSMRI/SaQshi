@@ -43,7 +43,10 @@ class Auth
     public function login(string $username, string $password, bool $rememberMe = false): array
     {
         $username = trim($username);
-        $password = trim($password);
+        // Passwords are opaque secrets. Do not trim or normalize them, or a
+        // password accepted and stored at reset time could verify differently
+        // at login time.
+        $password = (string)$password;
 
         if ($username === '' || $password === '') {
             return $this->error('Username and password are required');
@@ -291,11 +294,8 @@ class Auth
      */
     private function passwordStatus(string $plainPassword, string $storedPassword): array
     {
-        $plainPassword = trim((string)$plainPassword);
-        $storedPassword = trim((string)$storedPassword);
-
-        $plainPassword = preg_replace('/[[:^print:]]/', '', $plainPassword);
-        $storedPassword = preg_replace('/[[:^print:]]/', '', $storedPassword);
+        $plainPassword = (string)$plainPassword;
+        $storedPassword = (string)$storedPassword;
 
         if ($storedPassword === '') {
             return [
@@ -505,6 +505,48 @@ class Auth
                 'cost' => 12
             ]
         );
+    }
+
+    /**
+     * Returns human-readable failures for the password policy used by every
+     * account-creation, reset and self-service password-change path.
+     *
+     * A single policy avoids an administrator creating a password that the
+     * normal profile flow would reject (or vice versa).
+     */
+    public static function passwordPolicyErrors(string $password, array $disallowedValues = []): array
+    {
+        $errors = [];
+        $length = strlen($password);
+
+        if ($length < 12) $errors[] = 'Minimum 12 characters';
+        if ($length > 128) $errors[] = 'Maximum 128 characters';
+        if (preg_match('/[[:cntrl:]]/', $password)) $errors[] = 'No control characters';
+        if (!preg_match('/[A-Z]/', $password)) $errors[] = 'At least one capital letter';
+        if (!preg_match('/[a-z]/', $password)) $errors[] = 'At least one lower-case letter';
+        if (!preg_match('/[0-9]/', $password)) $errors[] = 'At least one digit';
+        if (!preg_match('/[^A-Za-z0-9\s]/', $password)) $errors[] = 'At least one special character';
+        if (preg_match('/(.)\1\1/', $password)) $errors[] = 'No character repeated three times in sequence';
+
+        $commonPasswords = ['password', 'password1', 'password123', 'welcome', 'welcome1', 'welcome123', 'admin', 'admin123', 'qwerty', 'qwerty123', 'letmein', 'india123'];
+        if (in_array(strtolower($password), $commonPasswords, true)) $errors[] = 'Not a commonly used password';
+
+        foreach ($disallowedValues as $value) {
+            $value = trim((string)$value);
+            if (strlen($value) >= 3 && stripos($password, $value) !== false) {
+                $errors[] = 'Must not contain your username or account identifier';
+                break;
+            }
+        }
+
+        return $errors;
+    }
+
+    public static function passwordPolicyMessage(array $errors = []): string
+    {
+        return $errors
+            ? 'Password does not meet policy: ' . implode('; ', $errors) . '.'
+            : 'Password must be 12-128 characters and include upper-case, lower-case, number and special character.';
     }
 
     /**

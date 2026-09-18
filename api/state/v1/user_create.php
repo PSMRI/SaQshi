@@ -31,7 +31,8 @@ try {
     if ($roleId !== 1) {
         if ($firstName === '' || !preg_match('/^[A-Za-z .\'-]{2,100}$/', $firstName)) Response::validation(['first_name' => 'Enter a valid first name.']);
         if (!preg_match('/^[A-Za-z0-9_.@-]{3,100}$/', $username)) Response::validation(['username' => 'Use 3-100 letters, numbers, dot, underscore, @ or hyphen.']);
-        if (strlen($password) < 8 || !preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/[0-9]/', $password) || !preg_match('/[^A-Za-z0-9]/', $password)) Response::validation(['password' => 'Password must have 8+ characters with upper-case, lower-case, number and special character.']);
+        $passwordErrors = Auth::passwordPolicyErrors($password, [$username]);
+        if ($passwordErrors) Response::validation(['password' => Auth::passwordPolicyMessage($passwordErrors)]);
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) Response::validation(['email' => 'Enter a valid email address.']);
         if ($mobile !== '' && !preg_match('/^[0-9+\-\s]{7,20}$/', $mobile)) Response::validation(['mobile' => 'Enter a valid mobile number.']);
     }
@@ -44,10 +45,11 @@ try {
         $scopeRow = $scope->get_result()->fetch_assoc();
         if (!$scopeRow) Response::validation(['facility_nin' => 'No facility was found for this NIN.']);
         $facilityId = (int)$scopeRow['fac_id']; $stateId = (int)$scopeRow['state_id']; $divisionId = (int)$scopeRow['division_id']; $districtId = (int)$scopeRow['dist_id']; $blockId = (int)$scopeRow['block_id'];
-        // Facility-user credentials are intentionally deterministic: the
-        // Facility NIN is both the initial username and initial password.
+        // The facility NIN identifies the account, but must never be reused
+        // as its password because it is broadly discoverable operational data.
         $username = $facilityNin;
-        $password = $facilityNin;
+        $passwordErrors = Auth::passwordPolicyErrors($password, [$username, $facilityNin]);
+        if ($passwordErrors) Response::validation(['password' => Auth::passwordPolicyMessage($passwordErrors)]);
     } elseif ($roleId === 5) {
         if ($scopeId <= 0) Response::validation(['scope_id' => 'Select a division.']);
         $scope = $con->prepare('SELECT state_id, division_id FROM facilities WHERE division_id = ? LIMIT 1');
@@ -109,7 +111,7 @@ try {
     $stmt->bind_param('ssiissssssiiiiii', $username, $hash, $facilityId, $roleId, $profile[0], $profile[1], $profile[2], $profile[3], $profile[4], $userType, $stateId, $divisionId, $districtId, $blockId, $createdBy, $createdBy);
     if (!$stmt->execute()) Response::serverError('Unable to create user.');
     $message = $roleId === 1
-        ? 'Facility User created. The Facility NIN is the initial user ID and password; personal details must be completed after first login.'
+        ? 'Facility User created. The Facility NIN is the user ID; provide the selected temporary password securely. Personal details must be completed after first login.'
         : 'User created successfully. The user must change the password at first login.';
     Response::success($message, ['u_id' => $con->insert_id, 'username' => $username, 'role_name' => $userType]);
 } catch (Throwable $e) {

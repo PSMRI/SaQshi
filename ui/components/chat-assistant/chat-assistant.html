@@ -1,13 +1,9 @@
 <div class="sq-ai-chat" id="sqAiChat">
-    <button type="button" class="sq-ai-chat-fab" id="sqAiChatToggle" aria-label="Open AI Chat Assistant" aria-expanded="false">
-        <i class="bi bi-chat-dots"></i>
-    </button>
-
     <section class="sq-ai-chat-panel" id="sqAiChatPanel" aria-label="AI Chat Assistant" hidden>
         <header class="sq-ai-chat-header">
             <div>
-                <h2>AI Chat Assistant</h2>
-                <p>SaQshi workflow help</p>
+                <h2>SaQshi AI Assistant</h2>
+                <p>Guideline references and workflow help</p>
             </div>
             <div class="sq-ai-chat-actions">
                 <button type="button" id="sqAiChatClear" aria-label="Clear chat"><i class="bi bi-trash"></i></button>
@@ -17,7 +13,15 @@
 
         <div class="sq-ai-chat-messages" id="sqAiChatMessages" aria-live="polite"></div>
 
+        <div class="sq-ai-chat-source-tabs" role="tablist" aria-label="Answer source">
+            <button type="button" class="is-active" role="tab" aria-selected="true" data-ai-chat-source="local">SaQshi Repository</button>
+            <button type="button" role="tab" aria-selected="false" data-ai-chat-source="auto">Both</button>
+            <button type="button" role="tab" aria-selected="false" data-ai-chat-source="web">Web Search</button>
+        </div>
+
         <div class="sq-ai-chat-suggestions">
+            <button type="button" data-ai-chat-suggestion="Explain the current assessment checkpoint and what evidence should be verified.">Explain checkpoint</button>
+            <button type="button" data-ai-chat-suggestion="Suggest CQI actions for incomplete cleaning records.">CQI suggestion</button>
             <button type="button" data-ai-chat-suggestion="How do I start assessment?">Start</button>
             <button type="button" data-ai-chat-suggestion="How do I continue checklist?">Checklist</button>
             <button type="button" data-ai-chat-suggestion="Current month status">Current Month</button>

@@ -553,16 +553,9 @@
         btn.dataset.sqAiBound = "true";
 
         btn.addEventListener("click", function () {
-            if (SQ.aiChatAssistant && SQ.aiChatAssistant.open) {
-                SQ.aiChatAssistant.open();
-                return;
+            if (SQ.router && SQ.router.navigate) {
+                SQ.router.navigate("ai/assistant");
             }
-
-            window.setTimeout(function () {
-                if (SQ.aiChatAssistant && SQ.aiChatAssistant.open) {
-                    SQ.aiChatAssistant.open();
-                }
-            }, 150);
         });
     }
 

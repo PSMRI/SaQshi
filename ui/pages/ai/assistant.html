@@ -1,0 +1,34 @@
+<section class="sq-ai-page" aria-label="SaQshi AI Assistant">
+    <div class="sq-ai-chat-shell">
+        <header class="sq-ai-chat-topbar">
+            <div class="sq-ai-chat-brand"><span><i class="bi bi-robot"></i></span><div><strong>SaQshi AI</strong><small>Local, controlled assistance</small></div></div>
+            <div class="sq-ai-page-tabs" role="tablist" aria-label="Answer source">
+                <button type="button" class="is-active" role="tab" aria-selected="true" data-ai-page-source="local"><i class="bi bi-folder2-open"></i> Repository</button>
+                <button type="button" role="tab" aria-selected="false" data-ai-page-source="auto"><i class="bi bi-diagram-3"></i> Both</button>
+                <button type="button" role="tab" aria-selected="false" data-ai-page-source="web"><i class="bi bi-globe2"></i> Web</button>
+            </div>
+        </header>
+        <aside class="sq-ai-history-sidebar" aria-label="Chat history">
+            <button id="aiAssistantClear" type="button" class="sq-ai-new-chat"><i class="bi bi-plus-lg"></i> New chat</button>
+            <h3>Recent chats</h3>
+            <div id="aiAssistantRecent" class="sq-ai-recent-list"></div>
+        </aside>
+        <div class="sq-ai-chat-main">
+            <main class="sq-ai-page-messages" id="aiAssistantMessages" aria-live="polite"></main>
+            <footer class="sq-ai-chat-composer">
+                <p class="sq-ai-page-source-help" id="aiAssistantSourceHelp">Repository mode searches only approved SaQshi documents and uploaded resources.</p>
+                <div class="sq-ai-page-suggestions" aria-label="Suggested questions">
+                    <button type="button" data-ai-page-question="Explain the current assessment checkpoint and what evidence should be verified.">Explain checkpoint</button>
+                    <button type="button" data-ai-page-question="Suggest CQI actions for incomplete cleaning records.">CQI suggestion</button>
+                    <button type="button" data-ai-page-question="How does Kayakalp address biomedical waste management?">Kayakalp</button>
+                </div>
+                <form class="sq-ai-page-form" id="aiAssistantForm">
+                    <label class="visually-hidden" for="aiAssistantQuestion">Ask SaQshi AI</label>
+                    <textarea id="aiAssistantQuestion" rows="2" maxlength="2000" placeholder="Message SaQshi AI..." required></textarea>
+                    <button id="aiAssistantSend" type="submit" aria-label="Send question"><i class="bi bi-arrow-up"></i></button>
+                </form>
+                <small id="aiAssistantPrivacy">SaQshi AI may make mistakes. Do not include patient names, IDs, mobile numbers, or other personal information.</small>
+            </footer>
+        </div>
+    </div>
+</section>

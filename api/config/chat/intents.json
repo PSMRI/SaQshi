@@ -21,6 +21,19 @@
       "data_tool": "facility_report"
     },
     {
+      "intent": "assessment_count",
+      "title": "Assessment Count",
+      "keywords": [
+        "assessment count",
+        "number of assessments",
+        "total assessments",
+        "how many assessments"
+      ],
+      "roles": ["facility", "assessor", "state", "division", "district", "block"],
+      "answer_key": "assessment_count",
+      "data_tool": "assessment_count"
+    },
+    {
       "intent": "current_month_status",
       "title": "Current Month Status",
       "keywords": [
@@ -33,7 +46,7 @@
         "kpi filled",
         "outcome filled"
       ],
-      "roles": ["state", "division", "district", "block"],
+      "roles": ["facility", "state", "division", "district", "block"],
       "answer_key": "current_month_status",
       "data_tool": "current_month_status"
     },
@@ -47,9 +60,13 @@
         "open gaps",
         "overdue action plan",
         "facility not started action plan",
-        "pending gap closure"
+        "pending gap closure",
+        "pending cqi",
+        "show pending cqi",
+        "show me pending cqi",
+        "pending cqi actions"
       ],
-      "roles": ["state", "division", "district", "block"],
+      "roles": ["facility", "state", "division", "district", "block"],
       "answer_key": "pending_cqi_status",
       "data_tool": "pending_cqi_status"
     },

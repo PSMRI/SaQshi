@@ -21,12 +21,22 @@ class Security
      */
     public static function headers(): void
     {
+        // PHP-FastCGI can add this after IIS has applied its header policy.
+        // Remove it in the application response path as a defence in depth
+        // measure so API responses never disclose the PHP version.
+        header_remove('X-Powered-By');
+        header_remove('X-AspNet-Version');
+        header_remove('X-AspNetMvc-Version');
+
         header('Content-Type: application/json; charset=utf-8');
 
         header('X-Frame-Options: DENY');
         header('X-Content-Type-Options: nosniff');
         header('Referrer-Policy: strict-origin-when-cross-origin');
-        header('X-XSS-Protection: 0');
+        // X-XSS-Protection is intentionally omitted: modern browsers rely on CSP.
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: 0');
 
         header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
 

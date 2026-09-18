@@ -765,14 +765,29 @@ class AssessorService
 
     private function temporaryPassword(): string
     {
-        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%';
-        $password = '';
+        // Seed each required character class, then fill with cryptographically
+        // secure random characters so generated accounts meet the same policy.
+        $sets = [
+            'ABCDEFGHJKLMNPQRSTUVWXYZ',
+            'abcdefghijkmnopqrstuvwxyz',
+            '23456789',
+            '@#$%'
+        ];
+        $alphabet = implode('', $sets);
+        $characters = [];
 
-        for ($i = 0; $i < 12; $i += 1) {
-            $password .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+        foreach ($sets as $set) {
+            $characters[] = $set[random_int(0, strlen($set) - 1)];
+        }
+        for ($i = count($characters); $i < 16; $i += 1) {
+            $characters[] = $alphabet[random_int(0, strlen($alphabet) - 1)];
+        }
+        for ($i = count($characters) - 1; $i > 0; $i -= 1) {
+            $swap = random_int(0, $i);
+            [$characters[$i], $characters[$swap]] = [$characters[$swap], $characters[$i]];
         }
 
-        return $password;
+        return implode('', $characters);
     }
 
     private function splitName(string $name): array

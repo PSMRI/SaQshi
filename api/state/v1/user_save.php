@@ -24,8 +24,9 @@ if ($userId <= 0 || $username === '' || $firstName === '') Response::validation(
 if (!preg_match('/^[A-Za-z0-9_.@-]{3,100}$/', $username)) Response::validation(['u_name' => 'Use 3-100 letters, numbers, dot, underscore, @ or hyphen.']);
 if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) Response::validation(['mail_id' => 'Enter a valid email address.']);
 if ($mobile !== '' && !preg_match('/^[0-9+\-\s]{7,20}$/', $mobile)) Response::validation(['mob_no' => 'Enter a valid mobile number.']);
-if ($password !== '' && (strlen($password) < 8 || !preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/[0-9]/', $password) || !preg_match('/[^A-Za-z0-9]/', $password))) {
-    Response::validation(['password' => 'Password must have 8+ characters with upper-case, lower-case, number and special character.']);
+if ($password !== '') {
+    $passwordErrors = Auth::passwordPolicyErrors($password, [$username]);
+    if ($passwordErrors) Response::validation(['password' => Auth::passwordPolicyMessage($passwordErrors)]);
 }
 $target = $con->prepare("SELECT r.role_name FROM s_user u LEFT JOIN u_role r ON r.role_id = u.role_id_fk WHERE u.u_id = ? LIMIT 1");
 $target->bind_param('i', $userId); $target->execute();

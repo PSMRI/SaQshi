@@ -1,0 +1,20 @@
+{
+  "id": "ai-assistant",
+  "name": "SaQshi AI Assistant",
+  "title": "SaQshi AI Assistant",
+  "layout": "dashboard",
+  "pageHeader": {
+    "title": "SaQshi AI Assistant",
+    "subtitle": "Ask questions using SaQshi resources, approved public websites, or both."
+  },
+  "authentication": { "required": true },
+  "assets": {
+    "css": ["/ui/pages/ai/assistant.css?v=20260912-1"],
+    "js": ["/ui/pages/ai/assistant.js?v=20260912-1"]
+  },
+  "breadcrumb": [
+    { "label": "Dashboard", "url": "/ui/dashboard.html" },
+    { "label": "SaQshi AI Assistant" }
+  ],
+  "moduleName": "aiAssistantPage"
+}

@@ -3,14 +3,31 @@
 
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
-    const state = { open: false, sending: false, history: [], initialized: false };
+    const state = { open: false, sending: false, history: [], initialized: false, searchMode: "local" };
 
     function $(id) { return document.getElementById(id); }
     function esc(value) {
         return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
+    function formatMessage(value) {
+        return esc(value).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+    }
     function currentRoute() {
         return SQ.router?.state?.currentRoute || new URLSearchParams(window.location.search).get("route") || "dashboard";
+    }
+    function setSearchMode(mode) {
+        state.searchMode = ["local", "web", "auto"].includes(mode) ? mode : "local";
+        document.querySelectorAll("[data-ai-chat-source]").forEach(button => {
+            const active = button.getAttribute("data-ai-chat-source") === state.searchMode;
+            button.classList.toggle("is-active", active);
+            button.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        const input = $("sqAiChatInput");
+        if (input) input.placeholder = state.searchMode === "web"
+            ? "Ask a public web question..."
+            : state.searchMode === "auto"
+                ? "Search SaQshi repository, then web if needed..."
+                : "Ask from SaQshi repository...";
     }
     function render() {
         const target = $("sqAiChatMessages");
@@ -20,7 +37,7 @@
             message: "Hi. I can help with assessment, checklist, CQI, KPI/Outcome, reports and certification workflows."
         }];
         target.innerHTML = rows.map(row => `
-            <div class="sq-ai-chat-msg is-${esc(row.role === "user" ? "user" : "assistant")}">${esc(row.message)}</div>
+            <div class="sq-ai-chat-msg is-${esc(row.role === "user" ? "user" : "assistant")}">${formatMessage(row.message)}</div>
         `).join("");
         target.scrollTop = target.scrollHeight;
     }
@@ -49,8 +66,15 @@
         try {
             const res = await SQ.api.post("/chat/v1/send.php", {
                 message: message.trim(),
-                context_page: currentRoute()
-            }, { loader: false, showError: false });
+                context_page: currentRoute(),
+                search_mode: state.searchMode
+            }, {
+                loader: false,
+                showError: false,
+                // Local Qwen can take longer than the shared 30-second API
+                // default while it loads into memory; chat alone may wait.
+                timeout: 120000
+            });
             state.history = res.data?.history || state.history.concat([{ role: "assistant", message: res.data?.reply || "Done." }]);
         } catch (error) {
             state.history.push({ role: "assistant", message: error.message || "Unable to reach AI Chat Assistant." });
@@ -72,6 +96,9 @@
         $("sqAiChatToggle")?.addEventListener("click", function () { setOpen(!state.open); });
         $("sqAiChatClose")?.addEventListener("click", function () { setOpen(false); });
         $("sqAiChatClear")?.addEventListener("click", clear);
+        document.querySelectorAll("[data-ai-chat-source]").forEach(button => {
+            button.addEventListener("click", function () { setSearchMode(button.getAttribute("data-ai-chat-source")); });
+        });
         $("sqAiChatForm")?.addEventListener("submit", function (event) {
             event.preventDefault();
             const input = $("sqAiChatInput");

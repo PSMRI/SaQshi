@@ -1,0 +1,4 @@
+{
+  "top_k": 5,
+  "allowed_source_types": ["guideline", "manual", "sop", "saqshi_config"]
+}

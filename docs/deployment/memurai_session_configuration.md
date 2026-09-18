@@ -32,7 +32,7 @@ If no result is returned, enable the matching `php_redis` extension in the PHP `
 3. Confirm the server responds:
 
 ```powershell
-& "C:\Program Files\Memurai\memurai-cli.exe" ping
+memurai-cli.exe ping
 ```
 
 Expected result:
@@ -99,8 +99,8 @@ Never share the same cookie name and key prefix between unrelated applications.
 Check Memurai health and memory usage:
 
 ```powershell
-& "C:\Program Files\Memurai\memurai-cli.exe" ping
-& "C:\Program Files\Memurai\memurai-cli.exe" info memory
+memurai-cli.exe ping
+memurai-cli.exe info memory
 ```
 
 During a SaQshi login, session reads and writes should be only a few milliseconds on a healthy local Memurai server. If login is still slow, check database queries, password hashing, external captcha/notification calls, and synchronous audit logging rather than assuming Redis is the bottleneck.
@@ -112,8 +112,8 @@ Run these checks in a non-production or approved maintenance window:
 ```powershell
 php -m | Select-String redis
 Get-Content api/config/session.json
-& "C:\Program Files\Memurai\memurai-cli.exe" ping
-& "C:\Program Files\Memurai\memurai-cli.exe" info memory
+memurai-cli.exe ping
+memurai-cli.exe info memory
 ```
 
 Then sign in through HTTPS, refresh an authenticated page, sign out and sign in again. Confirm that the configured cookie name is present, has `HttpOnly` and `SameSite=Strict`, and has the `Secure` flag under HTTPS. Do not copy cookie values into tickets or logs.

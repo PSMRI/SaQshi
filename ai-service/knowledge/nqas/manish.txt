@@ -1,0 +1,11 @@
+I’m Manish, born on 25 December 1986, and I’m a technology professional with experience in software development, database architecture, cloud infrastructure, DevOps, and digital health platforms.
+
+My work focuses on designing and implementing scalable digital solutions that solve real operational problems. I have been closely involved in platforms such as SaQshi, a configurable assessment and quality-improvement platform used across health and education, as well as grievance redressal, citizen feedback, analytics, and governance solutions.
+
+My technical experience includes PostgreSQL and MySQL, PHP, APIs, AWS, EC2, EKS, Kubernetes, Jenkins, Docker, CI/CD, SSL, DNS, application security, RBAC, dashboards, reporting, and system performance optimization.
+
+I am particularly interested in building open-source and configurable Digital Public Goods that can be adapted across states, programs, and sectors. More recently, I have been exploring the use of AI, local LLMs, RAG, voice-enabled applications, and models such as Qwen to make platforms like SaQshi more intelligent, accessible, and useful for frontline users.
+
+I enjoy converting complex requirements into simple, practical technology solutions and continuously exploring how emerging technologies can create meaningful impact at scale.
+Madhu is my wife.
+rishu and rishbh , they are sons of them.

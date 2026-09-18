@@ -4,6 +4,8 @@ require_once __DIR__ . '/../core/SessionManager.php';
 require_once __DIR__ . '/ChatIntentService.php';
 require_once __DIR__ . '/ChatKnowledgeService.php';
 require_once __DIR__ . '/ChatDataService.php';
+require_once __DIR__ . '/AIService.php';
+require_once __DIR__ . '/AIAuditService.php';
 
 /**
  * Provides chat assistant service behavior for SaQshi API workflows.
@@ -43,10 +45,13 @@ class ChatAssistantService
     /**
      * Handles send processing for this API workflow.
      */
-    public static function send(mysqli $con, int $userId, int $facId, string $message, string $contextPage = ''): array
+    public static function send(mysqli $con, int $userId, int $facId, string $message, string $contextPage = '', string $searchMode = 'auto'): array
     {
         self::ensureTable($con);
         $message = trim($message);
+        $searchMode = strtolower(trim($searchMode));
+        if (!in_array($searchMode, ['local', 'web', 'auto'], true)) $searchMode = 'auto';
+        $language = self::requestedLanguage($message);
 
         if ($message === '') {
             throw new InvalidArgumentException('Message is required.');
@@ -60,8 +65,53 @@ class ChatAssistantService
         self::saveMessage($con, $userId, $facId, 'user', $message, $contextPage, (string)$intent['intent'], 'user');
 
         $dataReply = ChatDataService::answer($con, $intent, $message, $userId, $facId);
-        $reply = $dataReply ?: ChatKnowledgeService::answer((string)($intent['answer_key'] ?? 'fallback'));
+        $reply = $dataReply;
         $source = $dataReply ? 'data' : 'knowledge';
+
+        // Live SaQshi data remains authoritative. General guideline questions
+        // can use the local RAG gateway; the browser never sees its URL.
+        if (!$reply) {
+            $ai = new AIService();
+            $startedAt = hrtime(true);
+            $result = $ai->request('v1/ask', [
+                'question' => $message,
+                'language' => $language,
+                'generate' => true,
+                'mode' => 'chat',
+                'max_tokens' => 120,
+                'search_mode' => $searchMode
+            ]);
+            AIAuditService::log([
+                'user_id' => $userId,
+                'facility_id' => $facId,
+                'feature' => 'chat:' . $searchMode,
+                'model' => $ai->model(),
+                'duration_ms' => (int)((hrtime(true) - $startedAt) / 1000000),
+                'success' => !empty($result['success']),
+                'source_count' => is_array($result['data']['sources'] ?? null) ? count($result['data']['sources']) : 0,
+                'error_code' => (string)($result['code'] ?? ''),
+            ]);
+            if (!empty($result['success']) && !empty($result['data']['answer'])) {
+                $reply = trim((string)$result['data']['answer']);
+                $sources = $result['data']['sources'] ?? [];
+                if (is_array($sources) && $sources) {
+                    $labels = [];
+                    foreach ($sources as $item) {
+                        if (!is_array($item) || empty($item['document_name'])) continue;
+                        $label = (string)$item['document_name'] . (!empty($item['page']) ? ' (p. ' . (int)$item['page'] . ')' : '');
+                        if (($item['source_type'] ?? '') === 'web' && !empty($item['url'])) {
+                            $label .= ': ' . (string)$item['url'];
+                        }
+                        $labels[] = $label;
+                    }
+                    if ($labels) $reply .= "\n\nSources used:\n- " . implode("\n- ", array_unique($labels));
+                }
+                $source = 'rag';
+            }
+        }
+        if (!$reply) {
+            $reply = ChatKnowledgeService::answer((string)($intent['answer_key'] ?? 'fallback'));
+        }
         self::saveMessage($con, $userId, $facId, 'assistant', $reply, $contextPage, (string)$intent['intent'], $source);
 
         return [
@@ -160,5 +210,15 @@ class ChatAssistantService
         if (!$con->query("ALTER TABLE ai_chat_messages ADD COLUMN {$safeColumn} {$definition}")) {
             throw new RuntimeException('Unable to update ai_chat_messages table: ' . $con->error);
         }
+    }
+
+    private static function requestedLanguage(string $message): string
+    {
+        // Covers typed Hindi as well as an English question followed by "in Hindi".
+        if (preg_match('/[\x{0900}-\x{097F}]/u', $message)
+            || preg_match('/\b(?:in|answer in|reply in)\s+(?:hindi|hindī)\b/i', $message)) {
+            return 'hi';
+        }
+        return 'en';
     }
 }

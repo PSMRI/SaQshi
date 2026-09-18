@@ -30,29 +30,7 @@ function adminUsersRequest(): array
  */
 function adminUsersPasswordErrors(string $password): array
 {
-    $errors = [];
-
-    if (strlen($password) < 8) {
-        $errors[] = 'Minimum 8 characters';
-    }
-
-    if (!preg_match('/[A-Z]/', $password)) {
-        $errors[] = 'At least one capital letter';
-    }
-
-    if (!preg_match('/[a-z]/', $password)) {
-        $errors[] = 'At least one lower-case letter';
-    }
-
-    if (!preg_match('/[0-9]/', $password)) {
-        $errors[] = 'At least one digit';
-    }
-
-    if (!preg_match('/[^A-Za-z0-9]/', $password)) {
-        $errors[] = 'At least one special character';
-    }
-
-    return $errors;
+    return Auth::passwordPolicyErrors($password);
 }
 
 /**

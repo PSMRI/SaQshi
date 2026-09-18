@@ -1,0 +1,5 @@
+{
+  "advisory_only": true,
+  "forbidden_operations": ["score_assessment", "change_score", "close_gap", "certify_facility", "change_permissions", "sql_access"],
+  "retain_raw_prompts": false
+}

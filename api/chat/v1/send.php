@@ -18,7 +18,8 @@ chatHandle(function () use ($con) {
         chatUserId(),
         chatFacilityId(),
         (string)($payload['message'] ?? ''),
-        (string)($payload['context_page'] ?? '')
+        (string)($payload['context_page'] ?? ''),
+        (string)($payload['search_mode'] ?? 'auto')
     );
 
     Response::success('Assistant response generated', $result);

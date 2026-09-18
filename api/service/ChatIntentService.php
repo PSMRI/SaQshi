@@ -28,7 +28,7 @@ class ChatIntentService
             $score = 0;
             foreach (($intent['keywords'] ?? []) as $keyword) {
                 $needle = self::normalize((string)$keyword);
-                if ($needle !== '' && str_contains($text, $needle)) {
+                if ($needle !== '' && self::matchesKeyword($text, $needle)) {
                     $score += max(1, substr_count($needle, ' ') + 1);
                 }
             }
@@ -86,5 +86,15 @@ class ChatIntentService
     private static function normalize(string $value): string
     {
         return trim((string)preg_replace('/\s+/', ' ', strtolower($value)));
+    }
+
+    private static function matchesKeyword(string $text, string $needle): bool
+    {
+        // Single-word intent keywords must be complete words. In particular,
+        // the NIN lookup keyword must not match the "nin" inside "cleaning".
+        if (!str_contains($needle, ' ')) {
+            return (bool)preg_match('/(?<![a-z0-9])' . preg_quote($needle, '/') . '(?![a-z0-9])/i', $text);
+        }
+        return str_contains($text, $needle);
     }
 }

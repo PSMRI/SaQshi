@@ -62,7 +62,7 @@
         const required = isPasswordForced();
 
         return {
-            length: (!hasPassword && !required) || password.length >= 8,
+            length: (!hasPassword && !required) || (password.length >= 12 && password.length <= 128),
             upper: (!hasPassword && !required) || /[A-Z]/.test(password),
             lower: (!hasPassword && !required) || /[a-z]/.test(password),
             digit: (!hasPassword && !required) || /[0-9]/.test(password),

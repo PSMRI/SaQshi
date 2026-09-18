@@ -21,8 +21,9 @@ class ChatDataService
 
         try {
             return match ($tool) {
-                'current_month_status' => self::currentMonthStatus($con),
-                'pending_cqi_status' => self::pendingCqiStatus($con),
+                'current_month_status' => self::currentMonthStatus($con, $facId),
+                'assessment_count' => self::assessmentCount($con, $facId),
+                'pending_cqi_status' => self::pendingCqiStatus($con, $facId),
                 'facility_report' => self::facilityReport($con, $message, $userId, $facId),
                 default => null,
             };
@@ -38,8 +39,26 @@ class ChatDataService
         }
     }
 
-    private static function currentMonthStatus(mysqli $con): string
+    private static function currentMonthStatus(mysqli $con, int $facId): string
     {
+        if (ChatIntentService::roleKey((int)SessionManager::roleId()) === 'facility') {
+            $detail = StateDashboardService::facilityDetail($con, $facId);
+            $summary = $detail['summary'] ?? [];
+            $assessment = $summary['assessments'] ?? [];
+            $performance = $summary['performance'] ?? [];
+            $cqi = $summary['cqi'] ?? [];
+            return implode("\n", [
+                'Current status for your facility:',
+                '',
+                '- Total assessments: ' . (int)($assessment['total'] ?? 0),
+                '- Completed: ' . (int)($assessment['completed'] ?? 0),
+                '- In progress: ' . (int)($assessment['in_progress'] ?? 0),
+                '- KPI months/entries: ' . (int)($performance['kpi_months'] ?? $performance['kpi_entries'] ?? 0),
+                '- Outcome months/entries: ' . (int)($performance['outcome_months'] ?? $performance['outcome_entries'] ?? 0),
+                '- Pending CQI actions/gaps: ' . (int)($cqi['pending'] ?? 0),
+                '- Overdue CQI actions/gaps: ' . (int)($cqi['overdue'] ?? 0),
+            ]);
+        }
         $filters = self::monitoringFilters();
         $status = StateDashboardService::currentMonthStatus($con, $filters);
         $cqi = StateDashboardService::cqiSummary($con, $filters);
@@ -60,8 +79,39 @@ class ChatDataService
         ]);
     }
 
-    private static function pendingCqiStatus(mysqli $con): string
+    private static function assessmentCount(mysqli $con, int $facId): string
     {
+        if (ChatIntentService::roleKey((int)SessionManager::roleId()) === 'facility') {
+            $detail = StateDashboardService::facilityDetail($con, $facId);
+            $assessment = $detail['summary']['assessments'] ?? [];
+            return 'Assessment count for your facility: ' . (int)($assessment['total'] ?? 0)
+                . "\n- Completed: " . (int)($assessment['completed'] ?? 0)
+                . "\n- In progress: " . (int)($assessment['in_progress'] ?? 0);
+        }
+        $status = StateDashboardService::currentMonthStatus($con, self::monitoringFilters());
+        $assessment = $status['assessment'] ?? [];
+        $total = (int)($assessment['started'] ?? 0) + (int)($assessment['in_progress'] ?? 0) + (int)($assessment['completed'] ?? 0);
+        return 'Current-month assessment count for your scope: ' . $total
+            . "\n- Started: " . (int)($assessment['started'] ?? 0)
+            . "\n- In progress: " . (int)($assessment['in_progress'] ?? 0)
+            . "\n- Completed: " . (int)($assessment['completed'] ?? 0);
+    }
+
+    private static function pendingCqiStatus(mysqli $con, int $facId): string
+    {
+        if (ChatIntentService::roleKey((int)SessionManager::roleId()) === 'facility') {
+            $detail = StateDashboardService::facilityDetail($con, $facId);
+            $cqi = $detail['summary']['cqi'] ?? [];
+            return implode("\n", [
+                'CQI status for your facility:',
+                '',
+                '- Open/pending gaps or actions: ' . (int)($cqi['pending'] ?? 0),
+                '- Completed: ' . (int)($cqi['completed'] ?? 0),
+                '- Overdue: ' . (int)($cqi['overdue'] ?? 0),
+                '',
+                'Open CQI Monitoring for facility-wise details.'
+            ]);
+        }
         $filters = self::monitoringFilters();
         $cqi = StateDashboardService::cqiSummary($con, $filters);
         $scope = (string)($filters['_scope_label'] ?? 'your scope');

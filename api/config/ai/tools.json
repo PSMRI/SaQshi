@@ -1,0 +1,8 @@
+[
+  "getAssessmentProgress",
+  "getOpenGaps",
+  "getActionPlanStatus",
+  "getPerformanceCompletion",
+  "getCertificationStatus",
+  "getDistrictSummary"
+]

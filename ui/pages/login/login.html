@@ -43,7 +43,7 @@ License : GPL-3.0
                     <p>Use your SaQshi account to continue.</p>
                 </div>
 
-                <form id="loginForm" class="sq-login-form" autocomplete="off">
+                <form id="loginForm" class="sq-login-form" method="post" autocomplete="off">
                     <div class="sq-form-group">
                         <label for="username">Username</label>
                         <input id="username" name="username" type="text" class="sq-form-control" placeholder="Enter username" required aria-label="Enter Username">
@@ -51,7 +51,7 @@ License : GPL-3.0
                     <div class="sq-form-group">
                         <label for="password">Password</label>
                         <div class="sq-password-group">
-                            <input id="password" name="password" type="password" class="sq-form-control" placeholder="Enter password" required aria-label="Enter Password">
+                        <input id="password" name="password" type="password" class="sq-form-control" placeholder="Enter password" required autocomplete="current-password" aria-label="Enter Password">
                             <button type="button" class="sq-password-toggle" id="togglePassword" aria-label="Show or hide password"><i class="bi bi-eye"></i></button>
                         </div>
                     </div>

@@ -16,13 +16,12 @@ try {
     $userId = (int)($input['u_id'] ?? $input['user_id'] ?? 0);
     $password = (string)($input['password'] ?? '');
     if ($userId <= 0) Response::validation(['u_id' => 'User ID is required.']);
-    if (strlen($password) < 8 || !preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/[0-9]/', $password) || !preg_match('/[^A-Za-z0-9]/', $password)) {
-        Response::validation(['password' => 'Password must have 8+ characters with upper-case, lower-case, number and special character.']);
-    }
     $target = $con->prepare('SELECT u_id, u_name FROM s_user WHERE u_id = ? LIMIT 1');
     $target->bind_param('i', $userId); $target->execute();
     $user = $target->get_result()->fetch_assoc();
     if (!$user) Response::validation(['u_id' => 'User was not found.']);
+    $passwordErrors = Auth::passwordPolicyErrors($password, [$user['u_name']]);
+    if ($passwordErrors) Response::validation(['password' => Auth::passwordPolicyMessage($passwordErrors)]);
 
     $hash = Auth::hashPassword($password);
     $hasFlag = (bool)$con->query("SHOW COLUMNS FROM s_user LIKE 'password_must_change'")->fetch_assoc();

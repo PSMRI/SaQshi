@@ -15,7 +15,8 @@
     const API = {
         activeAssessment: "/assessment/v1/active_assessment.php",
         actionPlan: "/assessment/v1/action_plan.php",
-        save: "/assessment/v1/action_plan_save.php"
+        save: "/assessment/v1/action_plan_save.php",
+        aiSuggestion: "/ai/v1/suggest_action_plan.php"
     };
 
     const state = {

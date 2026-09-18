@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "provider": "LOCAL",
+  "gateway_url": "http://127.0.0.1:18001",
+  "model": "qwen3:1.7b",
+  "timeout_seconds": 120,
+  "temperature": 0.2,
+  "max_tokens": 800,
+  "rag_enabled": true,
+  "audit_enabled": true
+}

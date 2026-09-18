@@ -95,7 +95,7 @@ License : GPL-3.0
                     <div class="sq-admin-form-grid is-password">
                         <label>
                             <span>New Password</span>
-                            <input type="password" id="adminPassword" class="sq-form-control" disabled autocomplete="new-password" aria-label="Admin Password">
+                            <input type="password" id="adminPassword" class="sq-form-control" disabled minlength="12" maxlength="128" autocomplete="new-password" aria-label="Admin Password">
                         </label>
                         <label>
                             <span>Confirm Password</span>
@@ -106,7 +106,7 @@ License : GPL-3.0
                         <span id="adminPasswordMeter"></span>
                     </div>
                     <div id="adminPasswordRules" class="sq-password-rules">
-                        <span data-rule="length">8 characters</span>
+                        <span data-rule="length">12-128 characters</span>
                         <span data-rule="upper">Capital letter</span>
                         <span data-rule="lower">Lower-case letter</span>
                         <span data-rule="digit">Digit</span>

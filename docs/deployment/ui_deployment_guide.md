@@ -191,9 +191,9 @@ Use the project root as the virtual host document root.
 Example:
 
 ```apache
-DocumentRoot "/var/www/saqshi"
+DocumentRoot "/path/to/application"
 
-<Directory "/var/www/saqshi">
+<Directory "/path/to/application">
     Options -Indexes
     AllowOverride All
     Require all granted
@@ -229,7 +229,7 @@ Example outline:
 server {
     listen 80;
     server_name example.org;
-    root /var/www/saqshi;
+    root /path/to/application;
     index index.html;
 
     location /ui/ {

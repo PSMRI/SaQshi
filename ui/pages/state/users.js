@@ -179,7 +179,7 @@
             <div class="sq-state-modal" id="statePasswordResetModal" hidden>
                 <div class="sq-state-modal-panel sq-user-profile-panel" role="dialog" aria-modal="true" aria-labelledby="statePasswordResetTitle">
                     <div class="sq-card-header"><div><h3 id="statePasswordResetTitle">Reset User Password</h3><p id="statePasswordResetHint"></p></div><button class="sq-btn sq-btn-light" type="button" data-password-reset-close>Close</button></div>
-                    <form class="sq-card-body sq-state-cert-form" id="statePasswordResetForm"><div class="sq-state-cert-form-wide"><label class="sq-form-label" for="stateResetPassword">New Temporary Password *</label><input class="sq-form-control" id="stateResetPassword" type="password" required autocomplete="new-password"><small>8+ characters with upper-case, lower-case, number and special character.</small></div><div class="sq-state-cert-form-wide"><label class="sq-form-label" for="stateResetPasswordConfirm">Confirm Password *</label><input class="sq-form-control" id="stateResetPasswordConfirm" type="password" required autocomplete="new-password"></div><div class="sq-state-cert-form-wide sq-state-modal-actions"><button class="sq-btn sq-btn-primary" type="submit">Reset Password</button><button class="sq-btn sq-btn-light" type="button" data-password-reset-close>Cancel</button></div></form>
+                    <form class="sq-card-body sq-state-cert-form" id="statePasswordResetForm"><div class="sq-state-cert-form-wide"><label class="sq-form-label" for="stateResetPassword">New Temporary Password *</label><input class="sq-form-control" id="stateResetPassword" type="password" required minlength="12" maxlength="128" autocomplete="new-password"><small>12-128 characters with upper-case, lower-case, number and special character. Do not use the user ID.</small></div><div class="sq-state-cert-form-wide"><label class="sq-form-label" for="stateResetPasswordConfirm">Confirm Password *</label><input class="sq-form-control" id="stateResetPasswordConfirm" type="password" required autocomplete="new-password"></div><div class="sq-state-cert-form-wide sq-state-modal-actions"><button class="sq-btn sq-btn-primary" type="submit">Reset Password</button><button class="sq-btn sq-btn-light" type="button" data-password-reset-close>Cancel</button></div></form>
                 </div>
             </div>`);
         document.getElementById("statePasswordResetModal")?.addEventListener("click", event => { if (event.target === event.currentTarget || event.target.closest("[data-password-reset-close]")) event.currentTarget.hidden = true; });
@@ -222,19 +222,54 @@
                     <div class="sq-card-header"><div><h3 id="stateUserCreateTitle">Create User</h3><p>Create a user with the correct monitoring scope.</p></div><button class="sq-btn sq-btn-light" type="button" data-user-create-close>Close</button></div>
                     <form class="sq-card-body sq-state-cert-form" id="stateUserCreateForm">
                         <div><label class="sq-form-label" for="createUserRole">Role *</label><select class="sq-form-control" id="createUserRole" required><option value="1">Facility User</option><option value="8">Block User</option><option value="4">District User</option><option value="5">Division User</option></select></div>
-                        <div id="createUserIdentity"><div><label class="sq-form-label" for="createUserFirstName">First Name *</label><input class="sq-form-control" id="createUserFirstName" required maxlength="100"></div><div><label class="sq-form-label" for="createUserLastName">Last Name</label><input class="sq-form-control" id="createUserLastName" maxlength="100"></div><div><label class="sq-form-label" for="createUserUsername">Username *</label><input class="sq-form-control" id="createUserUsername" required minlength="3" maxlength="100"></div><div><label class="sq-form-label" for="createUserPassword">Temporary Password *</label><input class="sq-form-control" id="createUserPassword" type="password" required autocomplete="new-password"><small>8+ characters with upper-case, lower-case, number and special character.</small></div><div><label class="sq-form-label" for="createUserEmail">Email</label><input class="sq-form-control" id="createUserEmail" type="email" maxlength="190"></div><div><label class="sq-form-label" for="createUserMobile">Mobile</label><input class="sq-form-control" id="createUserMobile" maxlength="20"></div></div>
-                        <div class="sq-state-cert-form-wide" id="createFacilityScope"><p>For a Facility User, the NIN is automatically used as the user ID and initial password. The user completes their personal details after first login.</p><label class="sq-form-label" for="createUserFacilityDistrict">District *</label><select class="sq-form-control" id="createUserFacilityDistrict"></select><label class="sq-form-label" for="createUserFacilityBlock">Block *</label><select class="sq-form-control" id="createUserFacilityBlock" disabled></select><label class="sq-form-label" for="createUserFacilityNin">Facility *</label><select class="sq-form-control" id="createUserFacilityNin" disabled></select></div>
+                        <div id="createUserIdentity"><div><label class="sq-form-label" for="createUserFirstName">First Name *</label><input class="sq-form-control" id="createUserFirstName" required maxlength="100"></div><div><label class="sq-form-label" for="createUserLastName">Last Name</label><input class="sq-form-control" id="createUserLastName" maxlength="100"></div><div><label class="sq-form-label" for="createUserUsername">Username *</label><input class="sq-form-control" id="createUserUsername" required minlength="3" maxlength="100"></div><div id="createUserPasswordGroup"><label class="sq-form-label" for="createUserPassword">Temporary Password *</label><input class="sq-form-control" id="createUserPassword" type="password" required minlength="12" maxlength="128" autocomplete="new-password"><small>12-128 characters with upper-case, lower-case, number and special character. Do not use the user ID.</small><div class="sq-password-hardening" aria-live="polite"><div class="sq-password-hardening-head"><strong>Password hardening</strong><span id="createUserPasswordProgress">Start typing</span></div><div class="sq-password-meter" aria-hidden="true"><span id="createUserPasswordMeter"></span></div><div class="sq-password-rules" id="createUserPasswordRules"><span data-rule="length">12-128 characters</span><span data-rule="upper">Capital letter</span><span data-rule="lower">Lower-case letter</span><span data-rule="digit">Digit</span><span data-rule="special">Special character</span><span data-rule="repeat">No repeated sequence</span><span data-rule="identifier">Does not use user ID</span></div></div></div><div><label class="sq-form-label" for="createUserEmail">Email</label><input class="sq-form-control" id="createUserEmail" type="email" maxlength="190"></div><div><label class="sq-form-label" for="createUserMobile">Mobile</label><input class="sq-form-control" id="createUserMobile" maxlength="20"></div></div>
+                        <div class="sq-state-cert-form-wide" id="createFacilityScope"><p>For a Facility User, the NIN is automatically used as the user ID. Set a separate strong temporary password and share it only through an approved secure channel.</p><label class="sq-form-label" for="createUserFacilityDistrict">District *</label><select class="sq-form-control" id="createUserFacilityDistrict"></select><label class="sq-form-label" for="createUserFacilityBlock">Block *</label><select class="sq-form-control" id="createUserFacilityBlock" disabled></select><label class="sq-form-label" for="createUserFacilityNin">Facility *</label><select class="sq-form-control" id="createUserFacilityNin" disabled></select></div>
                         <div class="sq-state-cert-form-wide" id="createHierarchyScope" hidden><div id="createBlockDistrictScope" hidden><label class="sq-form-label" for="createUserBlockDistrict">District *</label><select class="sq-form-control" id="createUserBlockDistrict"></select></div><label class="sq-form-label" for="createUserScope" id="createUserScopeLabel">Assigned Scope *</label><select class="sq-form-control" id="createUserScope"></select></div>
                         <div class="sq-state-cert-form-wide sq-state-modal-actions"><button class="sq-btn sq-btn-primary" type="submit">Create User</button><button class="sq-btn sq-btn-light" type="button" data-user-create-close>Cancel</button></div>
                     </form>
                 </div>
             </div>`);
+        // Facility users do not supply personal identity fields, so that
+        // section is hidden. Keep the required temporary-password control
+        // outside it so the form remains completable for this role.
+        const passwordGroup = document.getElementById("createUserPasswordGroup");
+        const facilityScope = document.getElementById("createFacilityScope");
+        if (passwordGroup && facilityScope) facilityScope.after(passwordGroup);
         document.getElementById("stateUserCreateModal")?.addEventListener("click", event => { if (event.target === event.currentTarget || event.target.closest("[data-user-create-close]")) event.currentTarget.hidden = true; });
         document.getElementById("createUserRole")?.addEventListener("change", renderCreateScope);
         document.getElementById("createUserBlockDistrict")?.addEventListener("change", renderBlockUserBlocks);
         document.getElementById("createUserFacilityDistrict")?.addEventListener("change", renderFacilityBlocks);
         document.getElementById("createUserFacilityBlock")?.addEventListener("change", renderFacilities);
+        document.getElementById("createUserFacilityNin")?.addEventListener("change", renderPasswordHardening);
+        document.getElementById("createUserPassword")?.addEventListener("input", renderPasswordHardening);
         document.getElementById("stateUserCreateForm")?.addEventListener("submit", createUser);
+        renderPasswordHardening();
+    }
+
+    function renderPasswordHardening() {
+        const password = document.getElementById("createUserPassword")?.value || "";
+        const identifier = document.getElementById("createUserFacilityNin")?.value || document.getElementById("createUserUsername")?.value || "";
+        const active = password.length > 0;
+        const rules = {
+            length: password.length >= 12 && password.length <= 128,
+            upper: /[A-Z]/.test(password), lower: /[a-z]/.test(password), digit: /[0-9]/.test(password),
+            special: /[^A-Za-z0-9\s]/.test(password), repeat: !/(.)\1\1/.test(password),
+            identifier: identifier.length < 3 || !password.toLowerCase().includes(identifier.toLowerCase())
+        };
+        const total = Object.keys(rules).length;
+        const passed = Object.values(rules).filter(Boolean).length;
+        const meter = document.getElementById("createUserPasswordMeter");
+        const progress = document.getElementById("createUserPasswordProgress");
+        document.querySelectorAll("#createUserPasswordRules [data-rule]").forEach(rule => {
+            const key = rule.getAttribute("data-rule");
+            rule.classList.toggle("is-ok", active && rules[key]);
+            rule.classList.toggle("is-bad", active && !rules[key]);
+        });
+        if (meter) {
+            meter.style.width = active ? `${Math.round((passed / total) * 100)}%` : "0%";
+            meter.className = passed === total ? "is-strong" : (passed >= 5 ? "is-medium" : "is-weak");
+        }
+        if (progress) progress.textContent = active ? `${passed} of ${total} checks passed` : "Start typing";
     }
 
     function renderCreateScope() {
@@ -253,8 +288,10 @@
         ["createUserFirstName", "createUserUsername", "createUserPassword"].forEach(id => {
             const input = document.getElementById(id);
             if (!input) return;
-            input.disabled = roleId === 1;
-            input.required = roleId !== 1;
+            // Facility NIN is assigned as the username, but administrators
+            // must set a separate strong temporary password.
+            input.disabled = id !== "createUserPassword" && roleId === 1;
+            input.required = id === "createUserPassword" || roleId !== 1;
         });
         if (roleId === 1) renderFacilityDistricts();
         if (!select) return;
@@ -444,10 +481,7 @@
             createButton.addEventListener("click", openCreateUser);
         }
         const pendingCredentialsButton = document.getElementById("statePendingCredentials");
-        if (pendingCredentialsButton && Number(currentUser?.role_id) === 11) {
-            pendingCredentialsButton.hidden = false;
-            pendingCredentialsButton.addEventListener("click", downloadPendingFacilityCredentials);
-        }
+        if (pendingCredentialsButton) pendingCredentialsButton.hidden = true;
         document.getElementById("stateUsersTemplate")?.addEventListener("click", function () {
             downloadCsv("user-import-template.csv", ["username", "role_name", "school_facility_udise_nin", "is_active", "temporary_password"], [["new.admin", "Administrator", "", "1", ""], ["new.mentor", "Mentor", "", "1", ""]]);
         });

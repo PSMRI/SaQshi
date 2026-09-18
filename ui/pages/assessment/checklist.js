@@ -22,7 +22,8 @@
         checkpoints: "/framework/v1/checkpoints.php",
         startDepartment: "/assessment/v1/start_department.php",
         saveResponse: "/assessment/v1/save-response.php",
-        saveResponsesBulk: "/assessment/v1/save-responses-bulk.php"
+        saveResponsesBulk: "/assessment/v1/save-responses-bulk.php",
+        explainAI: "/ai/v1/explain_checkpoint.php"
     };
 
     const state = {
@@ -85,6 +86,21 @@
         if (SQ.toast) {
             SQ.toast(message, type);
         }
+    }
+
+    async function explainCurrentCheckpoint() {
+        const data = state.current; const checkpoint = data?.checkpoint || {};
+        if (!data) return;
+        const button = $("btnExplainWithAI"); if (button) { button.disabled = true; button.textContent = "Generating..."; }
+        try {
+            const response = await apiPost(API.explainAI, { assessment_id: state.assessment?.assessment_id || 0, checkpoint_code: checkpoint.csqa_reference_id || checkpoint.checkpoint_id || "", checkpoint_text: checkpoint.Checkpoint || checkpoint.Measurable_Element || "", framework: state.assessment?.framework_code || "", facility_type: data.facility?.facilities_type || "", department: data.department?.dept_name || "", language: document.documentElement.lang || "en" });
+            if (response.status === "error") throw new Error(response.message);
+            const result = response.data || {}; const sources = result.sources || [];
+            $("aiGuidance").hidden = false;
+            $("aiGuidanceContent").innerHTML = `<div>${escapeHtml(result.answer || "No AI guidance was returned.")}</div><div id="aiSources" hidden>${sources.map(s => `${escapeHtml(s.document_name)}${s.page ? " · p. " + escapeHtml(s.page) : ""}`).join("<br>") || "No source reference available."}</div>`;
+            $("btnShowAIReference").hidden = !sources.length;
+        } catch (error) { notify("warning", error.message || "SaQshi AI is temporarily unavailable. You can continue the assessment normally."); }
+        finally { if (button) { button.disabled = false; button.textContent = "Explain with SaQshi AI"; } }
     }
 
     function domainLabel(key, fallback) {
@@ -1448,6 +1464,8 @@
         });
         $("btnSaveCheckpoint")?.addEventListener("click", handleSave);
         $("btnNextCheckpoint")?.addEventListener("click", handleNext);
+        $("btnExplainWithAI")?.addEventListener("click", explainCurrentCheckpoint);
+        $("btnShowAIReference")?.addEventListener("click", function () { const node = $("aiSources"); if (node) node.hidden = !node.hidden; });
         $("btnPreviousCheckpoint")?.addEventListener("click", handlePrevious);
         $("concernTabs")?.addEventListener("click", async function (event) {
             const tab = event.target.closest("[data-concern-tab]");

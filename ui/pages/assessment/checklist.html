@@ -143,6 +143,14 @@ License : GPL-3.0
                 <div class="sq-checkpoint-verification" id="checkpointVerification"></div>
             </div>
 
+            <div class="sq-ai-guidance-actions">
+                <button type="button" class="sq-btn sq-btn-light" id="btnExplainWithAI">Explain with SaQshi AI</button>
+                <button type="button" class="sq-btn sq-btn-light" id="btnShowAIReference" hidden>Show Reference</button>
+            </div>
+            <div class="sq-ai-guidance" id="aiGuidance" hidden aria-live="polite">
+                <div id="aiGuidanceContent"></div><small>AI-assisted guidance. Assessment scoring remains with the assessor.</small>
+            </div>
+
             <div id="responseControl" class="sq-response-control" aria-live="polite"></div>
         </div>
 
