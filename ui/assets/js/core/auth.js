@@ -1,8 +1,7 @@
 /*!
  * ==========================================================
- * SQ-UI Auth Client v1.0
+ * Client-side authentication helper
  * ----------------------------------------------------------
- * Project   : SaQshi Open Source
  * Component : Authentication Helper
  * Depends   : SQ, SQ.api
  * License   : GPL-3.0

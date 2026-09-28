@@ -1,8 +1,7 @@
 /*!
  * ==========================================================
- * SQ Validator Service v1.0
+ * Client-side validation helper
  * ----------------------------------------------------------
- * Project  : SaQshi Open Source
  * Module   : Form Validation Service
  * File     : validator.js
  * License  : GPL-3.0

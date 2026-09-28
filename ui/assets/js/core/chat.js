@@ -1,8 +1,7 @@
 /*!
  * ==========================================================
- * SQ Chat Assistant v1.0
+ * Client-side chat helper
  * ----------------------------------------------------------
- * Project  : SaQshi Open Source
  * Module   : Frontend Chat / AI Assistant UI
  * File     : chat.js
  * License  : GPL-3.0

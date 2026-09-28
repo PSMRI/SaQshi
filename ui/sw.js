@@ -1,11 +1,10 @@
 /* SaQshi UI shell cache. Assessment and authentication API responses are never cached here. */
-const CACHE_NAME = "saqshi-ui-shell-20260825-network-first-1";
+const CACHE_NAME = "saqshi-ui-shell-20260924-bundled-assets-1";
 const APP_SHELL = [
     "/ui/dashboard.html",
     "/ui/login.html",
-    "/ui/assets/css/sq-ui.css?v=20260824-page-header-soft-1",
-    "/ui/assets/js/sq-ui.js?v=20260702-13",
-    "/ui/assets/js/app.js?v=20260825-theme-persistence-1",
+    "/ui/assets/css/sq-ui.css",
+    "/ui/assets/dist/saqshi-app.min.js",
     "/ui/assets/images/logo.png"
 ];
 

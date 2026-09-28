@@ -1,8 +1,7 @@
 /*!
  * ==========================================================
- * SQ-UI API Client v2.0
+ * Client-side API helper
  * ----------------------------------------------------------
- * Project   : SaQshi Open Source
  * Component : Central API Client
  * Standard  : ES6 + Fetch API
  * License   : GPL-3.0

@@ -197,6 +197,26 @@
         }
     }
 
+    /* Prevent accidental credential copy, paste and drag/drop on login inputs. */
+    function bindCredentialClipboardProtection() {
+        [username(), password(), captcha()].filter(Boolean).forEach(function (input) {
+            ["copy", "cut", "paste", "drop", "dragstart"].forEach(function (eventName) {
+                input.addEventListener(eventName, function (event) {
+                    event.preventDefault();
+                    SQ.notification?.warning("Copy, cut, paste and drag-drop are disabled for login fields.");
+                });
+            });
+
+            input.addEventListener("keydown", function (event) {
+                const key = String(event.key || "").toLowerCase();
+                if ((event.ctrlKey || event.metaKey) && ["c", "x", "v"].includes(key)) {
+                    event.preventDefault();
+                    SQ.notification?.warning("Clipboard shortcuts are disabled for login fields.");
+                }
+            });
+        });
+    }
+
     async function loadCaptcha() {
         const question = captchaQuestion();
         const input = captcha();
@@ -341,6 +361,8 @@
         if (frm) {
             frm.addEventListener("submit", handleLogin);
         }
+
+        bindCredentialClipboardProtection();
 
         const toggle = document.getElementById("togglePassword");
 

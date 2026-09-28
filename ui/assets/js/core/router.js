@@ -1,8 +1,7 @@
 /*!
  * ==========================================================
- * SQ Router Service v2.5
+ * Client-side router
  * ----------------------------------------------------------
- * Project  : SaQshi Open Source
  * Module   : Frontend Navigation / Routing Service
  * File     : router.js
  * License  : GPL-3.0

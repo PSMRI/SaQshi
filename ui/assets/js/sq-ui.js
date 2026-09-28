@@ -1,8 +1,7 @@
 /*!
  * ==========================================================
- * SQ-UI JavaScript v1.0
+ * Client-side UI helpers
  * ----------------------------------------------------------
- * Project   : SaQshi Open Source
  * Component : Core UI Helpers
  * Standard  : ES6 + Accessibility Ready
  * License   : GPL-3.0

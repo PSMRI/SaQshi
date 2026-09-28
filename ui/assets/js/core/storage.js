@@ -1,8 +1,7 @@
 /*!
  * ==========================================================
- * SQ Storage Service v1.0
+ * Client-side storage helpers
  * ----------------------------------------------------------
- * Project  : SaQshi Open Source
  * Module   : Browser Storage Service
  * File     : storage.js
  * License  : GPL-3.0

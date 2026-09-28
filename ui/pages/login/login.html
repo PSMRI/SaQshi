@@ -46,15 +46,16 @@ License : GPL-3.0
                 <form id="loginForm" class="sq-login-form" method="post" autocomplete="off">
                     <div class="sq-form-group">
                         <label for="username">Username</label>
-                        <input id="username" name="username" type="text" class="sq-form-control" placeholder="Enter username" required aria-label="Enter Username">
+                        <input id="username" name="username" type="text" class="sq-form-control" placeholder="Enter username" required autocomplete="username" aria-label="Enter Username" aria-describedby="credentialClipboardHelp">
                     </div>
                     <div class="sq-form-group">
                         <label for="password">Password</label>
                         <div class="sq-password-group">
-                        <input id="password" name="password" type="password" class="sq-form-control" placeholder="Enter password" required autocomplete="current-password" aria-label="Enter Password">
+                        <input id="password" name="password" type="password" class="sq-form-control" placeholder="Enter password" required autocomplete="current-password" aria-label="Enter Password" aria-describedby="credentialClipboardHelp">
                             <button type="button" class="sq-password-toggle" id="togglePassword" aria-label="Show or hide password"><i class="bi bi-eye"></i></button>
                         </div>
                     </div>
+                    <p class="sq-help-text" id="credentialClipboardHelp">For security, copy, cut, paste and drag-and-drop are disabled for login fields.</p>
                     <div class="sq-form-group">
                         <div class="sq-label-row">
                             <label for="captcha">Captcha</label>
@@ -62,7 +63,7 @@ License : GPL-3.0
                         </div>
                         <div class="sq-captcha-box"><span id="captchaQuestion" aria-live="polite">Loading...</span></div>
                         <p class="sq-help-text" id="captchaHelp">This is a text math question for screen readers. Type the numeric answer. If you cannot complete this challenge, contact your administrator for assisted login or password reset.</p>
-                        <input id="captcha" name="captcha" type="text" inputmode="numeric" class="sq-form-control" placeholder="Enter captcha answer" required aria-label="Enter captcha answer" aria-describedby="captchaHelp captchaQuestion">
+                        <input id="captcha" name="captcha" type="text" inputmode="numeric" class="sq-form-control" placeholder="Enter captcha answer" required aria-label="Enter captcha answer" aria-describedby="captchaHelp captchaQuestion credentialClipboardHelp">
                     </div>
                     <div class="sq-login-options">
                         <label class="sq-checkbox"><input type="checkbox" id="rememberMe" aria-label="Remember Me"><span>Remember me</span></label>

@@ -1,8 +1,7 @@
 /*!
  * ==========================================================
- * SQ Component Loader v2.0
+ * Client-side component loader
  * ----------------------------------------------------------
- * Project  : SaQshi Open Source
  * Module   : HTML/CSS/JS Component Loader
  * File     : component-loader.js
  * License  : GPL-3.0
@@ -51,7 +50,6 @@
 
     const CONFIG = {
         basePath: "/ui/components",
-        assetVersion: "20260822-state-user-management-1",
         attribute: "data-component",
         cache: false,
         debug: true,
@@ -72,15 +70,15 @@
     }
 
     function componentHtmlUrl(name) {
-        return `${CONFIG.basePath}/${name}/${name}.html?v=${CONFIG.assetVersion}`;
+        return `${CONFIG.basePath}/${name}/${name}.html`;
     }
 
     function componentCssUrl(name) {
-        return `${CONFIG.basePath}/${name}/${name}.css?v=${CONFIG.assetVersion}`;
+        return `${CONFIG.basePath}/${name}/${name}.css`;
     }
 
     function componentJsUrl(name) {
-        return `${CONFIG.basePath}/${name}/${name}.js?v=${CONFIG.assetVersion}`;
+        return `${CONFIG.basePath}/${name}/${name}.js`;
     }
 
     async function loadCss(name) {

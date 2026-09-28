@@ -1,8 +1,7 @@
 /*!
  * ==========================================================
- * SQ Upload Service v1.0
+ * Client-side upload helper
  * ----------------------------------------------------------
- * Project  : SaQshi Open Source
  * Module   : File Upload & Management Service
  * File     : upload.js
  * License  : GPL-3.0
