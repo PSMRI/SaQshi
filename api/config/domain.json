@@ -46,10 +46,10 @@
         "login_description": "Manage NQAS, MusQan, LaQshya and Kayakalp assessment workflows with department activation, checkpoint scoring and CQI tracking.",
         "login_app_name": "SaQshi",
         "login_app_tagline": "Digital Healthcare Quality Assessment Platform",
-        "login_logo_1": "/ui/assets/images/jharkhand-government-logo.jpeg?v=20260827-1",
-        "login_logo_1_alt": "Government of Jharkhand",
+        "login_logo_1": "/ui/assets/images/uttar-pradesh-government-logo.png",
+        "login_logo_1_alt": "Government of Uttar Pradesh emblem",
         "login_logo_2": "/ui/assets/images/logo.png",
-        "login_logo_2_alt": "SaQshi"
+        "login_logo_2_alt": "Piramal Foundation logo"
     },
     "content": {
         "assessor_dashboard_overview": "{assessment} overview across your assigned {facilities}.",
