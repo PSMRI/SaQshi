@@ -362,33 +362,9 @@ try {
             $assignment->execute();
         }
 
-        $statusColumn = responseDepartmentStatusAssessmentColumn($con);
-        $activeDepartments = $con->prepare("SELECT ads.dept_id, COALESCE(ad.status, 'NOT_STARTED') AS status FROM assessment_department_status ads LEFT JOIN assessment_department ad ON ad.assessment_id = ads.{$statusColumn} AND ad.fac_id_fk = ads.fac_id_fk AND ad.dept_id = ads.dept_id AND ad.is_active = 1 WHERE ads.{$statusColumn} = ? AND ads.fac_id_fk = ? AND ads.is_active = 1");
-        $allDepartmentsCompleted = true;
-        $activeDepartmentCount = 0;
-        if ($activeDepartments) {
-            $activeDepartments->bind_param('ii', $assessmentId, $facId);
-            $activeDepartments->execute();
-            $activeResult = $activeDepartments->get_result();
-            while ($activeRow = $activeResult->fetch_assoc()) {
-                $activeDepartmentCount++;
-                if (($activeRow['status'] ?? '') !== 'COMPLETED') $allDepartmentsCompleted = false;
-            }
-        } else {
-            $allDepartmentsCompleted = false;
-        }
-
-        // An assessment can contain multiple active classes/departments.
-        // Completing one class must never close the parent assessment while
-        // another class is still pending.
-        if ($activeDepartmentCount > 0 && $allDepartmentsCompleted) {
-            $stmt = $con->prepare("UPDATE assessment_master SET status = 'COMPLETED', completed_on = CURRENT_TIMESTAMP WHERE assessment_id = ? AND fac_id_fk = ? AND status = 'ACTIVE'");
-            if ($stmt) {
-                $stmt->bind_param('ii', $assessmentId, $facId);
-                $stmt->execute();
-                $assessmentCompleted = $stmt->affected_rows > 0;
-            }
-        }
+        // Checklist completion is not final assessment completion. Keep the
+        // assessment active until the user completes the gap/action-plan stages
+        // and explicitly uses the assessment completion workflow.
     }
 
     /*

@@ -12,6 +12,8 @@
     gap:.35rem;
 }
 
+.sq-upload-help-link{color:#b91c1c!important;font-weight:800;text-decoration:underline}.sq-upload-help-link:hover{color:#7f1d1d!important}
+
 .sq-offline-sync-status{margin:0 0 .4rem;padding:.35rem .55rem;border:1px solid #fbbf24;border-radius:6px;background:#fffbeb;color:#92400e;font-size:.72rem;font-weight:700}
 
 body:has(.sq-checklist-page) .sq-page-content,
@@ -173,6 +175,10 @@ body:has(.sq-checklist-page) .sq-content{
 }
 
 #checklistScopeCard.is-aoc-mode .sq-detailed-only{
+    display:none;
+}
+
+#checklistScopeCard.is-excel-mode .sq-detailed-only{
     display:none;
 }
 
@@ -457,6 +463,63 @@ body:has(.sq-checklist-page) .sq-content{
 .sq-hidden{
     display:none !important;
 }
+
+.sq-import-concern{
+    margin-top:.85rem;
+    border:1px solid var(--sq-border, #cbd5e1);
+    border-radius:8px;
+    overflow:hidden;
+}
+
+.sq-import-concern summary{
+    cursor:pointer;
+    padding:.7rem .85rem;
+    font-weight:700;
+    background:var(--sq-surface-muted, #f1f5f9);
+}
+
+.sq-import-concern summary span{
+    margin-left:.4rem;
+    font-weight:400;
+    color:var(--sq-text-muted, #475569);
+}
+
+.sq-import-preview-table{
+    overflow:auto;
+    max-height:520px;
+}
+
+.sq-import-preview-table .sq-state-table{
+    min-width:1200px;
+    width:100%;
+    border-collapse:collapse;
+    border:1px solid #94a3b8;
+}
+
+.sq-import-preview-table .sq-state-table th,
+.sq-import-preview-table .sq-state-table td{
+    border:1px solid #94a3b8;
+    padding:.55rem .65rem;
+    vertical-align:top;
+    text-align:left;
+    white-space:normal;
+    line-height:1.45;
+}
+
+.sq-import-preview-table .sq-state-table th{
+    position:sticky;
+    top:0;
+    z-index:1;
+    background:#e2f3ec;
+    color:#12372a;
+    font-weight:700;
+}
+
+.sq-import-preview-table .sq-state-table tbody tr:nth-child(even) td{
+    background:#f8fafc;
+}
+
+.sq-import-progress-track{height:10px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:999px;overflow:hidden;margin:.45rem 0 .8rem}.sq-import-progress-track span{display:block;height:100%;width:0;background:#059669;transition:width .25s ease}.sq-checklist-import-actions .is-disabled{pointer-events:none;opacity:.55;cursor:not-allowed}
 
 @media (max-width:640px){
     .sq-checklist-page{

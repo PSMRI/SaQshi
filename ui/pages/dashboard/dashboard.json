@@ -62,11 +62,11 @@
     "assets": {
 
         "css": [
-            "/ui/pages/dashboard/dashboard.css?v=20260822-colour-card-headings-1"
+            "/ui/pages/dashboard/dashboard.css?v=20261002-next-step-callout-1"
         ],
 
         "js": [
-            "/ui/pages/dashboard/dashboard.js?v=20260910-history-view-2"
+            "/ui/pages/dashboard/dashboard.js?v=20261002-checklist-complete-5"
         ]
 
     },

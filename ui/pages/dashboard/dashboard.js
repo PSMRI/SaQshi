@@ -113,6 +113,7 @@
 
         state.progress = response.data || null;
         renderProgress();
+        renderActiveAssessment();
     }
 
     async function loadScore(assessmentId) {
@@ -246,7 +247,7 @@
                         <a href="#" data-sq-route="reports/progress" class="sq-btn sq-btn-outline-primary sq-btn-sm">View Progress</a>
                         <a href="#" data-sq-route="reports/dashboard" class="sq-btn sq-btn-light sq-btn-sm">Reports</a>` : `
                         <a href="#" data-sq-route="assessment/departments" class="sq-btn sq-btn-outline-primary sq-btn-sm">View Progress</a>
-                        <a href="#" data-sq-route="assessment/checklist" class="sq-btn sq-btn-primary sq-btn-sm">Continue Assessment</a>`) }
+                        ${(() => { const total=Number(assessment.total_checkpoints||0); const saved=Number(state.progress?.summary?.responses?.total_saved_responses||0); return total>0&&saved>=total ? `<span class="sq-btn sq-btn-light sq-btn-sm" aria-disabled="true">Checklist Complete</span><span class="sq-text-muted sq-text-sm">Proceed with Gap Analysis and Action Plan</span>` : `<a href="#" data-sq-route="assessment/checklist" class="sq-btn sq-btn-primary sq-btn-sm">Continue Assessment</a>`; })()}`) }
                 </div>
             </div>
         ` + renderAssessorAssessment(assessorAssessment);
@@ -299,6 +300,13 @@
 
         if (bar) {
             bar.style.width = percent + "%";
+        }
+
+        if (percent >= 100) {
+            window.setTimeout(function () {
+                const continueButton = document.querySelector('#active-assessment-card .sq-btn-primary');
+                if (continueButton) continueButton.outerHTML = '<span class="sq-btn sq-btn-light sq-btn-sm" aria-disabled="true">Checklist Complete</span><span class="sq-next-step-callout">Proceed with Gap Analysis and Action Plan</span>';
+            }, 0);
         }
 
     }

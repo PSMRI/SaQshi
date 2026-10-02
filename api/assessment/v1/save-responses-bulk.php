@@ -103,18 +103,9 @@ try {
         $stmt->bind_param('iii', $assessmentId, $facId, $deptId);
         if (!$stmt->execute()) throw new RuntimeException('Assignee completion update failed: ' . $stmt->error);
 
-        $hasAssessmentId = $con->query("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'assessment_department_status' AND COLUMN_NAME = 'assessment_id' LIMIT 1");
-        $statusColumn = ($hasAssessmentId && $hasAssessmentId->fetch_assoc()) ? 'assessment_id' : 'ass_period_id';
-        $stmt = $con->prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN COALESCE(ad.status, 'NOT_STARTED') = 'COMPLETED' THEN 1 ELSE 0 END) AS completed FROM assessment_department_status ads LEFT JOIN assessment_department ad ON ad.assessment_id = ads.{$statusColumn} AND ad.fac_id_fk = ads.fac_id_fk AND ad.dept_id = ads.dept_id AND ad.is_active = 1 WHERE ads.{$statusColumn} = ? AND ads.fac_id_fk = ? AND ads.is_active = 1");
-        $stmt->bind_param('ii', $assessmentId, $facId);
-        $stmt->execute();
-        $all = $stmt->get_result()->fetch_assoc() ?: [];
-        if ((int)($all['total'] ?? 0) > 0 && (int)($all['total'] ?? 0) === (int)($all['completed'] ?? 0)) {
-            $stmt = $con->prepare("UPDATE assessment_master SET status = 'COMPLETED', completed_on = CURRENT_TIMESTAMP WHERE assessment_id = ? AND fac_id_fk = ? AND status = 'ACTIVE'");
-            $stmt->bind_param('ii', $assessmentId, $facId);
-            if (!$stmt->execute()) throw new RuntimeException('Assessment completion update failed: ' . $stmt->error);
-            $assessmentCompleted = $stmt->affected_rows > 0;
-        }
+        // Completing checklist responses finishes this department's checklist only.
+        // The parent assessment must stay ACTIVE for gap analysis, action plans and
+        // the explicit final assessment-completion step.
     }
 
     $con->commit();

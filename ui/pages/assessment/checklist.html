@@ -55,7 +55,9 @@ License : GPL-3.0
             <div class="sq-checklist-view-switch" role="tablist" aria-label="Checklist view">
                 <button type="button" class="sq-view-tab is-active" data-checklist-view="detailed" role="tab" aria-selected="true">Detailed View</button>
                 <button type="button" class="sq-view-tab" data-checklist-view="concern" role="tab" aria-selected="false" data-domain-template="{area_of_concern} View">Area of Concern View</button>
+                <button type="button" class="sq-view-tab" data-checklist-view="excel" role="tab" aria-selected="false">Upload via Excel</button>
             </div>
+            <div id="checklistExcelPanel" class="sq-hidden"><p>1. Download the sample, 2. enter Compliance, 3. upload and preview, 4. submit.</p><div class="sq-checklist-import-actions"><a id="btnDownloadChecklist" class="sq-btn sq-btn-light" href="#">Download Sample Excel</a><label class="sq-btn sq-btn-secondary">Upload Completed Excel<input id="checklistExcelFile" type="file" accept=".xlsx" hidden></label><button id="btnPreviewChecklistImport" type="button" class="sq-btn sq-btn-primary" disabled>Preview Import</button><button id="btnSubmitChecklistImport" type="button" class="sq-btn sq-btn-primary" disabled>Final Submit</button><button id="btnDeleteExcelImport" type="button" class="sq-btn sq-btn-danger" hidden>Delete Uploaded Excel</button></div><div id="checklistImportProgress" class="sq-help-text" aria-live="polite"></div><div class="sq-import-progress-track" id="checklistImportProgressTrack" hidden><span id="checklistImportProgressBar"></span></div><div id="checklistImportPreview" class="sq-hidden" aria-live="polite"></div></div>
             <div class="sq-filter-grid">
                 <div class="sq-form-group">
                     <label for="deptSelect" data-domain-label="department">Department</label>
