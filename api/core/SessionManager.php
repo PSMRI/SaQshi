@@ -147,7 +147,15 @@ class SessionManager
         if (self::$sessionConfig !== null) return self::$sessionConfig;
         $path = dirname(__DIR__) . '/config/session.json';
         $data = is_file($path) ? json_decode((string)file_get_contents($path), true) : [];
-        return self::$sessionConfig = is_array($data) ? $data : [];
+        $data = is_array($data) ? $data : [];
+        // Production instances must point at the same Redis service. Environment
+        // overrides avoid embedding an instance-local address in deployed code.
+        $data['redis'] = is_array($data['redis'] ?? null) ? $data['redis'] : [];
+        foreach (['host' => 'SAQSHI_REDIS_HOST', 'port' => 'SAQSHI_REDIS_PORT', 'database' => 'SAQSHI_REDIS_DATABASE', 'prefix' => 'SAQSHI_REDIS_PREFIX'] as $key => $env) {
+            $value = getenv($env);
+            if ($value !== false && $value !== '') $data['redis'][$key] = $value;
+        }
+        return self::$sessionConfig = $data;
     }
 
     /**

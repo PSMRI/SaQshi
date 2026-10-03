@@ -1,11 +1,11 @@
 {
-  "cookie_name": "SAQSHI_JH_SESSION",
+  "cookie_name": "SAQSHI_UP_SESSION",
   "driver": "redis",
   "redis": {
     "host": "127.0.0.1",
     "port": 6379,
     "database": 5,
-    "prefix": "jhsaqshi_sess_",
+    "prefix": "upsaqshi_sess_",
     "timeout_seconds": 1,
     "read_timeout_seconds": 1,
     "persistent": true,
