@@ -626,6 +626,8 @@ try {
             ? round(($improvedObtained / $possible) * 100, 2)
             : 0;
         $modelScore = scoreModels($con, $engine, $facTypeId, (int)$row['dept_id'], $assessmentId, $policy);
+        $departmentDefinition = $engine->getDepartmentById($facTypeId, (int)$row['dept_id']);
+        $departmentName = trim((string)($departmentDefinition['dept_name'] ?? ''));
         if ($modelScore !== null && strtoupper((string)$row['department_status']) === 'COMPLETED') {
             $classWeightedOriginal[] = $modelScore['weighted_score']['original_percentage'];
             $classWeightedImproved[] = $modelScore['weighted_score']['improved_percentage'];
@@ -633,6 +635,7 @@ try {
 
         $departments[] = [
             'dept_id' => (int)$row['dept_id'],
+            'department_name' => $departmentName !== '' ? $departmentName : ('Department ' . (int)$row['dept_id']),
             'department_status' => $row['department_status'],
 
             'answered_checkpoints' => $answered,
