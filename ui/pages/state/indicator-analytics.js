@@ -12,7 +12,7 @@
 
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
-    const state = { pager: null, departmentId: 0, facilityTypeId: 0, district: "", areaOfConcern: "" };
+    const state = { pager: null, departmentId: 0, facilityTypeId: 0, district: "", areaOfConcern: "", departmentLabel: "", facilityTypeLabel: "", priorityRows: [], priorityIndex: 0, priorityTimer: null };
 
     function domainLabel(key, fallback) {
         return SQ.deployment && typeof SQ.deployment.label === "function"
@@ -62,11 +62,78 @@
     function renderSummary(data) {
         const a = data.assessment?.summary || {};
         document.getElementById("stateIndicatorSummary").innerHTML = `
-            <div><span>Low-Score Checkpoints</span><strong>${esc(a.indicators || 0)}</strong></div>
-            <div><span>Affected Facilities</span><strong>${esc(a.facilities || 0)}</strong></div>
-            <div><span>Low-Score Responses</span><strong>${esc(a.responses || 0)}</strong></div>
-            <div><span>Assessment Coverage</span><strong>${esc(a.assessed_facilities || 0)} / ${esc(a.total_facilities || 0)}</strong></div>
+            <div><span>Indicators with score 0</span><strong>${esc(a.indicators || 0)}</strong></div>
+            <div><span>Facilities with score 0</span><strong>${esc(a.facilities || 0)}</strong></div>
+            <div><span>Score-0 responses</span><strong>${esc(a.responses || 0)}</strong></div>
+            <div><span>Facilities assessed</span><strong>${esc(a.assessed_facilities || 0)} / ${esc(a.total_facilities || 0)}</strong></div>
         `;
+    }
+
+    function showPriority(topIssue) {
+        const title = document.getElementById("statePriorityTitle");
+        const text = document.getElementById("statePriorityText");
+        if (!title || !text) return;
+        if (!topIssue) {
+            title.textContent = "No priority issues were found for the selected view.";
+            text.textContent = "Try changing the filters or return later when more assessment data is available.";
+        } else {
+            const facilities = Number(topIssue.low_score_facility_count || topIssue.affected_facilities || 0);
+            const issue = topIssue.indicator_name || topIssue.area_of_concern || "this indicator";
+            title.textContent = `${facilities} facilities scored 0 for ${issue}.`;
+            text.textContent = "Start by reviewing the affected facility list, then download it to plan follow-up with your team.";
+        }
+    }
+
+    function renderPriority(data) {
+        state.priorityRows = data.assessment?.rows || [];
+        state.priorityIndex = 0;
+        if (state.priorityTimer) {
+            window.clearInterval(state.priorityTimer);
+            state.priorityTimer = null;
+        }
+        showPriority(state.priorityRows[0] || (data.areas_of_concern || [])[0] || null);
+        if (state.priorityRows.length > 1) {
+            state.priorityTimer = window.setInterval(function () {
+                state.priorityIndex = (state.priorityIndex + 1) % state.priorityRows.length;
+                showPriority(state.priorityRows[state.priorityIndex]);
+            }, 3000);
+        }
+    }
+
+    function renderStandardRisks(rows) {
+        const target = document.getElementById("stateStandardRisks");
+        if (!target) return;
+        if (!rows?.length) {
+            target.innerHTML = `<div class="sq-state-empty">No score-0 indicators match the selected facility type.</div>`;
+            return;
+        }
+        target.innerHTML = `<div class="sq-state-list">${rows.map(row => `<div class="sq-state-risk-row" style="cursor:default"><span><strong>${esc(row.standard)}</strong><small>${esc(row.score_zero_indicators)} indicators with score 0</small></span><span class="sq-state-badge sq-state-danger">${esc(row.affected_facilities)} facilities</span><span>${esc(row.score_zero_responses)} score-0 responses</span></div>`).join("")}</div>`;
+    }
+
+    function populateFacilityTypes(rows) {
+        const select = document.getElementById("stateIndicatorFacilityType");
+        if (!select || select.dataset.ready === "true") return;
+        (rows || []).forEach(row => {
+            const option = document.createElement("option");
+            option.value = row.facility_type_id;
+            option.textContent = row.facility_type_name;
+            select.appendChild(option);
+        });
+        select.value = state.facilityTypeId || "";
+        select.dataset.ready = "true";
+    }
+
+    function renderActiveFilter() {
+        const target = document.getElementById("stateIndicatorActiveFilter");
+        if (!target) return;
+        const filters = [];
+        if (state.departmentId) filters.push(`Department: ${state.departmentLabel || state.departmentId}`);
+        if (state.facilityTypeId) filters.push(`Facility type: ${state.facilityTypeLabel || state.facilityTypeId}`);
+        if (state.district) filters.push(`District: ${state.district}`);
+        if (state.areaOfConcern) filters.push(`Service area: ${state.areaOfConcern}`);
+        target.innerHTML = filters.length
+            ? `<div class="sq-state-note" style="margin:0;padding:8px 12px"><strong>Showing results for:</strong> ${esc(filters.join(" · "))} <button type="button" class="sq-btn sq-btn-light sq-btn-sm" data-clear-indicator-filters style="margin-left:8px">Clear selection</button></div>`
+            : "";
     }
 
     function renderDepartmentRisks(rows) {
@@ -84,9 +151,9 @@
             <div class="sq-state-list">
                 ${rows.map(row => `
                     <button class="sq-state-risk-row" type="button" data-department-risk="${esc(row.dept_id)}">
-                        <span><strong>${esc(row.department_name)}</strong><small>${esc(row.low_score_checkpoints)} low-score checkpoints</small></span>
+                        <span><strong>${esc(row.department_name)}</strong><small>${esc(row.low_score_checkpoints)} issues needing attention</small></span>
                         <span class="sq-state-badge sq-state-danger">${esc(row.affected_facilities)} facilities</span>
-                        <span>${esc(row.low_score_responses)} responses</span>
+                        <span>${esc(row.low_score_responses)} items to improve</span>
                     </button>
                 `).join("")}
             </div>
@@ -108,9 +175,9 @@
             <div class="sq-state-list">
                 ${rows.map(row => `
                     <button class="sq-state-risk-row" type="button" data-facility-type-risk="${esc(row.facility_type_id)}">
-                        <span><strong>${esc(row.facility_type_name)}</strong><small>${esc(row.low_score_checkpoints)} low-score checkpoints</small></span>
+                        <span><strong>${esc(row.facility_type_name)}</strong><small>${esc(row.low_score_checkpoints)} issues needing attention</small></span>
                         <span class="sq-state-badge sq-state-danger">${esc(row.affected_facilities)} facilities</span>
-                        <span>${esc(row.low_score_responses)} responses</span>
+                        <span>${esc(row.low_score_responses)} items to improve</span>
                     </button>
                 `).join("")}
             </div>
@@ -132,9 +199,9 @@
             <div class="sq-state-list">
                 ${rows.map(row => `
                     <button class="sq-state-risk-row" type="button" data-district-risk="${esc(row.district_name)}">
-                        <span><strong>${esc(row.district_name)}</strong><small>${esc(row.low_score_checkpoints)} low-score checkpoints</small></span>
+                        <span><strong>${esc(row.district_name)}</strong><small>${esc(row.low_score_checkpoints)} issues needing attention</small></span>
                         <span class="sq-state-badge sq-state-danger">${esc(row.affected_facilities)} facilities</span>
-                        <span>${esc(row.low_score_responses)} responses</span>
+                        <span>${esc(row.low_score_responses)} items to improve</span>
                     </button>
                 `).join("")}
             </div>
@@ -154,9 +221,9 @@
             <div class="sq-state-list">
                 ${rows.map(row => `
                     <button class="sq-state-risk-row" type="button" data-area-of-concern-risk="${esc(row.area_of_concern)}">
-                        <span><strong>${esc(row.area_of_concern)}</strong><small>${esc(row.low_score_checkpoints)} low-score checkpoints</small></span>
+                        <span><strong>${esc(row.area_of_concern)}</strong><small>${esc(row.low_score_checkpoints)} issues needing attention</small></span>
                         <span class="sq-state-badge sq-state-danger">${esc(row.affected_facilities)} facilities</span>
-                        <span>${esc(row.low_score_responses)} responses</span>
+                        <span>${esc(row.low_score_responses)} items to improve</span>
                     </button>
                 `).join("")}
             </div>
@@ -208,10 +275,10 @@
             <table class="sq-state-table">
                 <thead>
                     <tr>
-                        <th>Risk Checkpoint</th>
+                        <th>Issue to improve</th>
                         <th>Department / Package</th>
                         <th>Affected Facilities</th>
-                        <th>Low-Score Responses</th>
+                        <th>Items to improve</th>
                         <th>Download</th>
                     </tr>
                 </thead>
@@ -225,7 +292,7 @@
                                 <td>${esc(row.low_score_count || 0)}</td>
                                 <td>
                                     <button class="sq-btn sq-btn-primary" type="button" data-low-score-download="${esc(row.download_key || row.checkpoint_id)}">
-                                        Facilities
+                                        View facility list
                                     </button>
                                 </td>
                             </tr>
@@ -244,13 +311,17 @@
                 timeout: 120000
             });
             const data = response.data || {};
+            renderPriority(data);
             renderSummary(data);
             renderCapacityBuildingRoadmap(data.capacity_building_roadmap || {});
             renderAreaOfConcernRisks(data.areas_of_concern || []);
+            renderStandardRisks(data.standards || []);
             renderDistrictRisks(data.districts || []);
             renderFacilityTypeRisks(data.facility_types || []);
             renderDepartmentRisks(data.departments || []);
+            populateFacilityTypes(data.facility_types || []);
             renderAssessment(data.assessment?.rows || []);
+            renderActiveFilter();
             state.pager.set(data.assessment?.pagination || {}).render("stateIndicatorPager", "Showing indicators");
         } catch (error) {
             const message = esc(error?.message || "Unable to load State risk data.");
@@ -298,6 +369,12 @@
             state.pager.reset();
             load();
         });
+        document.getElementById("stateIndicatorFacilityType")?.addEventListener("change", function (event) {
+            state.facilityTypeId = Number(event.target.value) || 0;
+            state.facilityTypeLabel = event.target.options[event.target.selectedIndex]?.text || "";
+            state.pager.reset();
+            load();
+        });
         document.getElementById("stateCapacityRoadmapDownload")?.addEventListener("click", function () {
             downloadCapacityBuildingRoadmap();
         });
@@ -305,6 +382,7 @@
             const button = event.target.closest("[data-department-risk]");
             if (!button) return;
             state.departmentId = Number(button.getAttribute("data-department-risk")) || 0;
+            state.departmentLabel = button.querySelector("strong")?.textContent || "";
             state.pager.reset();
             load();
         });
@@ -312,6 +390,7 @@
             const button = event.target.closest("[data-facility-type-risk]");
             if (!button) return;
             state.facilityTypeId = Number(button.getAttribute("data-facility-type-risk")) || 0;
+            state.facilityTypeLabel = button.querySelector("strong")?.textContent || "";
             state.pager.reset();
             load();
         });
@@ -331,11 +410,13 @@
         });
         document.getElementById("stateIndicatorClearDepartment")?.addEventListener("click", function () {
             state.departmentId = 0;
+            state.departmentLabel = "";
             state.pager.reset();
             load();
         });
         document.getElementById("stateIndicatorClearFacilityType")?.addEventListener("click", function () {
             state.facilityTypeId = 0;
+            state.facilityTypeLabel = "";
             state.pager.reset();
             load();
         });
@@ -345,6 +426,17 @@
             load();
         });
         document.getElementById("stateIndicatorClearArea")?.addEventListener("click", function () {
+            state.areaOfConcern = "";
+            state.pager.reset();
+            load();
+        });
+        document.getElementById("stateIndicatorActiveFilter")?.addEventListener("click", function (event) {
+            if (!event.target.closest("[data-clear-indicator-filters]")) return;
+            state.departmentId = 0;
+            state.departmentLabel = "";
+            state.facilityTypeId = 0;
+            state.facilityTypeLabel = "";
+            state.district = "";
             state.areaOfConcern = "";
             state.pager.reset();
             load();

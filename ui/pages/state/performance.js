@@ -41,7 +41,7 @@
     }
 
     function summaryCard(category, label, value, title, className = "", style = "") {
-        return `<div class="${esc(className)}"${style ? ` style="${esc(style)}"` : ""} title="${esc(title)}"><span>${esc(label)}</span><strong>${esc(value)}</strong><button type="button" data-state-performance-download-list="${esc(category)}" aria-label="Download ${esc(label)} list" title="Download facility list" style="position:relative;z-index:1;margin-top:7px;width:28px;height:26px;padding:0;border:1px solid rgba(255,255,255,.65);border-radius:4px;background:rgba(255,255,255,.16);color:#fff;font-size:18px;font-weight:700;line-height:1;cursor:pointer">⇩</button></div>`;
+        return `<div class="${esc(className)}"${style ? ` style="${esc(style)}"` : ""} title="${esc(title)}"><span>${esc(label)}</span><strong>${esc(value)}</strong><button type="button" data-state-performance-download-list="${esc(category)}" aria-label="Download ${esc(label)} list" title="Download facility list" style="position:absolute;right:10px;bottom:10px;z-index:2;width:28px;height:26px;padding:0;border:1px solid rgba(255,255,255,.65);border-radius:4px;background:rgba(255,255,255,.16);color:#fff;font-size:18px;font-weight:700;line-height:1;cursor:pointer">⇩</button></div>`;
     }
 
     function adjustSummaryCards() {
@@ -269,7 +269,7 @@
                 .then(() => SQ.deployment.applyLabels(document))
                 .catch(error => console.warn("[State Performance] Deployment labels unavailable", error));
         }
-        state.pager = SQ.pagination.create({ page: 1, perPage: 50, onChange: load });
+        state.pager = SQ.pagination.create({ page: 1, perPage: 10, onChange: load });
         bindToggle();
         window.addEventListener("resize", adjustSummaryCards);
         document.getElementById("statePerfRefresh")?.addEventListener("click", function () {
