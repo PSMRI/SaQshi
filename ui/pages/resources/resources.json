@@ -9,8 +9,8 @@
   },
   "authentication": { "required": true },
   "assets": {
-    "css": ["/ui/pages/resources/resources.css?v=20260826-5"],
-    "js": ["/ui/pages/resources/resources.js?v=20260826-9"]
+    "css": ["/ui/pages/resources/resources.css?v=20261024-resource-filename-2"],
+    "js": ["/ui/pages/resources/resources.js?v=20261024-resource-filename-2"]
   },
   "breadcrumb": [
     { "label": "Dashboard", "url": "/ui/dashboard.html" },

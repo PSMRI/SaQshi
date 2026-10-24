@@ -1,11 +1,11 @@
 <!-- SaQshi Open Source | State Indicator Score-0 Analysis -->
-<section class="sq-state-page">
+<section class="sq-state-page sq-state-indicator-analytics-page">
     <div class="sq-state-toolbar">
         <div class="sq-state-filters">
             <select class="sq-form-control" id="stateIndicatorFacilityType" aria-label="Facility type"><option value="">All facility types</option></select>
             <input type="search" class="sq-form-control" id="stateIndicatorSearch" placeholder="Search facility, NIN, district or block" aria-label="Search Facility, NIN, District Or Block">
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;white-space:nowrap">Show indicators affecting at least <input type="number" class="sq-form-control" id="stateIndicatorMinFacilities" min="1" value="1" title="Minimum facilities affected" aria-label="Minimum facilities affected" style="width:64px;min-width:64px"> facilities</label>
-            <button class="sq-btn sq-btn-primary" id="stateIndicatorRefresh">Refresh</button>
+            <button class="sq-btn sq-btn-primary sq-indicator-icon-action" id="stateIndicatorRefresh" type="button" title="Refresh indicator analysis" aria-label="Refresh indicator analysis"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
     </div>
 

@@ -13,23 +13,18 @@ License : GPL-3.0
 <section class="sq-admin-users">
     <div class="sq-admin-profile-shell">
         <form id="adminUserForm" class="sq-card sq-admin-user-form" autocomplete="off">
-            <div class="sq-card-header">
-                <div>
-                    <h3>My Profile</h3>
-                    <p data-domain-template="Update your {facility} user details and password.">Update your facility user details and password.</p>
-                </div>
-                <button type="button" class="sq-btn sq-btn-light" id="btnRefreshUsers">
-                    Refresh
-                </button>
-            </div>
-
             <div class="sq-card-body">
                 <div class="sq-admin-form-head">
                     <div>
                         <h4 id="adminUserFormTitle">Loading profile</h4>
                         <p id="adminUserFormHint">Please wait while your profile is loaded.</p>
                     </div>
-                    <span id="adminUserIdBadge" class="sq-admin-user-badge">User</span>
+                    <div class="sq-admin-profile-meta">
+                        <span id="adminUserIdBadge" class="sq-admin-user-badge">User</span>
+                        <button type="button" class="sq-btn sq-btn-light" id="btnRefreshUsers" aria-label="Refresh profile">
+                            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i><span>Refresh</span>
+                        </button>
+                    </div>
                 </div>
 
                 <input type="hidden" id="adminUserId">

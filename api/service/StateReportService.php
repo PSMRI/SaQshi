@@ -41,6 +41,9 @@ class StateReportService extends StateDashboardService
                 'cqi' => self::writeCqi($con, $out, $filters),
                 'performance' => self::writePerformance($con, $out, $filters),
                 'certification' => self::writeCertification($con, $out, $filters),
+                'activity_assessment_started', 'activity_assessment_completed', 'activity_assessment_in_progress',
+                'activity_kpi_submitted', 'activity_outcome_submitted', 'activity_action_plans_updated'
+                    => self::writeCurrentMonthActivity($con, $out, $filters, $report),
                 default => self::writeSummary($con, $out, $filters),
             };
         } catch (Throwable $e) {
@@ -92,6 +95,99 @@ class StateReportService extends StateDashboardService
             $reports[] = ['key' => 'certification', 'title' => 'Certification History', 'description' => $labels['facility'] . ' certification history with decoded status, dates and score.'];
         }
         return $reports;
+    }
+
+    /** Exports the facilities behind one Current Month Activity figure. */
+    private static function writeCurrentMonthActivity(mysqli $con, $out, array $filters, string $report): void
+    {
+        $month = max(1, min(12, (int)($filters['month'] ?? date('n'))));
+        $year = max(2000, (int)($filters['year'] ?? date('Y')));
+        $labels = self::domainLabels();
+        self::csvRow($out, [
+            'District', 'Block', $labels['facility'] . ' Name', $labels['facility_code'], $labels['facility'] . ' Type',
+            'Assessment ID', 'Assessment Name', 'Activity', 'Activity Date', 'Status'
+        ]);
+
+        $where = self::facilityWhereLocal($filters, 'f');
+        $activityLabels = [
+            'activity_assessment_started' => 'Assessment started',
+            'activity_assessment_completed' => 'Assessment completed',
+            'activity_assessment_in_progress' => 'Assessment in progress',
+            'activity_kpi_submitted' => 'KPI submitted',
+            'activity_outcome_submitted' => 'Outcome submitted',
+            'activity_action_plans_updated' => 'Action plan updated'
+        ];
+        $activityLabel = $activityLabels[$report] ?? 'Current month activity';
+        $dateCondition = '';
+        $sql = '';
+
+        if (in_array($report, ['activity_assessment_started', 'activity_assessment_completed', 'activity_assessment_in_progress'], true)) {
+            if (!self::tableExistsLocal($con, 'assessment_master')) {
+                self::csvRow($out, ['Assessment data is not available.']);
+                return;
+            }
+            $dateColumn = $report === 'activity_assessment_completed' ? 'completed_on' : 'start_date';
+            if (!self::columnExistsLocal($con, 'assessment_master', $dateColumn)) {
+                self::csvRow($out, ['Assessment activity date is not available.']);
+                return;
+            }
+            $statusCondition = $report === 'activity_assessment_in_progress'
+                ? "AND UPPER(COALESCE(a.status, '')) IN ('ACTIVE', 'IN_PROGRESS')"
+                : ($report === 'activity_assessment_completed'
+                    ? "AND UPPER(COALESCE(a.status, '')) = 'COMPLETED'"
+                    : "AND UPPER(COALESCE(a.status, '')) <> 'PENDING'");
+            $dateCondition = "AND MONTH(a.{$dateColumn}) = ? AND YEAR(a.{$dateColumn}) = ?";
+            $sql = "
+                SELECT f.Dist_Name, f.Block_Name, f.fac_name, f.NIN_no, f.Health_facilty_type,
+                       a.assessment_id, a.assessment_name, a.{$dateColumn} AS activity_date, a.status
+                FROM assessment_master a
+                LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+                {$where['sql']} {$statusCondition} {$dateCondition}
+                ORDER BY f.Dist_Name, f.Block_Name, f.fac_name, a.assessment_id DESC
+            ";
+        } elseif (in_array($report, ['activity_kpi_submitted', 'activity_outcome_submitted'], true)) {
+            if (!self::tableExistsLocal($con, 'performance_entries')) {
+                self::csvRow($out, ['Performance data is not available.']);
+                return;
+            }
+            $indicatorType = $report === 'activity_kpi_submitted' ? 'KPI' : 'OUTCOME';
+            $sql = "
+                SELECT f.Dist_Name, f.Block_Name, f.fac_name, f.NIN_no, f.Health_facilty_type,
+                       '' AS assessment_id, '' AS assessment_name,
+                       CONCAT(pe.entry_year, '-', LPAD(pe.entry_month, 2, '0')) AS activity_date,
+                       '{$indicatorType}' AS status
+                FROM performance_entries pe
+                LEFT JOIN facilities f ON f.fac_id = pe.fac_id
+                {$where['sql']}
+                  AND pe.indicator_type = '{$indicatorType}'
+                  AND pe.entry_month = ? AND pe.entry_year = ?
+                GROUP BY f.fac_id, f.Dist_Name, f.Block_Name, f.fac_name, f.NIN_no, f.Health_facilty_type, pe.entry_year, pe.entry_month
+                ORDER BY f.Dist_Name, f.Block_Name, f.fac_name
+            ";
+        } else {
+            if (!self::tableExistsLocal($con, 'assessment_action_plan') || !self::columnExistsLocal($con, 'assessment_action_plan', 'updated_on')) {
+                self::csvRow($out, ['Action plan activity is not available.']);
+                return;
+            }
+            $sql = "
+                SELECT f.Dist_Name, f.Block_Name, f.fac_name, f.NIN_no, f.Health_facilty_type,
+                       a.assessment_id, a.assessment_name, ap.updated_on AS activity_date, ap.status
+                FROM assessment_action_plan ap
+                LEFT JOIN assessment_master a ON a.assessment_id = ap.assessment_id
+                LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+                {$where['sql']}
+                  AND MONTH(ap.updated_on) = ? AND YEAR(ap.updated_on) = ?
+                ORDER BY f.Dist_Name, f.Block_Name, f.fac_name, ap.updated_on DESC
+            ";
+        }
+
+        self::streamQuery($con, $sql, $where['types'] . 'ii', array_merge($where['params'], [$month, $year]), $out, function (array $row) use ($activityLabel): array {
+            return [
+                $row['Dist_Name'] ?? '', $row['Block_Name'] ?? '', $row['fac_name'] ?? '', $row['NIN_no'] ?? '',
+                self::facilityTypeName($row['Health_facilty_type'] ?? ''), $row['assessment_id'] ?? '',
+                $row['assessment_name'] ?? '', $activityLabel, $row['activity_date'] ?? '', $row['status'] ?? ''
+            ];
+        });
     }
 
     /**
@@ -354,9 +450,9 @@ class StateReportService extends StateDashboardService
         $labels = self::domainLabels();
         self::csvRow($out, [
             'District', 'Block', $labels['facility'] . ' Name', $labels['facility_code'], $labels['facility'] . ' Type',
-            'Total Departments', 'KPI Departments', 'Outcome Departments',
+            'Departments', 'KPI Departments', 'Outcome Departments',
             'KPI Month Count', 'KPI Months', 'Outcome Month Count',
-            'Outcome Months', 'KPI Entry Count', 'Outcome Entry Count',
+            'Outcome Months', 'KPI Submitted', 'Outcome Submitted',
             'Latest Updated'
         ]);
 
@@ -379,7 +475,7 @@ class StateReportService extends StateDashboardService
                 f.fac_name,
                 f.NIN_no,
                 f.Health_facilty_type,
-                COUNT(DISTINCT pe.dept_id) AS total_departments,
+                GROUP_CONCAT(DISTINCT pe.dept_id ORDER BY pe.dept_id SEPARATOR ',') AS department_ids,
                 COUNT(DISTINCT CASE WHEN pe.indicator_type = 'KPI' THEN pe.dept_id END) AS kpi_departments,
                 COUNT(DISTINCT CASE WHEN pe.indicator_type = 'OUTCOME' THEN pe.dept_id END) AS outcome_departments,
                 SUM(CASE WHEN pe.indicator_type = 'KPI' THEN 1 ELSE 0 END) AS kpi_entries,
@@ -408,15 +504,18 @@ class StateReportService extends StateDashboardService
                 $row['fac_name'] ?? '',
                 $row['NIN_no'] ?? '',
                 self::facilityTypeName($row['Health_facilty_type'] ?? ''),
-                $row['total_departments'] ?? 0,
+                implode(', ', array_filter(array_map(
+                    static fn(string $departmentId): string => PerformanceService::departmentName((int)$departmentId),
+                    array_filter(explode(',', (string)($row['department_ids'] ?? '')))
+                ))),
                 $row['kpi_departments'] ?? 0,
                 $row['outcome_departments'] ?? 0,
                 $row['kpi_month_count'] ?? 0,
                 $row['kpi_months'] ?? '',
                 $row['outcome_month_count'] ?? 0,
                 $row['outcome_months'] ?? '',
-                $row['kpi_entries'] ?? 0,
-                $row['outcome_entries'] ?? 0,
+                ((int)($row['kpi_entries'] ?? 0) > 0) ? 'Yes' : 'No',
+                ((int)($row['outcome_entries'] ?? 0) > 0) ? 'Yes' : 'No',
                 $row['latest_updated'] ?? ''
             ];
         });
@@ -427,8 +526,10 @@ class StateReportService extends StateDashboardService
      */
     private static function writeCertification(mysqli $con, $out, array $filters): void
     {
-        if (!self::tableExistsLocal($con, 'certification_history')) {
-            self::csvRow($out, ['Certification history table is not available.']);
+        $hasHistory = self::tableExistsLocal($con, 'certification_history');
+        $hasImportedDetails = self::tableExistsLocal($con, 'cert_details');
+        if (!$hasHistory && !$hasImportedDetails) {
+            self::csvRow($out, ['Certification data is not available.']);
             return;
         }
 
@@ -440,34 +541,98 @@ class StateReportService extends StateDashboardService
             'Action Type', 'Action By', 'Action On'
         ]);
 
-        $where = self::facilityWhereLocal($filters, 'f');
-        $sql = "
-            SELECT ch.history_id, ch.fac_id_fk, ch.fac_nin, ch.new_data_json, ch.action_type,
-                   ch.action_by, ch.action_on, f.fac_name, f.Dist_Name, f.Block_Name
-            FROM certification_history ch
-            LEFT JOIN facilities f ON f.fac_id = ch.fac_id_fk OR CAST(f.NIN_no AS CHAR) = CAST(ch.fac_nin AS CHAR)
-            {$where['sql']}
-            ORDER BY ch.action_on DESC, ch.history_id DESC
-        ";
+        // Export the same latest certification rows displayed on the State
+        // Certification page. This includes migration imports from cert_details
+        // and avoids an empty report when certification_history has no rows.
+        $latestCertification = self::certificationSummary($con, array_merge($filters, ['_all_facilities' => true]));
+        $latestRows = is_array($latestCertification['facilities'] ?? null)
+            ? $latestCertification['facilities']
+            : [];
+        if ($latestRows) {
+            foreach ($latestRows as $row) {
+                self::csvRow($out, [
+                    !empty($row['last_action']) ? 'CURRENT-' . ($row['fac_id'] ?? '') : '',
+                    $row['fac_nin'] ?? '',
+                    $row['fac_name'] ?? '',
+                    $row['district'] ?? '',
+                    $row['block'] ?? '',
+                    $row['status'] ?? '',
+                    $row['certification_type'] ?? '',
+                    $row['assessment_mode'] ?? '',
+                    $row['certification_date'] ?? '',
+                    $row['valid_from'] ?? '',
+                    $row['valid_to'] ?? '',
+                    $row['score'] ?? '',
+                    $row['renewal_status'] ?? '',
+                    $row['remarks'] ?? '',
+                    $row['last_action'] ?? '',
+                    '',
+                    $row['last_updated_on'] ?? ''
+                ]);
+            }
+            return;
+        }
 
-        self::streamQuery($con, $sql, $where['types'], $where['params'], $out, function (array $row): array {
-            $payload = json_decode((string)($row['new_data_json'] ?? ''), true);
-            $payload = is_array($payload) ? $payload : [];
-            return [
-                $row['history_id'] ?? '', $row['fac_nin'] ?? '',
-                $row['fac_name'] ?? '', $row['Dist_Name'] ?? '', $row['Block_Name'] ?? '',
-                $payload['status'] ?? $payload['Cert_status'] ?? '',
-                $payload['certification_type'] ?? $payload['certification_level'] ?? $payload['type_of_ass'] ?? '',
-                $payload['assessment_mode'] ?? $payload['ass_mod'] ?? '',
-                $payload['certification_date'] ?? $payload['date_of_ass'] ?? '',
-                $payload['valid_from'] ?? '',
-                $payload['expiry_date'] ?? $payload['valid_to'] ?? $payload['validity'] ?? '',
-                $payload['score'] ?? '',
-                $payload['renewal_status'] ?? '',
-                $payload['remarks'] ?? $payload['cert_detailscol'] ?? '',
-                $row['action_type'] ?? '', $row['action_by'] ?? '', $row['action_on'] ?? ''
-            ];
-        });
+        $where = self::facilityWhereLocal($filters, 'f');
+        if ($hasHistory) {
+            $sql = "
+                SELECT ch.history_id, ch.fac_id_fk, ch.fac_nin, ch.new_data_json, ch.action_type,
+                       ch.action_by, ch.action_on, f.fac_name, f.Dist_Name, f.Block_Name
+                FROM certification_history ch
+                LEFT JOIN facilities f ON f.fac_id = ch.fac_id_fk OR CAST(f.NIN_no AS CHAR) = CAST(ch.fac_nin AS CHAR)
+                {$where['sql']}
+                ORDER BY ch.action_on DESC, ch.history_id DESC
+            ";
+
+            self::streamQuery($con, $sql, $where['types'], $where['params'], $out, function (array $row): array {
+                $payload = json_decode((string)($row['new_data_json'] ?? ''), true);
+                $payload = is_array($payload) ? $payload : [];
+                return [
+                    $row['history_id'] ?? '', $row['fac_nin'] ?? '',
+                    $row['fac_name'] ?? '', $row['Dist_Name'] ?? '', $row['Block_Name'] ?? '',
+                    $payload['status'] ?? $payload['Cert_status'] ?? '',
+                    $payload['certification_type'] ?? $payload['certification_level'] ?? $payload['type_of_ass'] ?? '',
+                    $payload['assessment_mode'] ?? $payload['ass_mod'] ?? '',
+                    $payload['certification_date'] ?? $payload['date_of_ass'] ?? '',
+                    $payload['valid_from'] ?? '',
+                    $payload['expiry_date'] ?? $payload['valid_to'] ?? $payload['validity'] ?? '',
+                    $payload['score'] ?? '',
+                    $payload['renewal_status'] ?? '',
+                    $payload['remarks'] ?? $payload['cert_detailscol'] ?? '',
+                    $row['action_type'] ?? '', $row['action_by'] ?? '', $row['action_on'] ?? ''
+                ];
+            });
+        }
+
+        if ($hasImportedDetails) {
+            $sql = "
+                SELECT CONCAT('IMPORT-', cd.id) AS history_id, cd.fac_nin, cd.Cert_status,
+                       cd.cert_type, cd.ass_mod, cd.date_of_ass, cd.cert_issue, cd.validity,
+                       cd.score, cd.cert_detailscol, cd.applied_date,
+                       f.fac_name, f.Dist_Name, f.Block_Name
+                FROM cert_details cd
+                LEFT JOIN facilities f ON f.fac_id = cd.fac_id OR CAST(f.NIN_no AS CHAR) = CAST(cd.fac_nin AS CHAR)
+                {$where['sql']}
+                ORDER BY COALESCE(cd.date_of_ass, cd.cert_issue, cd.applied_date) DESC, cd.id DESC
+            ";
+
+            self::streamQuery($con, $sql, $where['types'], $where['params'], $out, function (array $row): array {
+                return [
+                    $row['history_id'] ?? '', $row['fac_nin'] ?? '',
+                    $row['fac_name'] ?? '', $row['Dist_Name'] ?? '', $row['Block_Name'] ?? '',
+                    $row['Cert_status'] ?? '',
+                    $row['cert_type'] ?? '',
+                    $row['ass_mod'] ?? '',
+                    $row['date_of_ass'] ?? $row['cert_issue'] ?? '',
+                    '',
+                    $row['validity'] ?? '',
+                    $row['score'] ?? '',
+                    '',
+                    $row['cert_detailscol'] ?? '',
+                    'CERTIFICATION_IMPORT', '', $row['applied_date'] ?? $row['date_of_ass'] ?? $row['cert_issue'] ?? ''
+                ];
+            });
+        }
     }
 
     /**

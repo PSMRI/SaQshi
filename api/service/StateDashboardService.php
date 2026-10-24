@@ -3223,6 +3223,8 @@ class StateDashboardService
             'started' => 0,
             'in_progress' => 0,
             'completed' => 0,
+            'facilities_started' => 0,
+            'facilities_completed' => 0,
             'period' => sprintf('%04d-%02d', $year, $month)
         ];
 
@@ -3234,6 +3236,14 @@ class StateDashboardService
             if ($startedColumn !== null) {
                 $assessment['started'] = (int)self::scalar($con, "
                     SELECT COUNT(*)
+                    FROM assessment_master a
+                    {$where['sql']}
+                      AND MONTH(a.{$startedColumn}) = ?
+                      AND YEAR(a.{$startedColumn}) = ?
+                ", $where['types'] . 'ii', array_merge($where['params'], [$month, $year]));
+
+                $assessment['facilities_started'] = (int)self::scalar($con, "
+                    SELECT COUNT(DISTINCT a.fac_id_fk)
                     FROM assessment_master a
                     {$where['sql']}
                       AND MONTH(a.{$startedColumn}) = ?
@@ -3259,9 +3269,27 @@ class StateDashboardService
                       AND MONTH(a.{$completedColumn}) = ?
                       AND YEAR(a.{$completedColumn}) = ?
                 ", $where['types'] . 'ii', array_merge($where['params'], [$month, $year]));
+
+                $assessment['facilities_completed'] = (int)self::scalar($con, "
+                    SELECT COUNT(DISTINCT a.fac_id_fk)
+                    FROM assessment_master a
+                    {$where['sql']}
+                      AND UPPER(COALESCE(a.status, '')) = 'COMPLETED'
+                      AND MONTH(a.{$completedColumn}) = ?
+                      AND YEAR(a.{$completedColumn}) = ?
+                ", $where['types'] . 'ii', array_merge($where['params'], [$month, $year]));
             } elseif (self::columnExists($con, 'assessment_master', 'end_date')) {
                 $assessment['completed'] = (int)self::scalar($con, "
                     SELECT COUNT(*)
+                    FROM assessment_master a
+                    {$where['sql']}
+                      AND UPPER(COALESCE(a.status, '')) = 'COMPLETED'
+                      AND MONTH(a.end_date) = ?
+                      AND YEAR(a.end_date) = ?
+                ", $where['types'] . 'ii', array_merge($where['params'], [$month, $year]));
+
+                $assessment['facilities_completed'] = (int)self::scalar($con, "
+                    SELECT COUNT(DISTINCT a.fac_id_fk)
                     FROM assessment_master a
                     {$where['sql']}
                       AND UPPER(COALESCE(a.status, '')) = 'COMPLETED'
@@ -3278,7 +3306,18 @@ class StateDashboardService
             'period' => sprintf('%04d-%02d', $year, $month)
         ];
 
-        if (self::tableExists($con, 'performance_entries') && self::tableExists($con, 'facilities')) {
+        $actionPlans = [
+            'updated' => 0,
+            'completed' => 0,
+            'facilities' => 0,
+            'period' => sprintf('%04d-%02d', $year, $month)
+        ];
+
+        $facilityMasterTable = self::tableExists($con, 'facilities')
+            ? 'facilities'
+            : (self::tableExists($con, 'fac_master') ? 'fac_master' : '');
+
+        if (self::tableExists($con, 'performance_entries') && $facilityMasterTable !== '') {
             $where = self::facilityWhere($con, $filters);
             $where['sql'] .= ' AND pe.entry_month = ? AND pe.entry_year = ?';
             $where['types'] .= 'ii';
@@ -3291,7 +3330,7 @@ class StateDashboardService
                     COUNT(DISTINCT CASE WHEN pe.indicator_type = 'OUTCOME' THEN pe.fac_id END) AS outcome_filled,
                     COUNT(*) AS performance_entries
                 FROM performance_entries pe
-                LEFT JOIN facilities f ON f.fac_id = pe.fac_id
+                LEFT JOIN {$facilityMasterTable} f ON f.fac_id = pe.fac_id
                 {$where['sql']}
             ", $where['types'], $where['params']);
 
@@ -3300,12 +3339,35 @@ class StateDashboardService
             $performance['performance_entries'] = (int)($row['performance_entries'] ?? 0);
         }
 
+        if (self::tableExists($con, 'assessment_action_plan')
+            && self::tableExists($con, 'assessment_master')
+            && $facilityMasterTable !== ''
+            && self::columnExists($con, 'assessment_action_plan', 'updated_on')) {
+            $where = self::facilityWhere($con, $filters);
+            $row = self::one($con, "
+                SELECT
+                    COUNT(*) AS updated,
+                    SUM(CASE WHEN UPPER(COALESCE(ap.status, '')) IN ('COMPLETED', 'CLOSED') THEN 1 ELSE 0 END) AS completed,
+                    COUNT(DISTINCT a.fac_id_fk) AS facilities
+                FROM assessment_action_plan ap
+                INNER JOIN assessment_master a ON a.assessment_id = ap.assessment_id
+                INNER JOIN {$facilityMasterTable} f ON f.fac_id = a.fac_id_fk
+                {$where['sql']}
+                  AND MONTH(ap.updated_on) = ?
+                  AND YEAR(ap.updated_on) = ?
+            ", $where['types'] . 'ii', array_merge($where['params'], [$month, $year]));
+            $actionPlans['updated'] = (int)($row['updated'] ?? 0);
+            $actionPlans['completed'] = (int)($row['completed'] ?? 0);
+            $actionPlans['facilities'] = (int)($row['facilities'] ?? 0);
+        }
+
         return [
             'month' => $month,
             'year' => $year,
             'period' => sprintf('%04d-%02d', $year, $month),
             'assessment' => $assessment,
-            'performance' => $performance
+            'performance' => $performance,
+            'action_plans' => $actionPlans
         ];
     }
 
