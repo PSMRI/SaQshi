@@ -1,22 +1,31 @@
 <!-- SaQshi Open Source | State Assessment Progress | assessment-progress.html | Version 1.0.0 -->
-<section class="sq-state-page">
+<section class="sq-state-page sq-assessment-progress-page">
     <div class="sq-state-toolbar">
         <div>
             <h3>Assessment Progress</h3>
             <p data-domain-template="All {facility} assessments including repeated assessment history.">All facility assessments including repeated assessment history.</p>
         </div>
         <div class="sq-state-filters">
+            <select class="sq-form-control" id="stateAssessDivision" aria-label="Division filter"><option value="">All divisions</option></select>
+            <select class="sq-form-control" id="stateAssessDistrict" aria-label="District filter" disabled><option value="">All districts</option></select>
+            <select class="sq-form-control" id="stateAssessBlock" aria-label="Block filter" disabled><option value="">All blocks</option></select>
             <input type="search" class="sq-form-control" id="stateAssessSearch" placeholder="Search facility or NIN" aria-label="Search Facility Or NIN" data-domain-placeholder="Search {facility} or {facility_code}" data-domain-aria-label="Search {facility} or {facility_code}">
             <button class="sq-btn sq-btn-primary" id="stateAssessRefresh">Refresh</button>
+            <button class="sq-btn sq-btn-light" id="stateAssessExport" type="button">Download Excel (CSV)</button>
         </div>
     </div>
     <div class="sq-state-kpis" id="stateAssessSummary"></div>
+    <div class="sq-card sq-assessment-distribution">
+        <div class="sq-card-header"><h3 id="stateAssessDistributionTitle">Division-wise assessment completion</h3><label>View progress by <select class="sq-form-control" id="stateAssessViewBy" aria-label="View progress by"><option value="AUTO">Automatic</option><option value="DIVISION">Division</option><option value="DISTRICT">District</option><option value="BLOCK">Block</option></select></label></div>
+        <div class="sq-card-body" id="stateAssessDistribution"></div>
+    </div>
     <div class="sq-card">
         <div class="sq-card-header">
-            <h3>Assessment Records</h3>
+            <h3>Facility Assessment Records</h3>
+            <input type="search" class="sq-form-control" id="stateAssessRecordSearch" placeholder="Search NIN, facility, division, district or block" aria-label="Search facility assessment records">
             <div id="stateAssessPager"></div>
         </div>
         <div class="sq-card-body" id="stateAssessRows"></div>
     </div>
 </section>
-<script src="/ui/pages/state/assessment-progress.js?v=20260822-health-area-scores-1"></script>
+<script src="/ui/pages/state/assessment-progress.js?v=20261020-no-assessment-label-23"></script>

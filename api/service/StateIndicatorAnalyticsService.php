@@ -95,7 +95,7 @@ class StateIndicatorAnalyticsService
             ? ", ap.target_date, ap.status AS action_plan_status"
             : ", NULL AS target_date, NULL AS action_plan_status";
 
-        $rows = self::rows($con, "
+        $rows = self::iterateRows($con, "
             SELECT a.assessment_id, a.fac_id_fk, a.framework_code, r.checkpoint_id, r.score,
                    f.fac_name, f.NIN_no, f.Dist_Name, f.Block_Name
                    {$actionFields}
@@ -156,10 +156,17 @@ class StateIndicatorAnalyticsService
         if ($topics && $latestByFacility) {
             $facilityIds = array_keys($latestByFacility);
             $placeholders = implode(',', array_fill(0, count($facilityIds), '?'));
-            $history = self::rows($con, "
+            $history = self::iterateRows($con, "
                 SELECT a.assessment_id, a.fac_id_fk, a.framework_code, r.checkpoint_id
                 FROM {$responseTable} r
                 INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+                INNER JOIN (
+                    SELECT fac_id_fk, MAX(assessment_id) AS latest_id
+                    FROM assessment_master
+                    WHERE UPPER(COALESCE(status, '')) = 'COMPLETED'
+                    GROUP BY fac_id_fk
+                ) latest_history ON latest_history.fac_id_fk = a.fac_id_fk
+                    AND a.assessment_id < latest_history.latest_id
                 WHERE a.fac_id_fk IN ({$placeholders})
                   AND UPPER(COALESCE(a.status, '')) = 'COMPLETED'
                   AND r.score IN (0, 1)
@@ -240,7 +247,7 @@ class StateIndicatorAnalyticsService
 
         $assessmentColumn = self::columnExists($con, $responseTable, 'assessment_id') ? 'assessment_id' : 'cycle_id';
         $where = self::facilityWhere($filters, 'f');
-        $rows = self::rows($con, "
+        $rows = self::iterateRows($con, "
             SELECT a.fac_id_fk, a.framework_code, r.checkpoint_id,
                    r.score, r.max_score,
                    f.fac_name, f.NIN_no, f.Health_facilty_type, f.Dist_Name, f.Block_Name, f.lat, f.longit
@@ -611,7 +618,7 @@ class StateIndicatorAnalyticsService
         $assessmentColumn = self::columnExists($con, $responseTable, 'assessment_id') ? 'assessment_id' : 'cycle_id';
         $where = self::facilityWhere($filters, 'f');
         $where['sql'] .= ' AND ' . self::lowestScoreCondition($con, $responseTable, 'r');
-        $responses = self::rows($con, "
+        $responses = self::iterateRows($con, "
             SELECT a.framework_code, r.checkpoint_id, a.fac_id_fk
             FROM {$responseTable} r
             LEFT JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
@@ -1152,6 +1159,24 @@ class StateIndicatorAnalyticsService
         $rows = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
         $stmt->close();
         return $rows;
+    }
+
+    /** Process large result sets one row at a time instead of building a PHP array. */
+    private static function iterateRows(mysqli $con, string $sql, string $types = '', array $params = []): iterable
+    {
+        $stmt = self::prepare($con, $sql, $types, $params);
+        try {
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    yield $row;
+                }
+                $result->free();
+            }
+        } finally {
+            $stmt->close();
+        }
     }
 
     /**

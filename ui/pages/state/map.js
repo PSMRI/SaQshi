@@ -393,7 +393,10 @@
                 area_subtype: activeSubtype
             }, {
                 loader: false,
-                showError: false
+                showError: false,
+                // Area scoring can read a large latest-assessment response set.
+                // Keep this view from being cancelled by the shared 30-second API default.
+                timeout: 120000
             });
             const data = response.data || {};
             const points = data.map_points || [];

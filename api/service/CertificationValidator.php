@@ -21,7 +21,7 @@ class CertificationValidator
         $score = $payload['score'] ?? null;
 
         if (!in_array($type, $config['types'] ?? [], true)) {
-            $errors['certification_type'] = 'Certification type must be STATE or NATIONAL.';
+            $errors['certification_type'] = 'Certification type must be STATE, NATIONAL or NATIONAL_CONDITIONALITY.';
         }
 
         if (!in_array($mode, $config['assessment_modes'] ?? [], true)) {

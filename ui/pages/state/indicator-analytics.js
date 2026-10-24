@@ -240,7 +240,8 @@
         try {
             const response = await SQ.api.get("/state/v1/indicator_analytics.php", params(), {
                 loader: false,
-                showError: false
+                showError: false,
+                timeout: 120000
             });
             const data = response.data || {};
             renderSummary(data);

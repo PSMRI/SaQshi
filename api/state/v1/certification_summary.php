@@ -14,5 +14,6 @@ if (!headers_sent()) {
 try {
     Response::success('Certification summary loaded', StateDashboardService::certificationSummary($con, $_GET));
 } catch (Throwable $e) {
+    ErrorHandler::log($e, ['endpoint' => 'state certification summary', 'query' => $_GET]);
     Response::serverError($e->getMessage());
 }
