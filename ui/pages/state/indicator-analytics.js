@@ -59,16 +59,6 @@
         };
     }
 
-    function renderSummary(data) {
-        const a = data.assessment?.summary || {};
-        document.getElementById("stateIndicatorSummary").innerHTML = `
-            <div><span>Indicators with score 0</span><strong>${esc(a.indicators || 0)}</strong></div>
-            <div><span>Facilities with score 0</span><strong>${esc(a.facilities || 0)}</strong></div>
-            <div><span>Score-0 responses</span><strong>${esc(a.responses || 0)}</strong></div>
-            <div><span>Facilities assessed</span><strong>${esc(a.assessed_facilities || 0)} / ${esc(a.total_facilities || 0)}</strong></div>
-        `;
-    }
-
     function showPriority(topIssue) {
         const title = document.getElementById("statePriorityTitle");
         const text = document.getElementById("statePriorityText");
@@ -312,7 +302,6 @@
             });
             const data = response.data || {};
             renderPriority(data);
-            renderSummary(data);
             renderCapacityBuildingRoadmap(data.capacity_building_roadmap || {});
             renderAreaOfConcernRisks(data.areas_of_concern || []);
             renderStandardRisks(data.standards || []);
@@ -325,7 +314,6 @@
             state.pager.set(data.assessment?.pagination || {}).render("stateIndicatorPager", "Showing indicators");
         } catch (error) {
             const message = esc(error?.message || "Unable to load State risk data.");
-            document.getElementById("stateIndicatorSummary").innerHTML = "";
             ["stateCapacityBuildingRoadmap", "stateAreaOfConcernRisks", "stateDistrictRisks", "stateFacilityTypeRisks", "stateDepartmentRisks", "stateAssessmentIndicators"].forEach(function (id) {
                 const target = document.getElementById(id);
                 if (target) target.innerHTML = `<div class="sq-state-empty">${message}</div>`;
@@ -339,6 +327,18 @@
             download: "low_score_facilities",
             checkpoint_id: checkpointId
         }), `low-score-facilities-${checkpointId}.csv`);
+    }
+
+    async function downloadDetailedIssues() {
+        await SQ.api.download("/state/v1/indicator_analytics.php", Object.assign({}, params(), {
+            download: "issue_list"
+        }), "indicator-score-zero-issues.csv");
+    }
+
+    async function downloadMultipleIssueFacilities() {
+        await SQ.api.download("/state/v1/indicator_analytics.php", Object.assign({}, params(), {
+            download: "multiple_issue_facilities"
+        }), "facilities-with-multiple-score-zero-issues.csv");
     }
 
     async function downloadCapacityBuildingRoadmap() {
@@ -377,6 +377,12 @@
         });
         document.getElementById("stateCapacityRoadmapDownload")?.addEventListener("click", function () {
             downloadCapacityBuildingRoadmap();
+        });
+        document.getElementById("stateIndicatorIssuesDownload")?.addEventListener("click", function () {
+            downloadDetailedIssues();
+        });
+        document.getElementById("stateIndicatorMultipleIssuesDownload")?.addEventListener("click", function () {
+            downloadMultipleIssueFacilities();
         });
         document.getElementById("stateDepartmentRisks")?.addEventListener("click", function (event) {
             const button = event.target.closest("[data-department-risk]");

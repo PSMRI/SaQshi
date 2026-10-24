@@ -390,6 +390,50 @@ class StateDashboardService
             }
         }
 
+        // Migration imports are stored in cert_details. Use them when the facility
+        // has no newer state-managed history record yet.
+        if (self::tableExists($con, 'cert_details')) {
+            try {
+                $importedRows = self::rows($con, '
+                    SELECT id, fac_id, fac_nin, cert_type, cert_detailscol, cert_issue,
+                           validity, score, Cert_status, ass_mod, date_of_ass, applied_date
+                    FROM cert_details
+                    ORDER BY id DESC
+                ');
+                foreach ($importedRows as $imported) {
+                    $nin = self::normalizeNin($imported['fac_nin'] ?? '');
+                    $facId = (int)($imported['fac_id'] ?? 0);
+                    $key = $nin !== '' ? 'NIN:' . $nin : 'FAC:' . $facId;
+                    if ($key === 'FAC:0' || isset($latestByKey[$key])) {
+                        continue;
+                    }
+                    $latestByKey[$key] = [
+                        'certification_id' => (int)($imported['id'] ?? 0),
+                        'fac_id_fk' => $facId,
+                        'fac_nin' => $nin,
+                        'new_data_json' => json_encode([
+                            'certification_id' => (int)($imported['id'] ?? 0),
+                            'fac_id' => $facId,
+                            'fac_nin' => $nin,
+                            'Cert_status' => $imported['Cert_status'] ?? '',
+                            'cert_type' => $imported['cert_type'] ?? '',
+                            'ass_mod' => $imported['ass_mod'] ?? '',
+                            'date_of_ass' => $imported['date_of_ass'] ?? null,
+                            'applied_date' => $imported['applied_date'] ?? null,
+                            'cert_issue' => $imported['cert_issue'] ?? null,
+                            'validity' => $imported['validity'] ?? null,
+                            'score' => $imported['score'] ?? null,
+                            'cert_detailscol' => $imported['cert_detailscol'] ?? null
+                        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        'action_type' => 'CERTIFICATION_IMPORT',
+                        'action_on' => null
+                    ];
+                }
+            } catch (Throwable $e) {
+                $historyWarning = $historyWarning ?: $e->getMessage();
+            }
+        }
+
         $statusCounts = [];
         $typeCounts = [];
         $facilityTypeCounts = [];

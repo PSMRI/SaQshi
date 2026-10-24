@@ -1,10 +1,6 @@
 <!-- SaQshi Open Source | State Indicator Score-0 Analysis -->
 <section class="sq-state-page">
     <div class="sq-state-toolbar">
-        <div>
-            <h3>Indicator Score-0 Analysis</h3>
-            <p>Find indicators where facilities scored 0 and download the affected facility list.</p>
-        </div>
         <div class="sq-state-filters">
             <select class="sq-form-control" id="stateIndicatorFacilityType" aria-label="Facility type"><option value="">All facility types</option></select>
             <input type="search" class="sq-form-control" id="stateIndicatorSearch" placeholder="Search facility, NIN, district or block" aria-label="Search Facility, NIN, District Or Block">
@@ -17,15 +13,17 @@
         <div><span>Top priority</span><h2 id="statePriorityTitle">Loading the highest-priority indicator…</h2><p id="statePriorityText">Review the affected facility list and download it for follow-up.</p></div>
     </section>
 
-    <div class="sq-state-kpis" id="stateIndicatorSummary"></div>
-
     <div class="sq-card">
         <div class="sq-card-header">
             <div>
                 <h3>Detailed List of Issues</h3>
                 <p>Indicators ranked by the number of facilities that scored 0.</p>
             </div>
-            <div id="stateIndicatorPager"></div>
+            <div style="display:flex;align-items:center;gap:10px">
+                <div id="stateIndicatorPager"></div>
+                <button class="sq-btn sq-btn-icon sq-btn-primary" id="stateIndicatorIssuesDownload" type="button" title="Download detailed issue list" aria-label="Download detailed issue list">⇩</button>
+                <button class="sq-btn sq-btn-icon sq-btn-primary" id="stateIndicatorMultipleIssuesDownload" type="button" title="Download facilities with multiple issues" aria-label="Download facilities with multiple issues">⇩</button>
+            </div>
         </div>
         <div class="sq-card-body" id="stateAssessmentIndicators"></div>
     </div>

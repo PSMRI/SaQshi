@@ -23,6 +23,8 @@
         mix: { national: 0, conditionality: 0, state: 0 },
         upgradedFromStateToNational: 0,
         breakdown: [],
+        breakdownPage: 1,
+        breakdownPerPage: 5,
         viewBy: "DISTRICT",
         filterOptions: { districts: [], blocks: [] },
         warning: "",
@@ -118,9 +120,9 @@
         const national = counts.NATIONAL * 100 / total, conditionality = counts.CONDITIONAL * 100 / total;
         const facilityTypeMax = Math.max(...state.facilityTypes.map(row => Number(row.count) || 0), 1);
         const facilityTypes = state.facilityTypes.length
-            ? `<div class="sq-cert-facility-types"><h4>Facility type distribution</h4>${state.facilityTypes.map(row => `<div class="sq-cert-facility-type-row"><span>${esc(row.type)}</span><div class="sq-cert-facility-stacked"><i class="is-national" style="width:${(Number(row.national) || 0) * 100 / facilityTypeMax}%"></i><i class="is-conditionality" style="width:${(Number(row.conditionality) || 0) * 100 / facilityTypeMax}%"></i><i class="is-state" style="width:${(Number(row.state) || 0) * 100 / facilityTypeMax}%"></i></div><b>${esc(row.certified || 0)} / ${esc(row.count || 0)} (${esc(row.completion_percentage || 0)}%)<small>N ${esc(row.national || 0)} · C ${esc(row.conditionality || 0)} · S ${esc(row.state || 0)}</small></b></div>`).join("")}</div>`
-            : "";
-        return html("stateCertRows", `<div class="sq-cert-mix"><div class="sq-cert-donut" style="background:conic-gradient(#078b7a 0 ${national}%,#e59008 ${national}% ${national + conditionality}%,#3f5fc4 ${national + conditionality}% 100%)"></div><div class="sq-cert-legend"><div><i class="is-national"></i>Certified — National <b>${counts.NATIONAL} (${Math.round(national)}%)</b></div><div><i class="is-conditionality"></i>Conditional <b>${counts.CONDITIONAL} (${Math.round(conditionality)}%)</b></div><div><i class="is-state"></i>Certified — State <b>${counts.STATE} (${Math.round(counts.STATE * 100 / total)}%)</b></div></div></div>${facilityTypes}`);
+            ? `<section class="sq-cert-facility-types"><h4>Facility type distribution</h4>${state.facilityTypes.map(row => `<div class="sq-cert-facility-type-row"><span>${esc(row.type)}</span><div class="sq-cert-facility-stacked"><i class="is-national" style="width:${(Number(row.national) || 0) * 100 / facilityTypeMax}%"></i><i class="is-conditionality" style="width:${(Number(row.conditionality) || 0) * 100 / facilityTypeMax}%"></i><i class="is-state" style="width:${(Number(row.state) || 0) * 100 / facilityTypeMax}%"></i></div><b>${esc(row.certified || 0)} / ${esc(row.count || 0)} (${esc(row.completion_percentage || 0)}%)<small>N ${esc(row.national || 0)} · C ${esc(row.conditionality || 0)} · S ${esc(row.state || 0)}</small></b></div>`).join("")}</section>`
+            : `<section class="sq-cert-facility-types"><h4>Facility type distribution</h4><div class="sq-state-empty">No facility type data available.</div></section>`;
+        return html("stateCertRows", `<div class="sq-cert-overview"><section class="sq-cert-mix-panel"><h4>Certification type mix</h4><div class="sq-cert-mix"><div class="sq-cert-donut" style="background:conic-gradient(#078b7a 0 ${national}%,#e59008 ${national}% ${national + conditionality}%,#3f5fc4 ${national + conditionality}% 100%)"></div></div><div class="sq-cert-legend"><div><i class="is-national"></i>Certified — National <b>${counts.NATIONAL} (${Math.round(national)}%)</b></div><div><i class="is-conditionality"></i>Conditional <b>${counts.CONDITIONAL} (${Math.round(conditionality)}%)</b></div><div><i class="is-state"></i>Certified — State <b>${counts.STATE} (${Math.round(counts.STATE * 100 / total)}%)</b></div></div></section>${facilityTypes}</div>`);
         /* legacy status summary retained below for reference */
         html("stateCertRows", state.status.length
             ? `<table class="sq-state-table">
@@ -140,17 +142,27 @@
         const rows = state.breakdown.length ? state.breakdown : state.status;
         const max = Math.max(...rows.map(row => Number(row.total ?? row.count) || 0), 1);
         const viewBy = state.viewBy || "DISTRICT";
+        const totalPages = Math.max(1, Math.ceil(rows.length / state.breakdownPerPage));
+        state.breakdownPage = Math.min(state.breakdownPage, totalPages);
+        const start = (state.breakdownPage - 1) * state.breakdownPerPage;
+        const pageRows = rows.slice(start, start + state.breakdownPerPage);
         text("stateCertBreakdownTitle", `${viewBy.replace("_", " ").replace(/\b\w/g, char => char.toUpperCase())}-wise certification completion`);
 
         html("stateCertChart", rows.length
-            ? `<div class="sq-cert-bar-legend"><span><i class="is-national"></i>Certified — National</span><span><i class="is-conditionality"></i>Conditional</span><span><i class="is-state"></i>Certified — State</span></div><div class="sq-state-chart-bars">${rows.map(row => `
-                <div class="sq-state-chart-row">
+            ? `<div class="sq-cert-bar-legend"><span><i class="is-national"></i>Certified — National</span><span><i class="is-conditionality"></i>Conditional</span><span><i class="is-state"></i>Certified — State</span></div><div class="sq-state-chart-bars">${pageRows.map(row => `
+                <button class="sq-state-chart-row" type="button" ${viewBy === "DISTRICT" ? `data-cert-breakdown-district="${esc(row.label ?? "")}" title="Show certification mix for ${esc(row.label ?? "this district")}"` : ""}>
                     <span>${esc(row.label ?? row.status)}</span>
                     <div class="sq-cert-stacked"><i class="is-national" style="width:${(row.national || 0) * 100 / max}%"></i><i class="is-conditionality" style="width:${(row.conditionality || 0) * 100 / max}%"></i><i class="is-state" style="width:${(row.state || 0) * 100 / max}%"></i></div>
                     <b>${esc((row.certified ?? row.count) || 0)}/${esc((row.total ?? row.count) || 0)} (${esc(row.completion_percentage ?? row.percentage ?? 0)}%)<small>National ${esc(row.national || 0)} · Conditional ${esc(row.conditionality || 0)} · State ${esc(row.state || 0)}</small></b>
-                </div>
+                </button>
             `).join("")}</div>`
             : `<div class="sq-state-empty">No comparison data.</div>`);
+        html("stateCertBreakdownPager", rows.length > state.breakdownPerPage
+            ? `<div class="sq-state-pagination"><button class="sq-btn sq-btn-light sq-btn-sm" type="button" data-cert-breakdown-page="${state.breakdownPage - 1}" ${state.breakdownPage === 1 ? "disabled" : ""}>Previous</button><span>Showing ${start + 1}–${Math.min(start + state.breakdownPerPage, rows.length)} of ${rows.length}</span><button class="sq-btn sq-btn-light sq-btn-sm" type="button" data-cert-breakdown-page="${state.breakdownPage + 1}" ${state.breakdownPage === totalPages ? "disabled" : ""}>Next</button></div>`
+            : "");
+        html("stateCertBreakdownBack", viewBy === "BLOCK"
+            ? `<button class="sq-btn sq-btn-light sq-btn-sm" type="button" data-cert-show-districts><i class="bi bi-arrow-left"></i> District-wise</button>`
+            : "");
     }
 
     function renderTable() {
@@ -429,6 +441,31 @@
             document.addEventListener("click", function (event) {
                 const button = event.target.closest("[data-cert-update]");
                 if (button) openUpdateModal(button.getAttribute("data-cert-update"));
+                const breakdownButton = event.target.closest("[data-cert-breakdown-page]");
+                if (breakdownButton && !breakdownButton.disabled) {
+                    state.breakdownPage = Number(breakdownButton.getAttribute("data-cert-breakdown-page")) || 1;
+                    renderChart();
+                }
+                const districtButton = event.target.closest("[data-cert-breakdown-district]");
+                if (districtButton) {
+                    const district = districtButton.getAttribute("data-cert-breakdown-district") || "";
+                    const districtSelect = document.getElementById("stateCertDistrict");
+                    if (!district || !districtSelect) return;
+                    districtSelect.value = district;
+                    state.breakdownPage = 1;
+                    state.pager.reset();
+                    load();
+                }
+                const showDistrictsButton = event.target.closest("[data-cert-show-districts]");
+                if (showDistrictsButton) {
+                    const districtSelect = document.getElementById("stateCertDistrict");
+                    const blockSelect = document.getElementById("stateCertBlock");
+                    if (districtSelect) districtSelect.value = "";
+                    if (blockSelect) blockSelect.value = "";
+                    state.breakdownPage = 1;
+                    state.pager.reset();
+                    load();
+                }
             });
             globalEventsBound = true;
         }

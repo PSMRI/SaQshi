@@ -75,7 +75,7 @@ class StateIndicatorAnalyticsService
 
     /**
      * Builds a transparent, data-led capacity-building roadmap from the latest
-     * completed assessment for every facility in the selected monitoring scope.
+     * newest assessment for every facility in the selected monitoring scope.
      * This is deliberately rule based: it identifies priority support themes;
      * it does not diagnose individual staff or assign training.
      */
@@ -83,7 +83,7 @@ class StateIndicatorAnalyticsService
     {
         $responseTable = self::responseTable($con);
         if ($responseTable === '' || !self::tableExists($con, 'assessment_master')) {
-            return ['basis' => 'latest_completed_assessments', 'assessed_facilities' => 0, 'topics' => []];
+            return ['basis' => 'latest_assessments', 'assessed_facilities' => 0, 'topics' => []];
         }
 
         $assessmentColumn = self::columnExists($con, $responseTable, 'assessment_id') ? 'assessment_id' : 'cycle_id';
@@ -102,12 +102,7 @@ class StateIndicatorAnalyticsService
                    {$actionFields}
             FROM {$responseTable} r
             INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            INNER JOIN (
-                SELECT fac_id_fk, MAX(assessment_id) AS assessment_id
-                FROM assessment_master
-                WHERE UPPER(COALESCE(status, '')) = 'COMPLETED'
-                GROUP BY fac_id_fk
-            ) latest ON latest.assessment_id = a.assessment_id
+            " . self::latestCompletedAssessmentJoin('a') . "
             INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$actionJoin}
             {$where['sql']}
@@ -209,7 +204,7 @@ class StateIndicatorAnalyticsService
             $topic['suggested_planning_window'] = $band === 'HIGH' ? 'Next 30 days' : ($band === 'MEDIUM' ? 'Current quarter' : 'Next planning cycle');
         }
         unset($topic);
-        return ['basis' => 'latest_completed_assessments', 'assessed_facilities' => count($latestByFacility), 'topics' => $limit > 0 ? array_slice($result, 0, $limit) : $result];
+        return ['basis' => 'latest_assessments', 'assessed_facilities' => count($latestByFacility), 'topics' => $limit > 0 ? array_slice($result, 0, $limit) : $result];
     }
 
     /**
@@ -475,6 +470,39 @@ class StateIndicatorAnalyticsService
             ]);
         }
 
+        fclose($out);
+        exit;
+    }
+
+    /** Exports the complete filtered Detailed List of Issues. */
+    public static function streamDetailedIssueList(mysqli $con, array $filters = []): void
+    {
+        $minFacilities = max(1, (int)($filters['min_facilities'] ?? 1));
+        $issues = self::assessmentWeakIndicators($con, $filters, [
+            'page' => 1,
+            'per_page' => 10000,
+            'offset' => 0
+        ], $minFacilities);
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="indicator-score-zero-issues-' . date('Ymd-His') . '.csv"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        $out = fopen('php://output', 'w');
+        fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        self::csvRow($out, [
+            'Issue to Improve', 'Department / Package', 'Area of Concern',
+            'Affected Facilities', 'Score-0 Responses'
+        ]);
+        foreach (($issues['rows'] ?? []) as $issue) {
+            self::csvRow($out, [
+                $issue['indicator_name'] ?? '',
+                $issue['class_name'] ?? '',
+                $issue['area_of_concern'] ?? '',
+                $issue['low_score_facility_count'] ?? 0,
+                $issue['low_score_count'] ?? 0
+            ]);
+        }
         fclose($out);
         exit;
     }
@@ -968,14 +996,13 @@ class StateIndicatorAnalyticsService
         return '';
     }
 
-    /** Restricts analytics to each facility's most recent completed assessment. */
+    /** Restricts analytics to each facility's newest assessment, regardless of its status. */
     private static function latestCompletedAssessmentJoin(string $assessmentAlias = 'a'): string
     {
         return "
             INNER JOIN (
                 SELECT fac_id_fk, MAX(assessment_id) AS assessment_id
                 FROM assessment_master
-                WHERE UPPER(COALESCE(status, '')) = 'COMPLETED'
                 GROUP BY fac_id_fk
             ) latest_assessment ON latest_assessment.assessment_id = {$assessmentAlias}.assessment_id";
     }

@@ -1,14 +1,10 @@
 <!-- SaQshi Open Source | State CQI Monitoring | cqi.html | Version 1.0.0 -->
-<section class="sq-state-page">
+<section class="sq-state-page sq-state-cqi-page">
     <div class="sq-state-toolbar">
-        <div>
-            <h3>CQI Action Tracking</h3>
-            <p data-domain-template="Track accountable owners, priority, target dates, and overdue actions across all {facility} assessments.">Track accountable owners, priority, target dates, and overdue actions across all facility assessments.</p>
-        </div>
         <div class="sq-state-filters">
             <input type="search" class="sq-form-control" id="stateCqiSearch" placeholder="Search facility or NIN" aria-label="Search Facility Or NIN" data-domain-placeholder="Search {facility} or {facility_code}" data-domain-aria-label="Search {facility} or {facility_code}">
-            <button class="sq-btn sq-btn-primary" id="stateCqiRefresh">Refresh</button>
-            <button class="sq-btn sq-btn-light" id="stateCqiDownload" type="button">Download All Statuses (CSV)</button>
+            <button class="sq-btn sq-btn-light sq-cqi-icon-action" id="stateCqiDownload" type="button" title="Download all CQI statuses" aria-label="Download all CQI statuses"><i class="bi bi-download"></i></button>
+            <button class="sq-btn sq-btn-primary sq-cqi-icon-action" id="stateCqiRefresh" type="button" title="Refresh CQI data" aria-label="Refresh CQI data"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
     </div>
     <div class="sq-state-kpis">

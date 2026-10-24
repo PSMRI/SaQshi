@@ -1,10 +1,6 @@
 <!-- SaQshi Open Source | State Certification Status | certification.html | Version 1.1.0 -->
 <section class="sq-state-page">
     <div class="sq-state-toolbar">
-        <div>
-            <h3>Certification Status</h3>
-            <p>Latest facility certification status from certification history.</p>
-        </div>
         <div class="sq-state-filters">
             <select class="sq-form-control" id="stateCertDistrict" aria-label="District filter"><option value="">All districts</option></select>
             <select class="sq-form-control" id="stateCertBlock" aria-label="Block filter" disabled><option value="">All blocks</option></select>
@@ -20,8 +16,8 @@
                 <option value="APPLIED">Applied</option>
             </select>
             <select class="sq-form-control" id="stateCertTypeFilter" aria-label="Certification type filter"><option value="">All certification types</option><option value="NATIONAL">National</option><option value="NATIONAL_CONDITIONALITY">National (Conditionality)</option><option value="STATE">State</option></select>
-            <button class="sq-btn sq-btn-light" id="stateCertDownload"><i class="bi bi-download"></i> Download</button>
-            <button class="sq-btn sq-btn-primary" id="stateCertRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+            <button class="sq-btn sq-btn-light sq-cert-icon-action" id="stateCertDownload" type="button" title="Download certification list" aria-label="Download certification list"><i class="bi bi-download"></i></button>
+            <button class="sq-btn sq-btn-primary sq-cert-icon-action" id="stateCertRefresh" type="button" title="Refresh certification data" aria-label="Refresh certification data"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
     </div>
 
@@ -31,7 +27,7 @@
 
     <div class="sq-state-grid">
         <div class="sq-card">
-            <div class="sq-card-header"><h3 id="stateCertBreakdownTitle">Division-wise certification completion</h3></div>
+            <div class="sq-card-header"><h3 id="stateCertBreakdownTitle">District-wise certification completion</h3><div class="sq-cert-breakdown-actions"><div id="stateCertBreakdownBack"></div><div id="stateCertBreakdownPager"></div></div></div>
             <div class="sq-card-body" id="stateCertChart"></div>
         </div>
         <div class="sq-card">
