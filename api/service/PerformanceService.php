@@ -627,7 +627,9 @@ class PerformanceService
         $showAll = !empty($filters['all_indicators']) || (($filters['scope'] ?? '') === 'all');
         $trendLimit = $showAll ? 0 : 8;
         $departmentId = max(0, (int)($filters['department_id'] ?? $filters['dept_id'] ?? 0));
-        $trendFilters = ['indicator_type' => $effectiveType, 'limit' => $trendLimit, 'department_id' => $departmentId];
+        $selectedTrendType = strtoupper((string)($filters['trend_type'] ?? ''));
+        $selectedTrendType = in_array($selectedTrendType, ['KPI', 'OUTCOME'], true) ? $selectedTrendType : $effectiveType;
+        $trendFilters = ['indicator_type' => $effectiveType, 'limit' => $trendLimit, 'department_id' => $effectiveType === 'OUTCOME' ? $departmentId : 0];
         $effectiveSeries = self::indicatorTrends($con, $facId, $trendFilters)['series'];
 
         return [
@@ -637,10 +639,10 @@ class PerformanceService
             'effective_indicator_label' => $effectiveType === 'OUTCOME' && !empty($rule['outcome_treated_as_kpi']) ? 'Outcome as KPI' : $effectiveType,
             'summary' => $summary,
             'outcome_department_status' => $outcomeDepartmentStatus,
-            'month_status' => self::monthlyStatus($con, $facId, ['indicator_type' => $effectiveType, 'department_id' => $departmentId]),
+            'month_status' => self::monthlyStatus($con, $facId, ['indicator_type' => $selectedTrendType, 'department_id' => $selectedTrendType === 'OUTCOME' ? $departmentId : 0]),
             'trend_departments' => self::trendDepartments($con, $facId),
             'indicator_trends' => [
-                'KPI' => $effectiveType === 'KPI' ? $effectiveSeries : [],
+                'KPI' => $effectiveType === 'KPI' ? $effectiveSeries : ($selectedTrendType === 'KPI' && isset($filters['trend_type']) ? self::indicatorTrends($con, $facId, ['indicator_type' => 'KPI', 'limit' => $trendLimit])['series'] : []),
                 'OUTCOME' => $effectiveType === 'OUTCOME' ? $effectiveSeries : self::indicatorTrends($con, $facId, ['indicator_type' => 'OUTCOME', 'limit' => $trendLimit, 'department_id' => $departmentId])['series'],
                 'EFFECTIVE' => $effectiveSeries
             ],
@@ -832,6 +834,7 @@ class PerformanceService
             $types .= 'i';
         }
 
+        $rowLimit = $seriesLimit === 0 ? '' : 'LIMIT 500';
         $stmt = $con->prepare("
             SELECT
                 dept_id,
@@ -847,7 +850,7 @@ class PerformanceService
             FROM performance_entries
             WHERE {$where}
             ORDER BY entry_year DESC, entry_month DESC, updated_on DESC, entry_id DESC
-            LIMIT 500
+            {$rowLimit}
         ");
 
         if (!$stmt) {
@@ -857,6 +860,15 @@ class PerformanceService
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
 
+        $facilityTypeId = (int)(self::facilityMeta($facId)['fac_type_id'] ?? 0);
+        $metadata = [];
+        foreach (['KPI', 'OUTCOME'] as $type) {
+            if ($indicatorType !== '' && $indicatorType !== $type) continue;
+            $config = self::readJson(__DIR__ . '/../config/performance/' . strtolower($type) . '.json', []);
+            foreach (self::flattenIndicators($config, $type, $facilityTypeId) as $indicator) {
+                $metadata[$type . '|' . $indicator['department_id'] . '|' . $indicator['indicator_id']] = $indicator;
+            }
+        }
         $series = [];
         $order = [];
         $result = $stmt->get_result();
@@ -874,6 +886,12 @@ class PerformanceService
                 }
 
                 $order[] = $key;
+                $indicator = $metadata[$key] ?? [];
+                $labels = [];
+                foreach (($indicator['fields'] ?? []) as $field) {
+                    $labels[strtoupper((string)($field['field_id'] ?? ''))] = (string)($field['label'] ?? '');
+                }
+                $formula = FormulaEngine::findFormula($indicator['formula_id'] ?? 0);
                 $series[$key] = [
                     'indicator_type' => $row['indicator_type'],
                     'indicator_id' => (int)$row['indicator_id'],
@@ -881,6 +899,9 @@ class PerformanceService
                     'indicator_name' => (string)$row['indicator_name'],
                     'department_id' => (int)$row['dept_id'],
                     'department_name' => self::departmentName((int)$row['dept_id']),
+                    'formula' => (string)($formula['source_expression'] ?? $formula['expression'] ?? ''),
+                    'numerator_label' => $labels['N'] ?? '',
+                    'denominator_label' => $labels['D'] ?? '',
                     'points' => []
                 ];
             }

@@ -493,9 +493,14 @@ try {
         }
     }
 
+    $departmentRanges = [];
     foreach ($engine->getDepartments((int)$facility['fac_type_id']) as $department) {
         $deptId = (int)($department['fac_dept_id'] ?? 0);
+        if ($activeDeptIds && !isset($activeDeptIds[$deptId])) {
+            continue;
+        }
         $deptName = (string)($department['dept_name'] ?? '');
+        $departmentStart = count($checklistRows);
 
         foreach (($department['concerns'] ?? []) as $concern) {
             $concernName = trim((string)(
@@ -559,6 +564,10 @@ try {
                     ];
                 }
             }
+        }
+        $departmentCount = count($checklistRows) - $departmentStart;
+        if ($departmentCount > 0) {
+            $departmentRanges[] = ['name' => $deptName ?: 'Department ' . $deptId, 'start' => $departmentStart, 'count' => $departmentCount];
         }
     }
 
@@ -1031,6 +1040,8 @@ try {
             $gapStatusParts[] = 'Status: OPEN GAP';
         } elseif ($userScore !== null) {
             $gapStatusParts[] = 'Status: NO GAP';
+        } else {
+            $gapStatusParts[] = 'Status: NOT ASSESSED';
         }
 
         if ($closureRemarks !== '') {
@@ -1091,6 +1102,111 @@ try {
 
     $zip->addFromString('xl/worksheets/sheet1.xml', $dom->saveXML());
     $zip->close();
+
+    if ($departmentRanges) {
+        // Create each worksheet directly in the XLSX archive. Loading and cloning
+        // the entire report with PhpSpreadsheet multiplies memory use per sheet.
+        $zip->open($tmpFile);
+        $workbook = new DOMDocument();
+        $workbook->loadXML($zip->getFromName('xl/workbook.xml'));
+        $workbookPath = new DOMXPath($workbook);
+        $workbookPath->registerNamespace('x', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+        $sheets = $workbookPath->query('//x:sheets')->item(0);
+        $firstSheet = $workbookPath->query('x:sheet', $sheets)->item(0);
+        $relationships = new DOMDocument();
+        $relationships->loadXML($zip->getFromName('xl/_rels/workbook.xml.rels'));
+        $contentTypes = new DOMDocument();
+        $contentTypes->loadXML($zip->getFromName('[Content_Types].xml'));
+        $usedTitles = [];
+
+        foreach ($departmentRanges as $index => $range) {
+            $sheetDom = clone $dom;
+            $sheetPath = new DOMXPath($sheetDom);
+            $sheetPath->registerNamespace('x', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+            $data = $sheetPath->query('//x:sheetData')->item(0);
+            $first = 9 + $range['start'];
+            $last = $first + $range['count'] - 1;
+            $before = 0.0; $after = 0.0; $possible = 0.0;
+            foreach (iterator_to_array($sheetPath->query('x:row', $data)) as $row) {
+                $number = (int)$row->getAttribute('r');
+                if ($number < 9) continue;
+                if ($number < $first || $number > $last) {
+                    $data->removeChild($row);
+                    continue;
+                }
+                if ($checklistRows[$number - 9]['type'] === 'checkpoint') {
+                    $original = $sheetPath->query("x:c[@r='F$number']/x:v", $row)->item(0)?->nodeValue;
+                    $revised = $sheetPath->query("x:c[@r='G$number']/x:v", $row)->item(0)?->nodeValue;
+                    $possible += 2;
+                    $before += is_numeric($original) ? (float)$original : 0;
+                    $after += is_numeric($revised) ? (float)$revised : (is_numeric($original) ? (float)$original : 0);
+                }
+                $newNumber = $number - $range['start'];
+                $row->setAttribute('r', (string)$newNumber);
+                foreach ($sheetPath->query('x:c', $row) as $cell) {
+                    $cell->setAttribute('r', preg_replace('/\d+$/', (string)$newNumber, $cell->getAttribute('r')));
+                }
+            }
+            $merges = $sheetPath->query('//x:mergeCells')->item(0);
+            if ($merges instanceof DOMElement) {
+                foreach (iterator_to_array($sheetPath->query('x:mergeCell', $merges)) as $merge) {
+                    $ref = $merge->getAttribute('ref');
+                    preg_match_all('/\d+/', $ref, $matches);
+                    $numbers = array_map('intval', $matches[0]);
+                    if (!$numbers || max($numbers) < 9) continue;
+                    if (min($numbers) < $first || max($numbers) > $last) {
+                        $merges->removeChild($merge);
+                    } else {
+                        $merge->setAttribute('ref', preg_replace_callback('/\d+/', static function ($m) use ($range) { return (string)((int)$m[0] - $range['start']); }, $ref));
+                    }
+                }
+                $merges->setAttribute('count', (string)$sheetPath->query('x:mergeCell', $merges)->length);
+            }
+            foreach ([3 => $before, 4 => $after, 5 => $possible > 0 ? round(($after - $before) / $possible * 100, 2) : 0] as $number => $value) {
+                $headerRow = $sheetPath->query("//x:row[@r='$number']")->item(0);
+                scorecardSetStyledCell($sheetDom, $sheetPath, $headerRow, $number, 'J', $value, true, ['J' => $summaryStyle]);
+            }
+            $headerRow = $sheetPath->query("//x:row[@r='7']")->item(0);
+            if ($headerRow) scorecardSetStyledCell($sheetDom, $sheetPath, $headerRow, 7, 'A', 'Department: ' . $range['name'], false, $areaStyles);
+            $dimension = $sheetPath->query('//x:dimension')->item(0);
+            if ($dimension) $dimension->setAttribute('ref', 'A1:J' . max(10, 8 + $range['count']));
+
+            $base = trim((string)preg_replace('/[\\\\\/?*\[\]:]/u', ' ', $range['name']), " '\t\r\n");
+            $base = mb_substr($base ?: 'Department', 0, 31);
+            $title = $base;
+            for ($suffix = 2; in_array(mb_strtolower($title), $usedTitles, true); $suffix++) {
+                $tail = ' (' . $suffix . ')';
+                $title = mb_substr($base, 0, 31 - mb_strlen($tail)) . $tail;
+            }
+            $usedTitles[] = mb_strtolower($title);
+            $sheetNumber = $index + 1;
+            $zip->addFromString('xl/worksheets/sheet' . $sheetNumber . '.xml', $sheetDom->saveXML());
+            if ($index === 0) {
+                $firstSheet->setAttribute('name', $title);
+            } else {
+                $relationId = 'rIdProgress' . $sheetNumber;
+                $sheet = $workbook->createElementNS('http://schemas.openxmlformats.org/spreadsheetml/2006/main', 'sheet');
+                $sheet->setAttribute('name', $title);
+                $sheet->setAttribute('sheetId', (string)$sheetNumber);
+                $sheet->setAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'r:id', $relationId);
+                $sheets->appendChild($sheet);
+                $rel = $relationships->createElementNS('http://schemas.openxmlformats.org/package/2006/relationships', 'Relationship');
+                $rel->setAttribute('Id', $relationId);
+                $rel->setAttribute('Type', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet');
+                $rel->setAttribute('Target', '/xl/worksheets/sheet' . $sheetNumber . '.xml');
+                $relationships->documentElement->appendChild($rel);
+                $override = $contentTypes->createElementNS('http://schemas.openxmlformats.org/package/2006/content-types', 'Override');
+                $override->setAttribute('PartName', '/xl/worksheets/sheet' . $sheetNumber . '.xml');
+                $override->setAttribute('ContentType', 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml');
+                $contentTypes->documentElement->appendChild($override);
+            }
+            unset($sheetDom, $sheetPath);
+        }
+        $zip->addFromString('xl/workbook.xml', $workbook->saveXML());
+        $zip->addFromString('xl/_rels/workbook.xml.rels', $relationships->saveXML());
+        $zip->addFromString('[Content_Types].xml', $contentTypes->saveXML());
+        $zip->close();
+    }
 
     $filename = 'checkpoint_progress_assessment_' . $assessmentId . '.xlsx';
 

@@ -31,6 +31,8 @@
 .sq-progress-tools{
     display:flex;
     align-items:center;
+    justify-content:flex-end;
+    margin-left:auto;
     gap:.4rem;
     flex-wrap:wrap;
 }
@@ -47,6 +49,11 @@
     padding:.32rem .6rem !important;
     font-size:.72rem !important;
 }
+
+.sq-progress-tools .sq-progress-icon{display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px!important;border:0;font-size:1rem!important}
+.sq-progress-refresh{background:#dbeafe!important;color:#1d4ed8!important}.sq-progress-refresh:hover{background:#bfdbfe!important}
+.sq-progress-excel{background:#168344!important;color:#fff!important}.sq-progress-excel:hover{background:#116b37!important}
+.sq-progress-tools .sq-progress-icon[aria-busy="true"]{min-width:180px;font-size:.72rem!important}
 
 .sq-progress-context{
     display:grid;
@@ -194,7 +201,6 @@
 
     .sq-progress-tools,
     .sq-progress-tools .sq-form-control,
-    .sq-progress-tools .sq-btn,
     .sq-progress-filter{
         width:100%;
     }
