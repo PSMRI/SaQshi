@@ -1,14 +1,10 @@
 <!-- SaQshi Open Source | State Assessor Management | assessors.html | Version 1.0.0 -->
 <section class="sq-state-page sq-assessor-admin">
     <div class="sq-state-toolbar">
-        <div>
-            <h3 data-domain-label="assessor_management">Assessor Management</h3>
-            <p data-domain-template="Create assessor profiles and map {facilities} for state assessments.">Create assessor profiles and map facilities for state assessments.</p>
-        </div>
         <div class="sq-state-filters">
             <input type="search" class="sq-form-control" id="assessorSearch" placeholder="Search assessor code, login user or user ID" aria-label="Search assessors">
             <button class="sq-btn sq-btn-light" id="assessorCredentialLog" type="button" hidden>Credential Log</button>
-            <button class="sq-btn sq-btn-primary" id="assessorRefresh" type="button">Refresh</button>
+            <button class="sq-btn sq-btn-primary sq-assessor-icon-action" id="assessorRefresh" type="button" title="Refresh assessor list" aria-label="Refresh assessor list"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
     </div>
 

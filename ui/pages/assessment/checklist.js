@@ -23,7 +23,9 @@
         startDepartment: "/assessment/v1/start_department.php",
         saveResponse: "/assessment/v1/save-response.php",
         saveResponsesBulk: "/assessment/v1/save-responses-bulk.php",
-        explainAI: "/ai/v1/explain_checkpoint.php"
+        explainAI: "/ai/v1/explain_checkpoint.php",
+        excel: "/assessment/v1/checklist_excel.php",
+        excelProgress: "/assessment/v1/checklist_excel_progress.php"
     };
 
     const state = {
@@ -49,6 +51,8 @@
             checkpointId: 0
         },
         answered: new Set(),
+        importResponses: [],
+        importSubmitting: false,
         isLoading: false,
         offlineSync: {
             running: false,
@@ -191,9 +195,9 @@
         return response.json();
     }
 
-    async function apiPost(endpoint, payload) {
+    async function apiPost(endpoint, payload, options = {}) {
         if (SQ.api && typeof SQ.api.post === "function") {
-            return SQ.api.post(endpoint, payload, { loader: false });
+            return SQ.api.post(endpoint, payload, Object.assign({ loader: false }, options));
         }
 
         const response = await fetch("/api" + endpoint, {
@@ -1099,18 +1103,23 @@
     }
 
     function setChecklistView(view) {
-        state.checklistView = view === "concern" ? "concern" : "detailed";
+        state.checklistView = ["concern", "excel"].includes(view) ? view : "detailed";
         const concernView = state.checklistView === "concern";
+        const excelView = state.checklistView === "excel";
 
         $("checklistScopeCard")?.classList.toggle("is-aoc-mode", concernView);
+        $("checklistScopeCard")?.classList.toggle("is-excel-mode", excelView);
         document.querySelectorAll("[data-checklist-view]").forEach(function (button) {
             const active = button.dataset.checklistView === state.checklistView;
             button.classList.toggle("is-active", active);
             button.setAttribute("aria-selected", String(active));
         });
         show($("concernChecklistPanel"), concernView);
-        show($("checkpointPanel"), !concernView && Boolean(state.current));
-        show($("checklistState"), !concernView);
+        show($("checklistExcelPanel"), excelView);
+        show($("checkpointPanel"), !concernView && !excelView && Boolean(state.current));
+        show($("checklistState"), !concernView && !excelView);
+        if ($("checklistState")) $("checklistState").hidden = excelView;
+        if (excelView) loadExcelImportProgress();
 
         if (concernView) {
             if (state.selected.deptId) {
@@ -1408,11 +1417,180 @@
         }
     }
 
+    function renderExcelImportPreview(rows) {
+        const groups = rows.reduce(function (all, row) {
+            const concern = row.area_of_concern || "Uncategorised Area of Concern";
+            (all[concern] = all[concern] || []).push(row);
+            return all;
+        }, {});
+        const cell = function (value) { return `<td>${escapeHtml(value)}</td>`; };
+        const table = function (items) {
+            return `<div class="sq-import-preview-table"><table class="sq-state-table"><thead><tr><th>Area of Concern</th><th>Reference No.</th><th>Area of Concern subtype details</th><th>CSQA Reference ID</th><th>Means of Verification</th><th>Measurable Element</th><th>Checkpoint</th><th>Assessment Method</th><th>Compliance</th></tr></thead><tbody>${items.map(function (row) {
+                return `<tr>${cell(row.area_of_concern)}${cell(row.reference_no)}${cell(row.subtype_details)}${cell(row.csqa_reference_id || row.checkpoint_id)}${cell(row.means_of_verification)}${cell(row.measurable_element)}${cell(row.checkpoint)}${cell(row.assessment_method)}${cell(row.response_value)}</tr>`;
+            }).join("")}</tbody></table></div>`;
+        };
+        return `<strong>Preview: ${rows.length} checkpoint responses ready.</strong><p>Review the full checklist below, grouped by Area of Concern. Compliance can be changed only in the Excel file; upload it again to refresh this preview.</p>${Object.keys(groups).map(function (concern) {
+            const items = groups[concern];
+            return `<details class="sq-import-concern" open><summary>${escapeHtml(concern)} <span>${items.length} checkpoint${items.length === 1 ? "" : "s"}</span></summary>${table(items)}</details>`;
+        }).join("")}`;
+    }
+
+    async function loadExcelImportProgress() {
+        const deptId = Number($("deptSelect")?.value || 0);
+        if (!state.assessment?.assessment_id || !deptId) return;
+        try {
+            const data = await apiGet(API.excelProgress, { assessment_id: state.assessment.assessment_id, dept_id: deptId });
+            const progress = data?.data || {}; const saved = Number(progress.saved_count || 0); const total = Number(progress.total_count || 0);
+            const track = $("checklistImportProgressTrack"); const bar = $("checklistImportProgressBar");
+            if (track && total) { track.hidden = false; bar.style.width = `${Math.min(100, saved * 100 / total)}%`; }
+            const staged = Array.isArray(progress.staged_responses) ? progress.staged_responses : [];
+            if (staged.length) {
+                const savedIds = new Set((progress.saved_checkpoint_ids || []).map(Number));
+                state.importResponses = staged.filter(row => !savedIds.has(Number(row.checkpoint_id)));
+                $("btnSubmitChecklistImport").disabled = state.importResponses.length === 0;
+                $("btnSubmitChecklistImport").textContent = "Resume Submit";
+                $("checklistImportProgress").textContent = `Resume ${progress.staged_file_name || "uploaded checklist"}: ${saved} of ${total} saved, ${state.importResponses.length} remaining.`;
+                if (total > 0 && saved >= total) {
+                    state.importSubmitting = true;
+                    $("btnSubmitChecklistImport").textContent = "Upload Complete";
+                    $("btnPreviewChecklistImport").disabled = true;
+                    $("checklistExcelFile").disabled = true;
+                    $("checklistExcelFile").parentElement?.classList.add("is-disabled");
+                    $("btnDownloadChecklist").classList.add("is-disabled");
+                    $("btnDownloadChecklist").setAttribute("aria-disabled", "true");
+                }
+            } else if (saved) { $("checklistImportProgress").textContent = `Previously saved: ${saved} of ${total} responses.`; }
+            if (saved || staged.length) $("btnDeleteExcelImport").hidden = false;
+            else { $("btnDeleteExcelImport").hidden = true; }
+        } catch (error) { console.warn("Unable to load Excel import progress.", error); }
+    }
+
     function bindEvents() {
+        const excelHelp = document.querySelector("#checklistExcelPanel p");
+        if (excelHelp && !document.getElementById("checklistExcelHelpLink")) excelHelp.insertAdjacentHTML("beforeend", ' <a id="checklistExcelHelpLink" class="sq-upload-help-link" href="/ui/pages/assessment/checklist-upload-help.html" target="_blank" rel="noopener">How Excel Upload Works</a>');
+        $("checklistExcelFile")?.addEventListener("change", function () {
+            const hasFile = Boolean(this.files?.length);
+            state.importResponses = [];
+            $("btnPreviewChecklistImport").disabled = !hasFile;
+            $("btnSubmitChecklistImport").disabled = true;
+            $("btnSubmitChecklistImport").textContent = "Final Submit";
+            $("checklistImportProgress").textContent = hasFile ? `Selected: ${this.files[0].name}. Preparing preview...` : "";
+            if (hasFile) $("btnPreviewChecklistImport")?.click();
+        });
+        $("btnDownloadChecklist")?.addEventListener("click", function(e){ e.preventDefault(); if(state.importSubmitting)return; const d=Number($("deptSelect")?.value||0); if(!d)return notify("warning","Select an activated department first."); window.location.href="/api"+API.excel+"?assessment_id="+state.assessment.assessment_id+"&dept_id="+d; });
+        $("checklistExcelFile")?.addEventListener("click", function (event) { if (state.importSubmitting) event.preventDefault(); });
+        $("btnDeleteExcelImport")?.addEventListener("click", async function () {
+            const deptId = Number($("deptSelect")?.value || 0);
+            if (!deptId || !window.confirm("Delete all uploaded Excel checklist responses for this department? This cannot be undone.")) return;
+            try {
+                await apiPost(API.excelProgress, { action: "delete", assessment_id: state.assessment.assessment_id, dept_id: deptId });
+                state.importResponses = []; state.importSubmitting = false; $("btnSubmitChecklistImport").disabled = true; $("btnSubmitChecklistImport").textContent = "Final Submit"; $("btnPreviewChecklistImport").disabled = !$("checklistExcelFile").files?.length; $("checklistExcelFile").disabled = false; $("checklistExcelFile").parentElement?.classList.remove("is-disabled"); $("btnDownloadChecklist").classList.remove("is-disabled"); $("btnDownloadChecklist").removeAttribute("aria-disabled"); $("checklistImportPreview").classList.add("sq-hidden");
+                await loadExcelImportProgress(); notify("success", "Uploaded Excel responses deleted.");
+            } catch (error) { notify("error", error.message || "Unable to delete uploaded Excel responses."); }
+        });
+        $("btnPreviewChecklistImport")?.addEventListener("click", function () {
+            const file = $("checklistExcelFile").files?.[0];
+            const deptId = Number($("deptSelect")?.value || 0);
+            const progress = $("checklistImportProgress");
+            const preview = $("checklistImportPreview");
+            if (!file || !deptId) return notify("warning", "Select an activated department and workbook first.");
+
+            const form = new FormData();
+            form.append("file", file);
+            form.append("assessment_id", state.assessment.assessment_id);
+            form.append("dept_id", deptId);
+            const csrf = window.localStorage.getItem("sq_csrf_token") || "";
+            if (csrf) form.append("csrf_token", csrf);
+
+            progress.textContent = "Uploading workbook: 0%";
+            const request = new XMLHttpRequest();
+            request.open("POST", "/api" + API.excel);
+            request.withCredentials = true;
+            if (csrf) request.setRequestHeader("X-CSRF-TOKEN", csrf);
+            request.upload.onprogress = function (event) {
+                if (event.lengthComputable) progress.textContent = "Uploading workbook: " + Math.round(event.loaded / event.total * 100) + "%";
+            };
+            request.onload = async function () {
+                let result = {};
+                try { result = JSON.parse(request.responseText); } catch (error) { /* response shown below */ }
+                const rows = result.data?.responses || [];
+                const errors = result.data?.errors || result.errors || [];
+                const failed = request.status < 200 || request.status >= 300 || result.status === "error";
+                let pendingRows = rows;
+                if (!failed && !errors.length) {
+                    const saved = await apiGet(API.excelProgress, { assessment_id: state.assessment.assessment_id, dept_id: deptId });
+                    const savedIds = new Set((saved?.data?.saved_checkpoint_ids || []).map(Number));
+                    pendingRows = rows.filter(row => !savedIds.has(Number(row.checkpoint_id)));
+                }
+                state.importResponses = failed || errors.length ? [] : pendingRows;
+                $("btnSubmitChecklistImport").disabled = state.importResponses.length === 0;
+                $("btnSubmitChecklistImport").textContent = "Final Submit";
+                preview.classList.remove("sq-hidden");
+                if (failed) {
+                    progress.textContent = "Upload validation failed.";
+                    preview.innerHTML = `<strong>Unable to validate this workbook:</strong><p>${escapeHtml(result.message || "The server rejected the upload.")}</p>`;
+                    return;
+                }
+                progress.textContent = "Upload validation complete.";
+                preview.innerHTML = errors.length
+                    ? `<strong>Fix these issues before import:</strong><ul>${errors.map(escapeHtml).map(error => `<li>${error}</li>`).join("")}</ul>`
+                    : renderExcelImportPreview(rows) + (pendingRows.length !== rows.length ? `<p><strong>Resume:</strong> ${rows.length - pendingRows.length} already saved; ${pendingRows.length} remaining to upload.</p>` : "");
+            };
+            request.onerror = function () { progress.textContent = "Upload failed. Please try again."; };
+            request.send(form);
+        });
+        $("btnSubmitChecklistImport")?.addEventListener("click", async function () {
+            const deptId = Number($("deptSelect")?.value || 0);
+            if (!deptId || !state.importResponses.length) return notify("warning", "Preview a valid workbook before final submission.");
+            const button = this;
+            state.importSubmitting = true;
+            button.disabled = true;
+            const downloadButton = $("btnDownloadChecklist");
+            const uploadInput = $("checklistExcelFile");
+            downloadButton?.classList.add("is-disabled");
+            uploadInput?.parentElement?.classList.add("is-disabled");
+            if (downloadButton) downloadButton.setAttribute("aria-disabled", "true");
+            if (uploadInput) uploadInput.disabled = true;
+            try {
+                state.selected.deptId = deptId;
+                await startDepartment();
+                // Each save also recalculates department progress. Small batches keep
+                // the request well below the local server's 30-second timeout.
+                const batchSize = 25;
+                const batches = [];
+                for (let index = 0; index < state.importResponses.length; index += batchSize) {
+                    batches.push(state.importResponses.slice(index, index + batchSize));
+                }
+                for (let index = 0; index < batches.length; index += 1) {
+                    const start = index * batchSize + 1;
+                    const end = start + batches[index].length - 1;
+                    $("checklistImportProgressTrack").hidden = false;
+                    $("checklistImportProgressBar").style.width = `${Math.round((start - 1) * 100 / state.importResponses.length)}%`;
+                    $("checklistImportProgress").textContent = `Saving responses ${start}–${end} of ${state.importResponses.length} (batch ${index + 1} of ${batches.length})...`;
+                    await apiPost(API.saveResponsesBulk, {
+                        assessment_id: state.assessment.assessment_id,
+                        dept_id: deptId,
+                        responses: batches[index]
+                    }, { timeout: 120000 });
+                    $("checklistImportProgressBar").style.width = `${Math.round(end * 100 / state.importResponses.length)}%`;
+                }
+                $("checklistImportProgress").textContent = `${state.importResponses.length} responses saved successfully.`;
+                notify("success", "Excel assessment responses submitted successfully.");
+                await loadConcerns();
+            } catch (error) {
+                notify("error", error.message || "Unable to save Excel assessment responses.");
+                state.importSubmitting = false;
+                button.disabled = false;
+                downloadButton?.classList.remove("is-disabled");
+                uploadInput?.parentElement?.classList.remove("is-disabled");
+                downloadButton?.removeAttribute("aria-disabled");
+                if (uploadInput) uploadInput.disabled = false;
+            }
+        });
         document.querySelectorAll("[data-checklist-view]").forEach(function (button) {
             button.addEventListener("click", function () { setChecklistView(button.dataset.checklistView); });
         });
-        $("deptSelect")?.addEventListener("change", loadConcerns);
+        $("deptSelect")?.addEventListener("change", function () { loadConcerns(); loadExcelImportProgress(); });
         $("concernSelect")?.addEventListener("change", loadSubtypes);
         $("subtypeSelect")?.addEventListener("change", loadMethods);
         $("methodSelect")?.addEventListener("change", function () {

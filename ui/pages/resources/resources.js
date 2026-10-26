@@ -72,6 +72,15 @@
         document.getElementById("resourceUploadProgressBar").style.width = `${safePercent}%`;
     }
 
+    function updateSelectedFileName() {
+        const input = document.getElementById("resourceUploadFile");
+        const output = document.getElementById("resourceUploadFileName");
+        if (!output) return;
+        const name = input?.files?.[0]?.name || "No file selected";
+        output.textContent = name;
+        output.title = name;
+    }
+
     async function csrfToken() {
         const response = await fetch("/api/auth/v1/csrf.php", { credentials: "include", headers: { Accept: "application/json" } });
         const result = await response.json();
@@ -114,7 +123,9 @@
             const payload = new FormData(form); payload.append("csrf_token", token);
             await uploadWithProgress(payload, token);
             updateProgress(100, "Published. Updating the resource list…");
-            form.reset(); SQ.toast?.("Resource published for all users.", "success"); await load();
+            form.reset();
+            updateSelectedFileName();
+            SQ.toast?.("Resource published for all users.", "success"); await load();
             setTimeout(() => { document.getElementById("resourceUploadProgress").hidden = true; }, 1500);
         }
         catch (error) { SQ.toast?.(error.message || "Resource upload failed.", "danger"); }
@@ -139,6 +150,8 @@
     }
     async function init() {
         document.getElementById("resourceUploadForm")?.addEventListener("submit", upload);
+        document.getElementById("resourceChooseFile")?.addEventListener("click", () => document.getElementById("resourceUploadFile")?.click());
+        document.getElementById("resourceUploadFile")?.addEventListener("change", updateSelectedFileName);
         document.getElementById("resourcesRefresh")?.addEventListener("click", () => { currentPage = 1; load(); });
         document.getElementById("resourcesTabs")?.addEventListener("click", event => { const tab = event.target.closest("[data-facility-type-id]"); if (!tab) return; selectedFacilityType = Number(tab.dataset.facilityTypeId); currentPage = 1; load(); });
         let timer; document.getElementById("resourcesSearch")?.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => { currentPage = 1; load(); }, 300); });

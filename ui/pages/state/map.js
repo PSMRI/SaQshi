@@ -26,6 +26,7 @@
     let activeSubtype = "";
     let mapListPoints = [];
     let mapListPage = 1;
+    let mapLoadCount = 0;
     // Keep the details panel compact so the map remains the focus of the page.
     const MAP_LIST_PAGE_SIZE = 5;
 
@@ -100,6 +101,13 @@
     function setHtml(id, value) {
         const el = document.getElementById(id);
         if (el) el.innerHTML = value;
+    }
+
+    function setMapLoading(isLoading) {
+        const loading = document.getElementById("stateMapLoading");
+        const canvas = document.getElementById("stateMapCanvas");
+        if (loading) loading.hidden = !isLoading;
+        if (canvas) canvas.setAttribute("aria-busy", isLoading ? "true" : "false");
     }
 
     function popup(point) {
@@ -381,6 +389,8 @@
     }
 
     async function load() {
+        mapLoadCount++;
+        setMapLoading(true);
         try {
             activeMapMode = document.getElementById("stateMapMode")?.value || "presence";
             activeArea = document.getElementById("stateMapArea")?.value || "";
@@ -393,7 +403,10 @@
                 area_subtype: activeSubtype
             }, {
                 loader: false,
-                showError: false
+                showError: false,
+                // Area scoring can read a large latest-assessment response set.
+                // Keep this view from being cancelled by the shared 30-second API default.
+                timeout: 120000
             });
             const data = response.data || {};
             const points = data.map_points || [];
@@ -416,7 +429,10 @@
             renderMapLegend();
         } catch (error) {
             console.error("[State Map]", error);
-            setHtml("stateMapList", `<div class="sq-state-empty">${esc(error.message || "Unable to load certification map.")}</div>`);
+            setHtml("stateMapSummary", esc(error.message || "Unable to load map data."));
+        } finally {
+            mapLoadCount = Math.max(0, mapLoadCount - 1);
+            if (mapLoadCount === 0) setMapLoading(false);
         }
     }
 

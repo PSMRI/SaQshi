@@ -32,6 +32,7 @@ class StateIndicatorAnalyticsService
             'assessment' => self::assessmentWeakIndicators($con, $filters, $pagination, $minFacilities),
             'capacity_building_roadmap' => self::capacityBuildingRoadmap($con, $filters),
             'areas_of_concern' => self::areaOfConcernRisks($con, $filters, $minFacilities),
+            'standards' => self::standardRisks($con, $filters, $minFacilities),
             'departments' => self::departmentRisks($con, $filters, $minFacilities),
             'facility_types' => self::facilityTypeRisks($con, $filters, $minFacilities),
             'districts' => self::districtRisks($con, $filters, $minFacilities)
@@ -74,7 +75,7 @@ class StateIndicatorAnalyticsService
 
     /**
      * Builds a transparent, data-led capacity-building roadmap from the latest
-     * completed assessment for every facility in the selected monitoring scope.
+     * newest assessment for every facility in the selected monitoring scope.
      * This is deliberately rule based: it identifies priority support themes;
      * it does not diagnose individual staff or assign training.
      */
@@ -82,7 +83,7 @@ class StateIndicatorAnalyticsService
     {
         $responseTable = self::responseTable($con);
         if ($responseTable === '' || !self::tableExists($con, 'assessment_master')) {
-            return ['basis' => 'latest_completed_assessments', 'assessed_facilities' => 0, 'topics' => []];
+            return ['basis' => 'latest_assessments', 'assessed_facilities' => 0, 'topics' => []];
         }
 
         $assessmentColumn = self::columnExists($con, $responseTable, 'assessment_id') ? 'assessment_id' : 'cycle_id';
@@ -95,18 +96,13 @@ class StateIndicatorAnalyticsService
             ? ", ap.target_date, ap.status AS action_plan_status"
             : ", NULL AS target_date, NULL AS action_plan_status";
 
-        $rows = self::rows($con, "
+        $rows = self::iterateRows($con, "
             SELECT a.assessment_id, a.fac_id_fk, a.framework_code, r.checkpoint_id, r.score,
                    f.fac_name, f.NIN_no, f.Dist_Name, f.Block_Name
                    {$actionFields}
             FROM {$responseTable} r
             INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            INNER JOIN (
-                SELECT fac_id_fk, MAX(assessment_id) AS assessment_id
-                FROM assessment_master
-                WHERE UPPER(COALESCE(status, '')) = 'COMPLETED'
-                GROUP BY fac_id_fk
-            ) latest ON latest.assessment_id = a.assessment_id
+            " . self::latestCompletedAssessmentJoin('a') . "
             INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$actionJoin}
             {$where['sql']}
@@ -156,10 +152,17 @@ class StateIndicatorAnalyticsService
         if ($topics && $latestByFacility) {
             $facilityIds = array_keys($latestByFacility);
             $placeholders = implode(',', array_fill(0, count($facilityIds), '?'));
-            $history = self::rows($con, "
+            $history = self::iterateRows($con, "
                 SELECT a.assessment_id, a.fac_id_fk, a.framework_code, r.checkpoint_id
                 FROM {$responseTable} r
                 INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+                INNER JOIN (
+                    SELECT fac_id_fk, MAX(assessment_id) AS latest_id
+                    FROM assessment_master
+                    WHERE UPPER(COALESCE(status, '')) = 'COMPLETED'
+                    GROUP BY fac_id_fk
+                ) latest_history ON latest_history.fac_id_fk = a.fac_id_fk
+                    AND a.assessment_id < latest_history.latest_id
                 WHERE a.fac_id_fk IN ({$placeholders})
                   AND UPPER(COALESCE(a.status, '')) = 'COMPLETED'
                   AND r.score IN (0, 1)
@@ -201,7 +204,7 @@ class StateIndicatorAnalyticsService
             $topic['suggested_planning_window'] = $band === 'HIGH' ? 'Next 30 days' : ($band === 'MEDIUM' ? 'Current quarter' : 'Next planning cycle');
         }
         unset($topic);
-        return ['basis' => 'latest_completed_assessments', 'assessed_facilities' => count($latestByFacility), 'topics' => $limit > 0 ? array_slice($result, 0, $limit) : $result];
+        return ['basis' => 'latest_assessments', 'assessed_facilities' => count($latestByFacility), 'topics' => $limit > 0 ? array_slice($result, 0, $limit) : $result];
     }
 
     /**
@@ -240,17 +243,13 @@ class StateIndicatorAnalyticsService
 
         $assessmentColumn = self::columnExists($con, $responseTable, 'assessment_id') ? 'assessment_id' : 'cycle_id';
         $where = self::facilityWhere($filters, 'f');
-        $rows = self::rows($con, "
+        $rows = self::iterateRows($con, "
             SELECT a.fac_id_fk, a.framework_code, r.checkpoint_id,
                    r.score, r.max_score,
                    f.fac_name, f.NIN_no, f.Health_facilty_type, f.Dist_Name, f.Block_Name, f.lat, f.longit
             FROM {$responseTable} r
             INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            INNER JOIN (
-                SELECT fac_id_fk, MAX(assessment_id) AS latest_assessment_id
-                FROM assessment_master
-                GROUP BY fac_id_fk
-            ) latest ON latest.fac_id_fk = a.fac_id_fk AND latest.latest_assessment_id = a.assessment_id
+            " . self::latestCompletedAssessmentJoin('a') . "
             INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$where['sql']}
               AND f.lat IS NOT NULL AND f.longit IS NOT NULL
@@ -354,6 +353,7 @@ class StateIndicatorAnalyticsService
                    f.fac_name, f.NIN_no, f.Health_facilty_type, f.Dist_Name, f.Block_Name, f.lat, f.longit
             FROM {$responseTable} r
             INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+            " . self::latestCompletedAssessmentJoin('a') . "
             INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$where['sql']}
               AND f.lat IS NOT NULL AND f.longit IS NOT NULL
@@ -443,8 +443,9 @@ class StateIndicatorAnalyticsService
                    a.assessment_id, a.assessment_name, a.framework_code, r.checkpoint_id, r.score,
                    r.response_value, r.updated_on
             FROM {$responseTable} r
-            LEFT JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+            INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+            " . self::latestCompletedAssessmentJoin('a') . "
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$where['sql']}
             ORDER BY f.Dist_Name, f.Block_Name, f.fac_name, a.assessment_id DESC
         ", $where['types'], $where['params']);
@@ -469,6 +470,39 @@ class StateIndicatorAnalyticsService
             ]);
         }
 
+        fclose($out);
+        exit;
+    }
+
+    /** Exports the complete filtered Detailed List of Issues. */
+    public static function streamDetailedIssueList(mysqli $con, array $filters = []): void
+    {
+        $minFacilities = max(1, (int)($filters['min_facilities'] ?? 1));
+        $issues = self::assessmentWeakIndicators($con, $filters, [
+            'page' => 1,
+            'per_page' => 10000,
+            'offset' => 0
+        ], $minFacilities);
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="indicator-score-zero-issues-' . date('Ymd-His') . '.csv"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        $out = fopen('php://output', 'w');
+        fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        self::csvRow($out, [
+            'Issue to Improve', 'Department / Package', 'Area of Concern',
+            'Affected Facilities', 'Score-0 Responses'
+        ]);
+        foreach (($issues['rows'] ?? []) as $issue) {
+            self::csvRow($out, [
+                $issue['indicator_name'] ?? '',
+                $issue['class_name'] ?? '',
+                $issue['area_of_concern'] ?? '',
+                $issue['low_score_facility_count'] ?? 0,
+                $issue['low_score_count'] ?? 0
+            ]);
+        }
         fclose($out);
         exit;
     }
@@ -519,8 +553,9 @@ class StateIndicatorAnalyticsService
                    COUNT(*) AS responses,
                    COUNT(DISTINCT a.fac_id_fk) AS facilities
             FROM {$responseTable} r
-            LEFT JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+            INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+            " . self::latestCompletedAssessmentJoin('a') . "
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$lowWhere['sql']}
         ", $lowWhere['types'], $lowWhere['params']);
 
@@ -528,7 +563,8 @@ class StateIndicatorAnalyticsService
         $assessed = self::one($con, "
             SELECT COUNT(DISTINCT a.fac_id_fk) AS assessed_facilities
             FROM assessment_master a
-            LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+            " . self::latestCompletedAssessmentJoin('a') . "
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$coverageWhere['sql']}
         ", $coverageWhere['types'], $coverageWhere['params']);
         $totalFacilities = self::one($con, "
@@ -543,8 +579,9 @@ class StateIndicatorAnalyticsService
                 SELECT a.framework_code, r.checkpoint_id,
                        COUNT(DISTINCT a.fac_id_fk) AS low_score_facility_count
                 FROM {$responseTable} r
-                LEFT JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-                LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+                INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+                " . self::latestCompletedAssessmentJoin('a') . "
+                INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
                 {$lowWhere['sql']}
                 GROUP BY a.framework_code, r.checkpoint_id
                 HAVING low_score_facility_count >= ?
@@ -564,8 +601,9 @@ class StateIndicatorAnalyticsService
                 ROUND(AVG(r.score), 2) AS average_score,
                 100 AS low_score_rate
             FROM {$responseTable} r
-            LEFT JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+            INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+            " . self::latestCompletedAssessmentJoin('a') . "
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$lowWhere['sql']}
             GROUP BY a.framework_code, r.checkpoint_id
             HAVING low_score_facility_count >= ?
@@ -611,11 +649,12 @@ class StateIndicatorAnalyticsService
         $assessmentColumn = self::columnExists($con, $responseTable, 'assessment_id') ? 'assessment_id' : 'cycle_id';
         $where = self::facilityWhere($filters, 'f');
         $where['sql'] .= ' AND ' . self::lowestScoreCondition($con, $responseTable, 'r');
-        $responses = self::rows($con, "
+        $responses = self::iterateRows($con, "
             SELECT a.framework_code, r.checkpoint_id, a.fac_id_fk
             FROM {$responseTable} r
-            LEFT JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+            INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+            " . self::latestCompletedAssessmentJoin('a') . "
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$where['sql']}
         ", $where['types'], $where['params']);
 
@@ -668,6 +707,48 @@ class StateIndicatorAnalyticsService
         return array_slice($rows, 0, 12);
     }
 
+    /** Groups score-zero responses by their configured assessment standard. */
+    private static function standardRisks(mysqli $con, array $filters, int $minFacilities): array
+    {
+        $responseTable = self::responseTable($con);
+        if ($responseTable === '' || !self::tableExists($con, 'assessment_master')) return [];
+
+        $assessmentColumn = self::columnExists($con, $responseTable, 'assessment_id') ? 'assessment_id' : 'cycle_id';
+        $where = self::facilityWhere($filters, 'f');
+        $where['sql'] .= ' AND ' . self::lowestScoreCondition($con, $responseTable, 'r');
+        $responses = self::iterateRows($con, "
+            SELECT a.framework_code, r.checkpoint_id, a.fac_id_fk
+            FROM {$responseTable} r
+            INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+            " . self::latestCompletedAssessmentJoin('a') . "
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
+            {$where['sql']}
+        ", $where['types'], $where['params']);
+
+        $meta = self::checkpointMap();
+        $groups = [];
+        foreach ($responses as $response) {
+            $framework = (string)($response['framework_code'] ?? '');
+            $checkpointId = (string)($response['checkpoint_id'] ?? '');
+            $details = $meta[$framework . ':' . $checkpointId] ?? $meta[$checkpointId] ?? [];
+            $standard = trim((string)($details['standard'] ?? '')) ?: 'Other standard';
+            $key = $framework . ':' . $standard;
+            $groups[$key] ??= ['standard' => $standard, 'facilities' => [], 'checkpoints' => [], 'score_zero_responses' => 0];
+            $groups[$key]['facilities'][(int)($response['fac_id_fk'] ?? 0)] = true;
+            $groups[$key]['checkpoints'][$checkpointId] = true;
+            $groups[$key]['score_zero_responses']++;
+        }
+
+        $rows = [];
+        foreach ($groups as $group) {
+            $affected = count(array_filter(array_keys($group['facilities'])));
+            if ($affected < $minFacilities) continue;
+            $rows[] = ['standard' => $group['standard'], 'affected_facilities' => $affected, 'score_zero_indicators' => count($group['checkpoints']), 'score_zero_responses' => $group['score_zero_responses']];
+        }
+        usort($rows, static fn(array $a, array $b): int => ($b['affected_facilities'] <=> $a['affected_facilities']) ?: ($b['score_zero_responses'] <=> $a['score_zero_responses']));
+        return array_slice($rows, 0, 12);
+    }
+
     /** Ranks departments by the number of facilities with low-score assessment responses. */
     private static function departmentRisks(mysqli $con, array $filters, int $minFacilities): array
     {
@@ -685,8 +766,9 @@ class StateIndicatorAnalyticsService
                    COUNT(*) AS low_score_responses,
                    COUNT(DISTINCT r.checkpoint_id) AS low_score_checkpoints
             FROM {$responseTable} r
-            LEFT JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+            INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+            " . self::latestCompletedAssessmentJoin('a') . "
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$where['sql']}
             GROUP BY r.dept_id
             HAVING affected_facilities >= ?
@@ -723,8 +805,9 @@ class StateIndicatorAnalyticsService
                    COUNT(*) AS low_score_responses,
                    COUNT(DISTINCT r.checkpoint_id) AS low_score_checkpoints
             FROM {$responseTable} r
-            LEFT JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+            INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+            " . self::latestCompletedAssessmentJoin('a') . "
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$where['sql']}
             GROUP BY f.Health_facilty_type
             HAVING affected_facilities >= ?
@@ -762,8 +845,9 @@ class StateIndicatorAnalyticsService
                    COUNT(*) AS low_score_responses,
                    COUNT(DISTINCT r.checkpoint_id) AS low_score_checkpoints
             FROM {$responseTable} r
-            LEFT JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
-            LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+            INNER JOIN assessment_master a ON a.assessment_id = r.{$assessmentColumn}
+            " . self::latestCompletedAssessmentJoin('a') . "
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             {$where['sql']}
             GROUP BY f.Dist_Name
             HAVING affected_facilities >= ?
@@ -912,15 +996,20 @@ class StateIndicatorAnalyticsService
         return '';
     }
 
-    /** Returns a scale-independent condition for the lowest response band. */
+    /** Restricts analytics to each facility's newest assessment, regardless of its status. */
+    private static function latestCompletedAssessmentJoin(string $assessmentAlias = 'a'): string
+    {
+        return "
+            INNER JOIN (
+                SELECT fac_id_fk, MAX(assessment_id) AS assessment_id
+                FROM assessment_master
+                GROUP BY fac_id_fk
+            ) latest_assessment ON latest_assessment.assessment_id = {$assessmentAlias}.assessment_id";
+    }
+
+    /** Returns the exact score-zero condition used for indicator gap analysis. */
     private static function lowestScoreCondition(mysqli $con, string $responseTable, string $alias): string
     {
-        if (self::columnExists($con, $responseTable, 'max_score')) {
-            $ratio = self::LOWEST_SCORE_BAND_PERCENT / 100;
-            return "COALESCE({$alias}.max_score, 0) > 0 AND ({$alias}.score / NULLIF({$alias}.max_score, 0)) <= {$ratio}";
-        }
-
-        // Legacy response tables have no maximum-score column; retain the old safe fallback.
         return "{$alias}.score <= 0";
     }
 
@@ -1152,6 +1241,24 @@ class StateIndicatorAnalyticsService
         $rows = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
         $stmt->close();
         return $rows;
+    }
+
+    /** Process large result sets one row at a time instead of building a PHP array. */
+    private static function iterateRows(mysqli $con, string $sql, string $types = '', array $params = []): iterable
+    {
+        $stmt = self::prepare($con, $sql, $types, $params);
+        try {
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    yield $row;
+                }
+                $result->free();
+            }
+        } finally {
+            $stmt->close();
+        }
     }
 
     /**

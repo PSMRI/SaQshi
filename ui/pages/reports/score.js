@@ -15,15 +15,16 @@
     const API = {
         list: "/assessment/v1/list.php",
         activeAssessment: "/assessment/v1/active_assessment.php",
-        score: "/assessment/v1/score.php",
-        scoreCard: "/reports/v1/checkpoint_scorecard.php"
+        score: "/assessment/v1/score_department_names.php",
+        scoreCard: "/reports/v1/checkpoint_scorecard_department_sheets.php"
     };
 
     const state = {
         assessments: [],
         selectedAssessmentId: 0,
         score: null,
-        isLoading: false
+        isLoading: false,
+        isDownloading: false
     };
 
     function $(id) {
@@ -207,8 +208,8 @@
                 <tr>
                     <td>
                         <div class="sq-score-dept">
-                            <strong>Department ${escapeHtml(row.dept_id)}</strong>
-                            <span class="sq-score-subtext">ID ${escapeHtml(row.dept_id)}</span>
+                            <strong>${escapeHtml(row.department_name || ("Department " + row.dept_id))}</strong>
+                            <span class="sq-score-subtext">Department ID ${escapeHtml(row.dept_id)}</span>
                         </div>
                     </td>
                     <td>
@@ -322,7 +323,11 @@
     function bindEvents() {
         $("scoreAssessmentSelect")?.addEventListener("change", loadScore);
         $("btnRefreshScoreReport")?.addEventListener("click", loadScore);
-        $("btnDownloadScoreCard")?.addEventListener("click", function () {
+        $("btnDownloadScoreCard")?.addEventListener("click", async function () {
+            const button = this;
+            if (state.isDownloading) {
+                return;
+            }
             const assessmentId = Number($("scoreAssessmentSelect")?.value || state.selectedAssessmentId || 0);
 
             if (!assessmentId) {
@@ -335,14 +340,27 @@
                 return;
             }
 
-            SQ.api.download(
-                API.scoreCard,
-                { assessment_id: assessmentId },
-                "checkpoint_scorecard_assessment_" + assessmentId + ".xlsx"
-            ).catch(function (error) {
+            const originalLabel = button.textContent;
+            state.isDownloading = true;
+            button.disabled = true;
+            button.setAttribute("aria-busy", "true");
+            button.textContent = "Please wait, downloading…";
+
+            try {
+                await SQ.api.download(
+                    API.scoreCard,
+                    { assessment_id: assessmentId },
+                    "checkpoint_scorecard_assessment_" + assessmentId + ".xlsx"
+                );
+            } catch (error) {
                 console.error(error);
                 notify("error", error.message || "Unable to download score card.");
-            });
+            } finally {
+                state.isDownloading = false;
+                button.disabled = false;
+                button.removeAttribute("aria-busy");
+                button.textContent = originalLabel;
+            }
         });
     }
 

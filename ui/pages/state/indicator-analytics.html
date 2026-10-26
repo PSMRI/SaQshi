@@ -1,82 +1,29 @@
-<!-- SaQshi Open Source | State Indicator Analytics | indicator-analytics.html | Version 1.1.0 -->
-<section class="sq-state-page">
+<!-- SaQshi Open Source | State Indicator Score-0 Analysis -->
+<section class="sq-state-page sq-state-indicator-analytics-page">
     <div class="sq-state-toolbar">
-        <div>
-            <h3>State Risk Overview</h3>
-            <p>Priority assessment risks, based on facilities in the lowest score band.</p>
-        </div>
         <div class="sq-state-filters">
-            <a class="sq-btn sq-state-analysis-guide-button" href="/ui/help/state-risk-analysis.html" target="_blank" rel="noopener">New here? Learn how to analyse</a>
+            <select class="sq-form-control" id="stateIndicatorFacilityType" aria-label="Facility type"><option value="">All facility types</option></select>
             <input type="search" class="sq-form-control" id="stateIndicatorSearch" placeholder="Search facility, NIN, district or block" aria-label="Search Facility, NIN, District Or Block">
-            <input type="number" class="sq-form-control" id="stateIndicatorMinFacilities" min="1" value="1" title="Minimum facilities">
-            <button class="sq-btn sq-btn-primary" id="stateIndicatorRefresh">Refresh</button>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;white-space:nowrap">Show indicators affecting at least <input type="number" class="sq-form-control" id="stateIndicatorMinFacilities" min="1" value="1" title="Minimum facilities affected" aria-label="Minimum facilities affected" style="width:64px;min-width:64px"> facilities</label>
+            <button class="sq-btn sq-btn-primary sq-indicator-icon-action" id="stateIndicatorRefresh" type="button" title="Refresh indicator analysis" aria-label="Refresh indicator analysis"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
     </div>
 
-    <div class="sq-state-kpis" id="stateIndicatorSummary"></div>
+    <section class="sq-state-support-hero">
+        <div><span>Top priority</span><h2 id="statePriorityTitle">Loading the highest-priority indicator…</h2><p id="statePriorityText">Review the affected facility list and download it for follow-up.</p></div>
+    </section>
 
     <div class="sq-card">
         <div class="sq-card-header">
             <div>
-                <h3>Capacity-Building Needs &amp; Roadmap</h3>
-                <p>Priority support themes from the latest completed assessment for each facility. This supports planning; it does not assign training.</p>
+                <h3>Detailed List of Issues</h3>
+                <p>Indicators ranked by the number of facilities that scored 0.</p>
             </div>
-            <button class="sq-btn sq-btn-primary" id="stateCapacityRoadmapDownload" type="button">Download All Data</button>
-        </div>
-        <div class="sq-card-body" id="stateCapacityBuildingRoadmap"></div>
-    </div>
-
-    <div class="sq-card">
-        <div class="sq-card-header">
-            <div>
-                <h3>Area of Concern Risk Breakdown</h3>
-                <p>Quality concerns ranked by the number of affected facilities.</p>
+            <div style="display:flex;align-items:center;gap:10px">
+                <div id="stateIndicatorPager"></div>
+                <button class="sq-btn sq-btn-icon sq-btn-primary" id="stateIndicatorIssuesDownload" type="button" title="Download detailed issue list" aria-label="Download detailed issue list">⇩</button>
+                <button class="sq-btn sq-btn-icon sq-btn-primary" id="stateIndicatorMultipleIssuesDownload" type="button" title="Download facilities with multiple issues" aria-label="Download facilities with multiple issues">⇩</button>
             </div>
-            <button class="sq-btn sq-btn-light sq-btn-sm" id="stateIndicatorClearArea" type="button" hidden>Show All Areas</button>
-        </div>
-        <div class="sq-card-body" id="stateAreaOfConcernRisks"></div>
-    </div>
-
-    <div class="sq-card">
-        <div class="sq-card-header">
-            <div>
-                <h3>Geographic Risk Breakdown</h3>
-                <p>Districts ranked by low-score impact across assessed facilities.</p>
-            </div>
-            <button class="sq-btn sq-btn-light sq-btn-sm" id="stateIndicatorClearDistrict" type="button" hidden>Show All Districts</button>
-        </div>
-        <div class="sq-card-body" id="stateDistrictRisks"></div>
-    </div>
-
-    <div class="sq-card">
-        <div class="sq-card-header">
-            <div>
-                <h3>Facility Type Risk Comparison</h3>
-                <p>Compare low-score impact by Health facility type.</p>
-            </div>
-            <button class="sq-btn sq-btn-light sq-btn-sm" id="stateIndicatorClearFacilityType" type="button" hidden>Show All Facility Types</button>
-        </div>
-        <div class="sq-card-body" id="stateFacilityTypeRisks"></div>
-    </div>
-
-    <div class="sq-card">
-        <div class="sq-card-header">
-            <div>
-                <h3>Department Risk Breakdown</h3>
-                <p>Departments ranked by low-score impact across facilities.</p>
-            </div>
-            <button class="sq-btn sq-btn-light sq-btn-sm" id="stateIndicatorClearDepartment" type="button" hidden>Show All Departments</button>
-        </div>
-        <div class="sq-card-body" id="stateDepartmentRisks"></div>
-    </div>
-
-    <div class="sq-card">
-        <div class="sq-card-header">
-            <div>
-                <h3>Priority Risk Details</h3>
-                <p>Low-scoring checkpoints ranked by the number of affected facilities.</p>
-            </div>
-            <div id="stateIndicatorPager"></div>
         </div>
         <div class="sq-card-body" id="stateAssessmentIndicators"></div>
     </div>

@@ -13,20 +13,12 @@ License : GPL-3.0
 <section class="sq-progress-report">
     <div class="sq-card">
         <div class="sq-card-header">
-            <div>
-                <h3>Progress Report</h3>
-                <p>Department, response, score and gap closure progress.</p>
-            </div>
             <div class="sq-progress-tools">
                 <select id="progressAssessmentSelect" class="sq-form-control" aria-label="Progress Assessment Select">
                     <option value="">Select assessment</option>
                 </select>
-                <button type="button" class="sq-btn sq-btn-light" id="btnRefreshProgressReport">
-                    Refresh
-                </button>
-                <button type="button" class="sq-btn sq-btn-primary" id="btnDownloadProgressChecklist">
-                    Download Checklist
-                </button>
+                <button type="button" class="sq-btn sq-progress-icon sq-progress-refresh" id="btnRefreshProgressReport" aria-label="Refresh progress report" title="Refresh progress report"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
+                <button type="button" class="sq-btn sq-progress-icon sq-progress-excel" id="btnDownloadProgressChecklist" aria-label="Download checklist Excel" title="Download checklist Excel"><i class="bi bi-file-earmark-excel" aria-hidden="true"></i></button>
             </div>
         </div>
 

@@ -12,7 +12,7 @@
 
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
-    const state = { pager: null, rows: [] };
+    const state = { pager: null, rows: [], distribution: [], viewBy: "DIVISION", recordSearch: "", filterOptions: { divisions: [], districts: [], blocks: [] } };
 
     function domainLabel(key, fallback) {
         return SQ.deployment && typeof SQ.deployment.label === "function"
@@ -76,8 +76,36 @@
 
     function queryParams() {
         return state.pager.params({
-            search: document.getElementById("stateAssessSearch")?.value || ""
+            group_by_facility: 1,
+            view_by: document.getElementById("stateAssessViewBy")?.value === "AUTO" ? "" : (document.getElementById("stateAssessViewBy")?.value || ""),
+            search: document.getElementById("stateAssessSearch")?.value || "",
+            division: document.getElementById("stateAssessDivision")?.value || "",
+            district: document.getElementById("stateAssessDistrict")?.value || "",
+            block: document.getElementById("stateAssessBlock")?.value || ""
         });
+    }
+
+    function populateLocationFilters() {
+        const division = document.getElementById("stateAssessDivision");
+        const district = document.getElementById("stateAssessDistrict");
+        const block = document.getElementById("stateAssessBlock");
+        if (division) {
+            const selected = division.value;
+            division.innerHTML = `<option value="">All divisions</option>${state.filterOptions.divisions.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
+            division.value = state.filterOptions.divisions.includes(selected) ? selected : "";
+        }
+        if (district) {
+            const selected = district.value;
+            district.innerHTML = `<option value="">All districts</option>${state.filterOptions.districts.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
+            district.disabled = false;
+            district.value = state.filterOptions.districts.includes(selected) ? selected : "";
+        }
+        if (block) {
+            const selected = block.value;
+            block.innerHTML = `<option value="">All blocks</option>${state.filterOptions.blocks.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
+            block.disabled = !district?.value;
+            block.value = state.filterOptions.blocks.includes(selected) ? selected : "";
+        }
     }
 
     function domainClass(index) {
@@ -148,34 +176,61 @@
 
     function renderSummary(summary) {
         document.getElementById("stateAssessSummary").innerHTML = `
-            <div><span>Total</span><strong>${esc(summary.total || 0)}</strong></div>
-            <div><span>Active</span><strong>${esc(summary.active || 0)}</strong></div>
-            <div><span>Completed</span><strong>${esc(summary.completed || 0)}</strong></div>
-            <div><span>Cancelled</span><strong>${esc(summary.cancelled || 0)}</strong></div>
+            <div class="sq-assess-kpi is-total"><span>Total</span><strong>${esc(summary.total || 0)}</strong></div>
+            <div class="sq-assess-kpi is-active"><span>Active</span><strong>${esc(summary.active || 0)}</strong></div>
+            <div class="sq-assess-kpi is-completed"><span>Completed</span><strong>${esc(summary.completed || 0)}</strong></div>
+            <div class="sq-assess-kpi is-cancelled"><span>Cancelled</span><strong>${esc(summary.cancelled || 0)}</strong></div>
+            <div class="sq-assess-kpi is-total"><span>Facilities with no assessment</span><strong>${esc(summary.facilities_without_assessment || 0)}</strong></div>
         `;
     }
 
+    function renderDistribution() {
+        const viewBy = state.viewBy || "DIVISION";
+        document.getElementById("stateAssessDistributionTitle").textContent = `${viewBy.charAt(0) + viewBy.slice(1).toLowerCase()}-wise assessment completion`;
+        const rows = state.distribution || [];
+        const target = document.getElementById("stateAssessDistribution");
+        target.innerHTML = rows.length
+            ? `<div class="sq-state-progress-cards">${rows.map(row => { const value = percent(row.completion_percentage); const tone = value >= 70 ? "is-good" : (value >= 40 ? "is-watch" : "is-low"); const types = (row.facility_type_breakdown || []).map(item => `${item.count} ${item.type}`).join(" · "); return `<article class="sq-state-progress-card ${tone}"><strong>${esc(row.label)}</strong><b>${esc(row.completion_percentage)}%</b><div class="sq-state-mini-progress"><div><span style="width:${value}%"></span></div></div><small>${esc(row.completed)} / ${esc(row.total)} assessments · ${esc(row.facility_count)} facilities · Active ${esc(row.active_facilities)} · Completed ${esc(row.completed_facilities)} · Cancelled ${esc(row.cancelled_facilities)}</small><small class="sq-state-facility-type-breakdown">${esc(types)}</small></article>`; }).join("")}</div>`
+            : `<div class="sq-state-empty">No assessment records for the selected location.</div>`;
+    }
+
     function renderRows(rows) {
-        const schools = Object.values(rows.reduce(function (map, row) {
+        const needle = state.recordSearch.trim().toLowerCase();
+        const visibleRows = needle ? rows.filter(function (row) {
+            return [row.NIN_no, row.fac_name, row.division, row.district, row.block, row.assessment_name, row.assessment_id]
+                .some(value => String(value ?? "").toLowerCase().includes(needle));
+        }) : rows;
+        const schools = Object.values(visibleRows.reduce(function (map, row) {
             const key = String(row.fac_id_fk || row.NIN_no || row.fac_name || "unknown");
-            if (!map[key]) map[key] = { name: row.fac_name, code: row.NIN_no, district: row.district, block: row.block, rounds: {} };
+            if (!map[key]) map[key] = { id: row.fac_id_fk, name: row.fac_name, code: row.NIN_no, state: row.state_name, division: row.division, district: row.district, block: row.block, rounds: {} };
             const round = String(row.round_no || row.round_id || "Unassigned");
             if (!map[key].rounds[round]) map[key].rounds[round] = [];
             map[key].rounds[round].push(row);
             return map;
         }, {}));
         document.getElementById("stateAssessRows").innerHTML = schools.length
-            ? `<div class="sq-state-school-list">${schools.map(function (school) {
-                return `<details class="sq-state-school-drill"><summary><strong>${esc(school.name || "School / Facility")}</strong><small>${esc(school.district || "-")} / ${esc(school.block || "-")} · ${esc(school.code || "-")}</small></summary>${Object.keys(school.rounds).map(function (round) {
+            ? `<table class="sq-state-table"><thead><tr><th>Division</th><th>District</th><th>Block</th><th>NIN</th><th>Facility name</th><th>Assessments</th></tr></thead><tbody>${schools.map(function (school) {
+                const assessmentCount = Object.values(school.rounds).reduce((total, entries) => total + entries.length, 0);
+                return `<tr><td>${esc(school.division || "-")}</td><td>${esc(school.district || "-")}</td><td>${esc(school.block || "-")}</td><td>${esc(school.code || "-")}</td><td><strong>${esc(school.name || "School / Facility")}</strong><small>Facility ID: ${esc(school.id || "-")}</small></td><td>${esc(assessmentCount)}</td></tr><tr class="sq-state-facility-detail-row"><td colspan="6"><details class="sq-state-school-drill"><summary><span class="sq-state-expand-control">+</span> Show ${esc(assessmentCount)} assessment${assessmentCount === 1 ? "" : "s"}</summary>${Object.keys(school.rounds).map(function (round) {
                     const entries = school.rounds[round];
                     const completed = entries.filter(function (row) { return String(row.status || "").toUpperCase() === "COMPLETED"; });
                     const roundScore = completed[0]?.round_score;
                     const label = scoreDimensionLabel();
+                    const hasRound = round !== "Unassigned";
+                    const roundTitle = hasRound ? `Assessment Round ${esc(round)}` : "Assessment (round not assigned)";
+                    const roundProgress = `${esc(entries.length)} assessment record${entries.length === 1 ? "" : "s"}`;
                     const roundButton = isEducationProfile() ? `View Assessment Round ${esc(round)} Domains` : `View Assessment Round ${esc(round)} ${esc(label)} Scores`;
                     const itemButton = isEducationProfile() ? "View class domains" : `View ${esc(label)} scores`;
-                    return `<details class="sq-state-round-drill"><summary>Assessment Round ${esc(round)} · ${esc(completed.length)} assessed ${esc(assessmentUnitLabel())} ${roundScore ? categoryBadge(roundScore.category) : ""}</summary><div class="sq-state-round-items">${completed.length ? `<button type="button" class="sq-btn sq-btn-light" data-round-domain-dialog="${esc(completed[0].assessment_id)}">${roundButton}</button>` : ""}${entries.map(function (row) { const done = String(row.status || "").toUpperCase() === "COMPLETED"; return `<div><strong>${esc(row.assessment_name || "Assessment")}</strong><span>${esc(row.status || "-")} · ${esc(number(row.score_percent).toFixed(2))}% ${done ? categoryBadge(row.model_score?.category) : ""}</span>${done ? `<button type="button" class="sq-btn sq-btn-light" data-model-dialog="${esc(row.assessment_id)}">${itemButton}</button>` : ""}</div>`; }).join("")}</div></details>`;
-                }).join("")}</details>`;
-            }).join("")}</div>`
+                    return `<details class="sq-state-round-drill"><summary>${roundTitle} · ${roundProgress} ${roundScore ? categoryBadge(roundScore.category) : ""}</summary><div class="sq-assessment-detail-wrap">${completed.length && hasRound && roundScore?.models?.length ? `<button type="button" class="sq-btn sq-btn-light" data-round-domain-dialog="${esc(completed[0].assessment_id)}">${roundButton}</button>` : ""}<table class="sq-assessment-detail-table"><thead><tr><th>Assessment</th><th>Status</th><th>Responses<br>0 / 1 / 2</th><th>Checkpoint completion</th><th>Score</th><th>Start / planned end</th><th>Completed / cancelled</th></tr></thead><tbody>${entries.map(function (row) {
+                        const done = String(row.status || "").toUpperCase() === "COMPLETED";
+                        const total = number(row.total_checkpoints);
+                        const completedCount = number(row.checkpoint_done);
+                        const completion = total > 0 ? `${esc((completedCount * 100 / total).toFixed(2))}%<small>${esc(completedCount)} / ${esc(total)} checkpoints</small>` : `<span>Unknown</span><small>${esc(completedCount)} answered · checklist total unavailable</small>`;
+                        const score = number(row.total_score) > 0 ? `${esc(number(row.score_percent).toFixed(2))}%<small>${esc(number(row.obtained_score))} / ${esc(number(row.total_score))} total possible</small>` : "-";
+                        return `<tr><td><strong>${esc(row.assessment_name || "Assessment")}</strong><small>ID ${esc(row.assessment_id)}</small>${done && row.model_score?.models?.length ? `<button type="button" class="sq-btn sq-btn-light sq-state-domain-button" data-model-dialog="${esc(row.assessment_id)}">${itemButton}</button>` : ""}</td><td>${esc(row.status || "-")}</td><td>${esc(number(row.response_zero))} / ${esc(number(row.response_one))} / ${esc(number(row.response_two))}</td><td>${completion}</td><td>${score}</td><td><small>Start: ${esc(row.start_date || "-")}</small><small>End: ${esc(row.end_date || "-")}</small></td><td><small>Completed: ${esc(row.completed_on || "-")}</small><small>Cancelled: ${esc(row.cancelled_on || "-")}</small></td></tr>`;
+                    }).join("")}</tbody></table></div></details>`;
+                }).join("")}</details></td></tr>`;
+            }).join("")}</tbody></table>`
             : `<div class="sq-state-empty">No School assessment records available.</div>`;
         /* Flat assessment table retained below for future export-only use. */
         /* `<table class="sq-state-table sq-state-assess-table">
@@ -258,14 +313,63 @@
             const data = response.data || {};
 
             state.rows = data.rows || [];
+            state.distribution = data.distribution || [];
+            state.viewBy = data.view_by || "DIVISION";
+            const viewSelect = document.getElementById("stateAssessViewBy");
+            if (viewSelect?.value === "AUTO") {
+                viewSelect.options[0].text = `Automatic (${state.viewBy.charAt(0) + state.viewBy.slice(1).toLowerCase()})`;
+            }
+            state.filterOptions = data.filter_options || { divisions: [], districts: [], blocks: [] };
+            populateLocationFilters();
             renderSummary(data.summary || {});
+            renderDistribution();
             renderRows(state.rows);
-            state.pager.set(data.pagination || {}).render("stateAssessPager", "Showing");
+            state.pager.set(data.pagination || {}).render("stateAssessPager", "Facilities");
         } catch (error) {
             document.getElementById("stateAssessSummary").innerHTML = "";
             document.getElementById("stateAssessRows").innerHTML =
                 `<div class="sq-state-empty">${esc(error.message || "Unable to load assessment progress.")}</div>`;
             state.pager.set({ page: 1, total_pages: 1, total_rows: 0 }).render("stateAssessPager", "Showing");
+        }
+    }
+
+    async function exportAssessments() {
+        const button = document.getElementById("stateAssessExport");
+        // Export assessment rows, not the grouped facility rows used by the screen.
+        const filters = Object.assign({}, queryParams(), { group_by_facility: 0, page: 1, per_page: 100 });
+        const header = ["Facility ID", "Facility name", "NIN", "State", "Division", "District", "Block", "Assessment ID", "Assessment name", "Round", "Status", "Score 0", "Score 1", "Score 2", "Answered checkpoints", "Total checkpoints", "Checkpoint completion %", "Obtained score", "Total possible score", "Score %", "Start date", "Planned end date", "Completed on", "Cancelled on"];
+        const output = [header];
+        const csvValue = value => {
+            let text = String(value ?? "");
+            if (/^[\s]*[=+@\-\t\r]/.test(text)) text = "'" + text;
+            return `"${text.replace(/"/g, '""')}"`;
+        };
+        button.disabled = true;
+        button.textContent = "Preparing download...";
+        try {
+            let page = 1, totalPages = 1;
+            do {
+                const response = await SQ.api.get("/state/v1/assessment_progress.php", Object.assign({}, filters, { page }), { loader: false, showError: false, timeout: 120000 });
+                const data = response.data || {};
+                totalPages = number(data.pagination?.total_pages) || 1;
+                for (const row of data.rows || []) {
+                    const total = number(row.total_checkpoints), scoreTotal = number(row.total_score);
+                    output.push([row.fac_id_fk, row.fac_name, row.NIN_no, row.state_name, row.division, row.district, row.block, row.assessment_id, row.assessment_name, row.round_no || row.round_id || "", row.status, row.response_zero, row.response_one, row.response_two, row.checkpoint_done, total || "", total ? (number(row.checkpoint_done) * 100 / total).toFixed(2) : "", row.obtained_score, scoreTotal || "", scoreTotal ? number(row.score_percent).toFixed(2) : "", row.start_date, row.end_date, row.completed_on, row.cancelled_on]);
+                }
+                page++;
+            } while (page <= totalPages);
+            const blob = new Blob(["\ufeff", output.map(row => row.map(csvValue).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "all-assessment-details.csv";
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (error) {
+            if (SQ.notification?.error) SQ.notification.error(error?.message || "Unable to download assessment details.");
+        } finally {
+            button.disabled = false;
+            button.textContent = "Download Excel (CSV)";
         }
     }
 
@@ -279,11 +383,39 @@
                 if (pageSubtitle) pageSubtitle.textContent = `${facility}-wise assessment history and status.`;
             }
             state.pager = createPager();
+            document.getElementById("stateAssessViewBy")?.addEventListener("change", function () { state.pager.reset(); load(); });
+            document.getElementById("stateAssessExport")?.addEventListener("click", exportAssessments);
+            document.getElementById("stateAssessRecordSearch")?.addEventListener("input", function () {
+                state.recordSearch = this.value || "";
+                renderRows(state.rows);
+            });
             document.getElementById("stateAssessRefresh")?.addEventListener("click", function () {
                 state.pager.reset();
                 load();
             });
             bindSearch("stateAssessSearch");
+            document.getElementById("stateAssessDivision")?.addEventListener("change", function () {
+                const district = document.getElementById("stateAssessDistrict");
+                const block = document.getElementById("stateAssessBlock");
+                if (district) district.value = "";
+                if (block) block.value = "";
+                const viewSelect = document.getElementById("stateAssessViewBy");
+                if (viewSelect?.value === "AUTO") viewSelect.options[0].text = "Automatic (District)";
+                state.pager.reset();
+                load();
+            });
+            document.getElementById("stateAssessDistrict")?.addEventListener("change", function () {
+                const block = document.getElementById("stateAssessBlock");
+                if (block) block.value = "";
+                const viewSelect = document.getElementById("stateAssessViewBy");
+                if (viewSelect?.value === "AUTO") viewSelect.options[0].text = this.value ? "Automatic (Block)" : (document.getElementById("stateAssessDivision")?.value ? "Automatic (District)" : "Automatic (Division)");
+                state.pager.reset();
+                load();
+            });
+            document.getElementById("stateAssessBlock")?.addEventListener("change", function () {
+                state.pager.reset();
+                load();
+            });
             document.addEventListener("click", function (event) {
                 const button = event.target.closest("[data-model-dialog]");
                 if (button) openDomainDialog(button.getAttribute("data-model-dialog"));

@@ -317,7 +317,7 @@
         $("progressAssessmentSelect")?.addEventListener("change", loadProgress);
         $("btnRefreshProgressReport")?.addEventListener("click", loadProgress);
         $("progressStatusFilter")?.addEventListener("change", renderRows);
-        $("btnDownloadProgressChecklist")?.addEventListener("click", function () {
+        $("btnDownloadProgressChecklist")?.addEventListener("click", async function (event) {
             const assessmentId = Number($("progressAssessmentSelect")?.value || state.selectedAssessmentId || 0);
 
             if (!assessmentId) {
@@ -330,14 +330,22 @@
                 return;
             }
 
-            SQ.api.download(
-                API.progressChecklist,
-                { assessment_id: assessmentId },
-                "checkpoint_progress_assessment_" + assessmentId + ".xlsx"
-            ).catch(function (error) {
+            const button = event.currentTarget;
+            if (button.disabled) return;
+            const originalContent = button.innerHTML;
+            button.disabled = true;
+            button.setAttribute("aria-busy", "true");
+            button.textContent = "Please wait, downloading…";
+            try {
+                await SQ.api.download(API.progressChecklist, { assessment_id: assessmentId }, "checkpoint_progress_assessment_" + assessmentId + ".xlsx");
+            } catch (error) {
                 console.error(error);
                 notify("error", error.message || "Unable to download progress checklist.");
-            });
+            } finally {
+                button.disabled = false;
+                button.removeAttribute("aria-busy");
+                button.innerHTML = originalContent;
+            }
         });
     }
 

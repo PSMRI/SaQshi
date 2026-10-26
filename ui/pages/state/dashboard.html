@@ -1,5 +1,5 @@
 <!-- SaQshi Open Source | State Monitoring Dashboard | dashboard.html | Version 1.0.0 -->
-<section class="sq-state-page">
+<section class="sq-state-page sq-state-dashboard-page">
     <div class="sq-state-toolbar">
         <div>
             <h3 id="stateMonitoringTitle">State Monitoring Dashboard</h3>
@@ -11,9 +11,11 @@
     </div>
     <div class="sq-state-kpis">
         <div><span data-domain-template="Total {facilities}">Total Facilities</span><strong id="stateTotalFacilities">0</strong></div>
-        <div><span>Total Assessments</span><strong id="stateMonthAssessmentStarted">0</strong></div>
+        <div><span>All Assessment Records</span><strong id="stateMonthAssessmentStarted">0</strong></div>
         <div><span>Assessments In Progress</span><strong id="stateMonthAssessmentProgress">0</strong></div>
         <div><span>Assessments Completed</span><strong id="stateMonthAssessmentCompleted">0</strong></div>
+        <div><span>Assessments Cancelled</span><strong id="stateMonthAssessmentCancelled">0</strong></div>
+        <div><span>Facilities with no assessment</span><strong id="stateFacilitiesWithoutAssessment">0</strong></div>
     </div>
     <div class="sq-state-category-kpis" id="stateSchoolCategoryCards" aria-label="School assessment category counts"></div>
     <div class="sq-state-category-breakdown" id="stateCategoryBreakdown"></div>

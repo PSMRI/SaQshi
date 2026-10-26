@@ -15,7 +15,7 @@
 
     "assets": {
         "css": [
-            "/ui/pages/facilityusers/users_profile.css?v=20260705-1"
+            "/ui/pages/facilityusers/users_profile.css?v=20261024-profile-compact-2"
         ],
         "js": [
             "/ui/pages/facilityusers/users_profile.js?v=20260822-forced-password-profile-1"

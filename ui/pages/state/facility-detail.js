@@ -173,14 +173,45 @@
     }
 
     async function loadFacilityDomains(facility) {
+        const school = await fetchFacilityDomains(facility.fac_id || facility.nin);
+        if (school?.domains?.length) openDomainDialog(school);
+    }
+
+    async function fetchFacilityDomains(facilityId) {
         const response = await SQ.api.get("/state/v1/facility_detail.php", {
             mode: "hierarchy",
-            search: facility.nin || facility.fac_id,
+            search: facilityId,
             include_domains: 1
         }, { loader: false, showError: false });
         const stateNode = response.data?.states?.[0];
-        const school = stateNode?.divisions?.[0]?.districts?.[0]?.blocks?.[0]?.facilities?.[0];
-        if (school?.domains?.length) openDomainDialog(school);
+        return stateNode?.divisions?.[0]?.districts?.[0]?.blocks?.[0]?.facilities?.[0] || null;
+    }
+
+    function renderFacilityAreas(facility) {
+        const target = document.getElementById("stateFacilityAreas");
+        if (!target) return;
+        const domains = facility?.domains || [];
+        if (!domains.length) {
+            target.innerHTML = empty("No Area of Concern score is available. Complete an assessment with saved checkpoint scores to view this report.");
+            html("stateFacilityStandards", empty("No standard-wise score is available."));
+            return;
+        }
+        target.innerHTML = `<table class="sq-state-table"><thead><tr><th>Area of Concern</th><th>Score</th><th>Score %</th></tr></thead><tbody>${domains.map(domain => {
+            const percentage = Number(domain.percentage || 0);
+            return `<tr><td><strong>${esc(domain.model_name || "-")}</strong></td><td>${esc(Number(domain.obtained_score || 0).toFixed(2))} / ${esc(Number(domain.total_score || 0).toFixed(2))}</td><td><strong>${esc(percentage.toFixed(2).replace(/\.00$/, ""))}%</strong></td></tr>`;
+        }).join("")}</tbody></table>`;
+
+        const standardsTarget = document.getElementById("stateFacilityStandards");
+        if (!standardsTarget) return;
+        const standards = (facility?.standards || []).slice().sort((left, right) =>
+            String(left.model_name || "").localeCompare(String(right.model_name || ""), undefined, {
+                numeric: true,
+                sensitivity: "base"
+            })
+        );
+        standardsTarget.innerHTML = standards.length
+            ? `<div class="sq-standard-score-grid">${standards.map(standard => `<div class="sq-standard-score-card"><strong>${esc(standard.model_name || "-")}</strong><span>${esc(Number(standard.obtained_score || 0).toFixed(2))} / ${esc(Number(standard.total_score || 0).toFixed(2))}</span><b>${esc(Number(standard.percentage || 0).toFixed(2).replace(/\.00$/, ""))}%</b></div>`).join("")}</div>`
+            : empty("No standard-wise score is available.");
     }
 
     async function loadHierarchy() {
@@ -284,6 +315,13 @@
         renderFacilityInfo(facility);
         renderSummary(data.summary || {});
         renderAssessments(data.assessments || [], data.performance || []);
+        html("stateFacilityAreas", `<div class="sq-state-empty">Loading Area of Concern report...</div>`);
+        try {
+            renderFacilityAreas(await fetchFacilityDomains(facility.fac_id || facilityId));
+        } catch (error) {
+            html("stateFacilityAreas", empty(error.message || "Unable to load the Area of Concern report."));
+            html("stateFacilityStandards", empty(error.message || "Unable to load the Standard-wise report."));
+        }
     }
 
     function bindTree() {
@@ -342,6 +380,8 @@
         html("stateFacilityInfo", empty(`Select a ${domainLabel("facility", "facility").toLowerCase()} from the hierarchy.`));
         html("stateFacilitySummary", "");
         html("stateFacilityAssessments", "");
+        html("stateFacilityAreas", empty(`Select a ${domainLabel("facility", "facility").toLowerCase()} to view its Area of Concern report.`));
+        html("stateFacilityStandards", empty(`Select a ${domainLabel("facility", "facility").toLowerCase()} to view its Standard-wise report.`));
         await loadHierarchy();
         const selectedFacilityId = Number(new URLSearchParams(window.location.search).get("fac_id") || 0);
         if (selectedFacilityId > 0) await loadFacility(selectedFacilityId);

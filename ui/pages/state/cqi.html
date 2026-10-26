@@ -1,26 +1,26 @@
 <!-- SaQshi Open Source | State CQI Monitoring | cqi.html | Version 1.0.0 -->
-<section class="sq-state-page">
+<section class="sq-state-page sq-state-cqi-page">
     <div class="sq-state-toolbar">
-        <div>
-            <h3>CQI Action Tracking</h3>
-            <p data-domain-template="Track accountable owners, priority, target dates, and overdue actions across all {facility} assessments.">Track accountable owners, priority, target dates, and overdue actions across all facility assessments.</p>
-        </div>
         <div class="sq-state-filters">
             <input type="search" class="sq-form-control" id="stateCqiSearch" placeholder="Search facility or NIN" aria-label="Search Facility Or NIN" data-domain-placeholder="Search {facility} or {facility_code}" data-domain-aria-label="Search {facility} or {facility_code}">
-            <button class="sq-btn sq-btn-primary" id="stateCqiRefresh">Refresh</button>
+            <button class="sq-btn sq-btn-light sq-cqi-icon-action" id="stateCqiDownload" type="button" title="Download all CQI statuses" aria-label="Download all CQI statuses"><i class="bi bi-download"></i></button>
+            <button class="sq-btn sq-btn-primary sq-cqi-icon-action" id="stateCqiRefresh" type="button" title="Refresh CQI data" aria-label="Refresh CQI data"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
     </div>
     <div class="sq-state-kpis">
-        <div><span>Facilities With Action Plan</span><strong id="stateCqiTotal">0</strong></div>
-        <div><span>Facilities Completed</span><strong id="stateCqiDone">0</strong></div>
-        <div><span>High-Priority Pending</span><strong id="stateCqiHighPriority">0</strong></div>
-        <div><span>Unassigned Actions</span><strong id="stateCqiUnassigned">0</strong></div>
+        <div><span>Facilities Submitted</span><strong id="stateCqiTotal">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiTotalTypes"></small></div>
+        <div><span>Action Plans Created</span><strong id="stateCqiDone">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiPlanTypes"></small></div>
+        <div><span>Action Plan Not Created</span><strong id="stateCqiHighPriority">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiMissingTypes"></small></div>
+        <div><span>Facilities CQI Completed</span><strong id="stateCqiUnassigned">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiCompletedTypes"></small></div>
+    </div>
+    <div class="sq-state-note" role="note">
+        <strong>How these values are counted:</strong> Only the latest active or completed assessment of each facility is considered. Cancelled assessments are excluded. Facilities Submitted = included assessment checklists; Action Plans Created = total plans created from those checklists; Action Plan Not Created = included facilities with no plan; Facilities CQI Completed = every plan is closed, marked achievable/non-achievable, and has a revised score.
     </div>
     <div class="sq-card">
         <div class="sq-card-header">
             <h3>Facility Action Tracking Details</h3>
             <div id="stateCqiPager"></div>
         </div>
-        <div class="sq-card-body" id="stateCqiRows"></div>
+        <div class="sq-card-body" id="stateCqiRows" style="overflow:auto"></div>
     </div>
 </section>

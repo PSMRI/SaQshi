@@ -70,7 +70,6 @@
             setText("loginBrandAppTagline", branding.login_app_tagline);
             setText("loginBrandKicker", branding.login_kicker);
             setText("loginBrandTitle", branding.login_title);
-            setText("loginBrandDescription", branding.login_description);
             setLoginLogos(branding);
         } catch (error) {
             // Keep the HTML defaults if public deployment configuration is unavailable.

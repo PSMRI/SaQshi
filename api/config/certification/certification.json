@@ -1,6 +1,6 @@
 {
   "module": "Certification",
-  "types": ["STATE", "NATIONAL"],
+  "types": ["STATE", "NATIONAL", "NATIONAL_CONDITIONALITY"],
   "assessment_modes": ["PHYSICAL", "VIRTUAL"],
   "statuses": [
     { "code": "CONDITIONAL", "validity_years": 1 },

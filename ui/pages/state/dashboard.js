@@ -275,6 +275,8 @@
             setText("stateMonthAssessmentStarted", assessmentSummary.total || 0);
             setText("stateMonthAssessmentProgress", assessmentSummary.active || 0);
             setText("stateMonthAssessmentCompleted", assessmentSummary.completed || 0);
+            setText("stateMonthAssessmentCancelled", assessmentSummary.cancelled || 0);
+            setText("stateFacilitiesWithoutAssessment", assessmentSummary.facilities_without_assessment || 0);
             if (isEducationProfile()) {
                 renderSchoolCategoryCards(data.school_category_summary || {});
             }

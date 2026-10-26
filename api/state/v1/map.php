@@ -15,6 +15,9 @@ try {
 
     $mode = strtolower(trim((string)($_GET['map_mode'] ?? 'presence')));
     if ($mode === 'area_of_concern') {
+        // This view aggregates the latest assessment responses across the state.
+        // It can legitimately exceed the standard web request execution limit.
+        @set_time_limit(120);
         $base = StateDashboardService::certificationMap($con, $_GET);
         $data = StateIndicatorAnalyticsService::areaOfConcernMap($con, $_GET);
         $data['map_config'] = $base['map_config'] ?? [];

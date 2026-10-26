@@ -19,6 +19,7 @@
         trends: { KPI: [], OUTCOME: [], EFFECTIVE: [] },
         effectiveLabel: "Performance",
         effectiveType: "KPI",
+        selectedType: "KPI",
         departmentId: "",
         departments: []
     };
@@ -111,8 +112,8 @@
             ? state.monthStatus.slice(-12).map(row => `
                 <div class="sq-trend-month-card">
                     <strong>${esc(shortMonth(row.period))}</strong>
-                    <span>${esc(state.effectiveLabel || "Performance")} <b>${esc(row.total_entries || 0)}</b></span>
-                    ${isReadonly() ? `<span>View only</span>` : `<a href="${esc(indicatorEntryUrl(state.effectiveType || "OUTCOME", "", row.period))}">Edit month</a>`}
+                    <span>${esc(state.selectedType)} <b>${esc(row.total_entries || 0)}</b></span>
+                    ${isReadonly() ? `<span>View only</span>` : `<a href="${esc(indicatorEntryUrl(state.selectedType, state.selectedType === "OUTCOME" ? state.departmentId : "", row.period))}">Edit month</a>`}
                 </div>
             `).join("")
             : `<div class="sq-trend-empty">No month-wise performance entries available.</div>`;
@@ -236,7 +237,7 @@
         const select = $("trendDepartmentFilter");
         if (!select) return;
 
-        const departments = new Map(state.departments.map(item => [
+        const departments = new Map(state.departments.filter(item => Number(item.department_id || 0) > 0).map(item => [
             String(item.department_id || 0),
             item.department_name || (Number(item.department_id || 0) === 0 ? "Facility-level KPI" : `Department ${item.department_id}`)
         ]));
@@ -260,12 +261,18 @@
         setText("trendTotalMonths", state.summary?.total_months || 0);
         setText("trendTotalEntries", state.summary?.total_entries || 0);
         setText("trendLatestPeriod", state.summary?.latest_period ? shortMonth(state.summary.latest_period) : "-");
-        if ($("btnDownloadOutcomeTrend")) $("btnDownloadOutcomeTrend").hidden = readonly;
-        if ($("btnDownloadKpiTrend")) $("btnDownloadKpiTrend").hidden = readonly;
+        if ($("trendDepartmentContainer")) $("trendDepartmentContainer").hidden = state.selectedType !== "OUTCOME";
+        document.querySelectorAll(".sq-trend-outcome-summary").forEach(el => { el.hidden = state.selectedType !== "OUTCOME"; });
+        setText("trendMonthStatusLabel", `${state.selectedType === "KPI" ? "KPI" : "Outcome"} entries by month`);
+        if ($("trendOutcomeSection")) $("trendOutcomeSection").hidden = state.selectedType !== "OUTCOME";
+        if ($("trendKpiSection")) $("trendKpiSection").hidden = state.selectedType !== "KPI";
+        if ($("btnDownloadOutcomeTrend")) $("btnDownloadOutcomeTrend").hidden = readonly || state.selectedType !== "OUTCOME";
+        if ($("btnDownloadKpiTrend")) $("btnDownloadKpiTrend").hidden = readonly || state.selectedType !== "KPI";
         renderMonthStatus();
-        setText("trendEffectiveTitle", `${outcomeIsEffective ? (state.effectiveLabel || "Outcome as KPI") : "Outcome"} Trends`);
+        const departmentName = state.departmentId ? $("trendDepartmentFilter")?.selectedOptions[0]?.textContent : "";
+        setText("trendEffectiveTitle", `${outcomeIsEffective ? (state.effectiveLabel || "Outcome as KPI") : "Outcome"} Trends${departmentName ? ` — ${departmentName}` : ""}`);
         renderCharts("trendOutcomeCharts", filterByDepartment(outcomeSeries));
-        renderCharts("trendKpiCharts", filterByDepartment(state.trends.KPI || []));
+        renderCharts("trendKpiCharts", state.trends.KPI || []);
     }
 
     function excelText(value) {
@@ -276,28 +283,115 @@
             .replace(/"/g, "&quot;");
     }
 
-    function downloadExcel(type) {
+    async function downloadOutcomePdf() {
+        const button = $("btnOutcomePdf");
+        const series = filterByDepartment(state.effectiveType === "OUTCOME" ? (state.trends.EFFECTIVE || state.trends.OUTCOME || []) : (state.trends.OUTCOME || []));
+        if (!series.length) {
+            if (SQ.toast) SQ.toast("No outcome trend data to download.", "warning");
+            return;
+        }
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        try {
+            await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+            const pages = [];
+            const title = $("trendEffectiveTitle")?.textContent || "Outcome Trends";
+            const style = $("trendChartStyle")?.value || "line";
+            for (let start = 0; start < series.length; start += 4) {
+                const canvas = document.createElement("canvas");
+                canvas.width = 1240; canvas.height = 1754;
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#0f172a"; ctx.font = "bold 36px Arial"; ctx.fillText(title, 60, 70, 1120);
+                ctx.font = "22px Arial"; ctx.fillText(state.facility?.fac_name || "", 60, 110, 1120);
+                series.slice(start, start + 4).forEach((item, index) => {
+                    const top = 145 + index * 390;
+                    ctx.strokeStyle = "#cbd5e1"; ctx.strokeRect(60, top, 1120, 365);
+                    ctx.fillStyle = "#0f172a"; ctx.font = "bold 25px Arial";
+                    ctx.fillText(item.indicator_name || "Indicator", 80, top + 38, 1080);
+                    ctx.fillStyle = "#64748b"; ctx.font = "20px Arial";
+                    ctx.fillText(`${item.indicator_code || ""} | ${item.department_name || ""}`, 80, top + 68, 1080);
+                    const points = item.points || [];
+                    if (!points.length) { ctx.fillText("No trend data", 80, top + 130); return; }
+                    const values = points.map(point => num(point.result));
+                    const min = Math.min(0, ...values), max = Math.max(0, ...values), range = Math.max(1, max - min);
+                    const left = 105, right = 1135, bottom = top + 285, height = 160;
+                    const coords = points.map((point, i) => ({ x: points.length === 1 ? (left + right) / 2 : left + i * (right - left) / (points.length - 1), y: bottom - (num(point.result) - min) * height / range, point }));
+                    ctx.strokeStyle = "#cbd5e1"; ctx.beginPath(); ctx.moveTo(left, bottom); ctx.lineTo(right, bottom); ctx.stroke();
+                    ctx.strokeStyle = "#2563eb"; ctx.fillStyle = "#2563eb"; ctx.lineWidth = 4;
+                    if (style === "bar") {
+                        const width = Math.min(40, (right - left) / points.length * .55);
+                        coords.forEach(p => ctx.fillRect(p.x - width / 2, p.y, width, Math.max(2, bottom - p.y)));
+                    } else {
+                        if (style === "area") {
+                            ctx.beginPath(); ctx.moveTo(coords[0].x, bottom); coords.forEach(p => ctx.lineTo(p.x, p.y)); ctx.lineTo(coords[coords.length - 1].x, bottom); ctx.closePath();
+                            ctx.fillStyle = "rgba(37,99,235,.18)"; ctx.fill(); ctx.fillStyle = "#2563eb";
+                        }
+                        ctx.beginPath(); coords.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+                        coords.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill(); });
+                    }
+                    ctx.fillStyle = "#475569"; ctx.font = "18px Arial"; ctx.textAlign = "center";
+                    coords.forEach(p => { ctx.fillText(shortMonth(p.point.period), p.x, bottom + 25); ctx.fillText(fmt(p.point.result), p.x, Math.max(top + 95, p.y - 10)); });
+                    ctx.textAlign = "left"; ctx.lineWidth = 1;
+                });
+                const data = canvas.toDataURL("image/jpeg", .9).split(",")[1];
+                const binary = atob(data);
+                pages.push(Uint8Array.from(binary, char => char.charCodeAt(0)));
+            }
+            const encoder = new TextEncoder(), chunks = [], offsets = [0]; let length = 0;
+            const add = value => { const bytes = typeof value === "string" ? encoder.encode(value) : value; chunks.push(bytes); length += bytes.length; };
+            const object = (id, content) => { offsets[id] = length; add(`${id} 0 obj\n`); content(); add("\nendobj\n"); };
+            add("%PDF-1.4\n");
+            object(1, () => add("<< /Type /Catalog /Pages 2 0 R >>"));
+            object(2, () => add(`<< /Type /Pages /Count ${pages.length} /Kids [${pages.map((_, i) => `${3 + i * 3} 0 R`).join(" ")}] >>`));
+            pages.forEach((jpeg, i) => {
+                const page = 3 + i * 3, imageId = page + 1, contentId = page + 2;
+                object(page, () => add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im0 ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>`));
+                object(imageId, () => { add(`<< /Type /XObject /Subtype /Image /Width 1240 /Height 1754 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`); add(jpeg); add("\nendstream"); });
+                const stream = "q\n595 0 0 842 0 0 cm\n/Im0 Do\nQ\n";
+                object(contentId, () => add(`<< /Length ${encoder.encode(stream).length} >>\nstream\n${stream}endstream`));
+            });
+            const xref = length;
+            add(`xref\n0 ${offsets.length}\n0000000000 65535 f \n`);
+            for (let i = 1; i < offsets.length; i++) add(`${String(offsets[i]).padStart(10, "0")} 00000 n \n`);
+            add(`trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+            const url = URL.createObjectURL(new Blob(chunks, { type: "application/pdf" }));
+            const link = document.createElement("a"); link.href = url; link.download = "outcome_trends.pdf"; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(error); if (SQ.toast) SQ.toast("Unable to download outcome trends PDF.", "error");
+        } finally { button.disabled = false; button.removeAttribute("aria-busy"); }
+    }
+
+    async function downloadExcel(type) {
+        if (type === "OUTCOME" && !state.departmentId) {
+            await SQ.api.download("/performance/v1/trend_excel.php", {}, "outcome_trends_by_department.xlsx");
+            return;
+        }
         const requestedType = type === "EFFECTIVE" ? (state.effectiveType || "OUTCOME") : type;
-        const series = filterByDepartment(type === "EFFECTIVE" ? (state.trends.EFFECTIVE || []) : (state.trends[type] || []));
+        const rawSeries = type === "EFFECTIVE" ? (state.trends.EFFECTIVE || []) : (state.trends[type] || []);
+        const series = requestedType === "OUTCOME" ? filterByDepartment(rawSeries) : rawSeries;
         if (!series.length) {
             if (SQ.toast) SQ.toast(`No ${type} trend data to download.`, "warning");
             return;
         }
 
         const periods = [...new Set(series.flatMap(item => (item.points || []).map(point => point.period)))].sort();
-        const colCount = Math.max(5, 4 + periods.length);
+        const colCount = 4 + Math.max(1, periods.length) * 3;
         const reportTime = new Date().toLocaleString();
         const title = `${type === "EFFECTIVE" ? state.effectiveLabel : requestedType} Performance Trend`;
+        const department = requestedType === "OUTCOME" ? (state.departmentId ? $("trendDepartmentFilter")?.selectedOptions[0]?.textContent : "All departments") : "Facility-wide";
         const dataRows = series.map(item => {
-            const latest = (item.points || [])[item.points.length - 1] || {};
             const byPeriod = new Map((item.points || []).map(point => [point.period, point]));
             return `
                 <tr>
                     <td class="indicator">${excelText(item.indicator_name || "")}</td>
-                    <td>${excelText(item.department_name || (Number(item.department_id || 0) === 0 ? "Facility-level KPI" : "-"))}</td>
-                    <td class="num">${excelText(fmt(latest.numerator ?? 0))}</td>
-                    <td class="num">${excelText(fmt(latest.denominator ?? 0))}</td>
-                    ${periods.map(period => `<td class="num">${byPeriod.has(period) ? excelText(fmt(byPeriod.get(period).result)) : ""}</td>`).join("")}
+                    <td>${excelText(item.formula || "")}</td>
+                    <td>${excelText(item.numerator_label || "")}</td>
+                    <td>${excelText(item.denominator_label || "")}</td>
+                    ${periods.map(period => {
+                        const point = byPeriod.get(period);
+                        return ["numerator", "denominator", "result"].map(field => `<td class="num">${point && point[field] != null ? excelText(fmt(point[field])) : ""}</td>`).join("");
+                    }).join("")}
                 </tr>
             `;
         }).join("");
@@ -324,7 +418,9 @@
                         <td class="label">Facility Name</td>
                         <td class="value">${excelText(state.facility?.fac_name || "-")}</td>
                         <td class="label">Report Time</td>
-                        <td class="value" colspan="${Math.max(1, colCount - 3)}">${excelText(reportTime)}</td>
+                        <td class="value">${excelText(reportTime)}</td>
+                        <td class="label">Department</td>
+                        <td class="value" colspan="${colCount - 5}">${excelText(department)}</td>
                     </tr>
                     <tr>
                         <td class="label">Facility NIN No</td>
@@ -335,18 +431,14 @@
                         <td class="report" colspan="${colCount - 1}">${excelText(title)}</td>
                     </tr>
                     <tr>
-                        <td class="head">Indicator's Name</td>
-                        <td class="head">Department</td>
-                        <td class="head">Numerator</td>
-                        <td class="head">Denominator</td>
-                        <td class="head" colspan="${Math.max(1, periods.length)}">Month</td>
+                        <td class="head" rowspan="2">Indicator's Name</td>
+                        <td class="head" rowspan="2">Formula</td>
+                        <td class="head" rowspan="2">Numerator label</td>
+                        <td class="head" rowspan="2">Denominator label</td>
+                        ${periods.map(period => `<td class="head" colspan="3">${excelText(shortMonth(period))}</td>`).join("")}
                     </tr>
                     <tr>
-                        <td class="month"></td>
-                        <td class="month"></td>
-                        <td class="month"></td>
-                        <td class="month"></td>
-                        ${periods.map(period => `<td class="month">${excelText(shortMonth(period))}</td>`).join("")}
+                        ${periods.map(() => `<td class="month">Numerator</td><td class="month">Denominator</td><td class="month">Value</td>`).join("")}
                     </tr>
                     ${dataRows}
                 </table>
@@ -365,10 +457,30 @@
         URL.revokeObjectURL(url);
     }
 
+    async function downloadWithProgress(type, button) {
+        if (!button || button.disabled) return;
+        const originalContent = button.innerHTML;
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        button.textContent = "Please wait, downloading…";
+        try {
+            await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+            await downloadExcel(type);
+        } catch (error) {
+            console.error(error);
+            if (SQ.toast) SQ.toast(error.message || "Unable to download report.", "error");
+        } finally {
+            button.disabled = false;
+            button.removeAttribute("aria-busy");
+            button.innerHTML = originalContent;
+        }
+    }
+
     async function loadTrend() {
         const response = await SQ.api.get("/performance/v1/trend.php", {
             all_indicators: $("trendAllIndicators")?.checked ? 1 : 0,
-            department_id: state.departmentId,
+            trend_type: state.selectedType,
+            department_id: state.selectedType === "OUTCOME" ? state.departmentId : "",
             period: $("trendPeriodFilter")?.value || currentPeriod()
         }, { loader: false, showError: false });
 
@@ -383,11 +495,6 @@
         setText("trendOutcomeDepartments", outcomeDepartmentStatus.total_departments || 0);
         setText("trendCompletedOutcomeDepartments", outcomeDepartmentStatus.completed_departments || 0);
         setText("trendSelectedPeriod", shortMonth(outcomeDepartmentStatus.period || currentPeriod()));
-        if ($("btnDownloadOutcomeTrend")) {
-            $("btnDownloadOutcomeTrend").textContent = state.effectiveType === "OUTCOME"
-                ? `${state.effectiveLabel} Excel`
-                : "Outcome Excel";
-        }
         renderDepartmentFilter();
         renderAll();
     }
@@ -399,14 +506,20 @@
         document.addEventListener("click", handleEditLink);
         $("btnTrendRefresh")?.addEventListener("click", loadTrend);
         $("trendAllIndicators")?.addEventListener("change", loadTrend);
+        $("trendTypeFilter")?.addEventListener("change", event => {
+            state.selectedType = event.target.value;
+            renderAll();
+            loadTrend().catch(console.error);
+        });
         periodFilter?.addEventListener("change", loadTrend);
         $("trendDepartmentFilter")?.addEventListener("change", event => {
             state.departmentId = event.target.value;
             loadTrend().catch(console.error);
         });
         $("trendChartStyle")?.addEventListener("change", renderAll);
-        $("btnDownloadOutcomeTrend")?.addEventListener("click", () => downloadExcel("OUTCOME"));
-        $("btnDownloadKpiTrend")?.addEventListener("click", () => downloadExcel("KPI"));
+        $("btnOutcomePdf")?.addEventListener("click", downloadOutcomePdf);
+        $("btnDownloadOutcomeTrend")?.addEventListener("click", event => downloadWithProgress("OUTCOME", event.currentTarget));
+        $("btnDownloadKpiTrend")?.addEventListener("click", event => downloadWithProgress("KPI", event.currentTarget));
         loadTrend().catch(console.error);
     }
 
