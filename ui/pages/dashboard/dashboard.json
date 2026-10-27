@@ -55,8 +55,7 @@
         "confirm-dialog",
         "header",
         "sidebar",
-        "breadcrumb",
-        "footer"
+        "breadcrumb"
     ],
 
     "assets": {
