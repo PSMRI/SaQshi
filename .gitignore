@@ -22,6 +22,7 @@ tools/observability/
 *.dump
 *.sql.gz
 *.dll
+*.sql
 .codex_tmp/
 node_modules/
 tools/
