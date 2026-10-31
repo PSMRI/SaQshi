@@ -1,6 +1,7 @@
 ﻿<?php
 
 require_once __DIR__ . '/../core/Crypto.php';
+require_once __DIR__ . '/../core/SessionManager.php';
 
 /**
  * Provides auth service behavior for SaQshi API workflows.
@@ -44,27 +45,15 @@ class AuthService {
         // If plain password (temporary fallback)
         // if ($password !== $user['u_password']) { ... }
 
-        // Generate token
-        $token = bin2hex(random_bytes(32));
-
-        $_SESSION['user'] = [
-            "u_id" => $user['u_id'],
-            "username" => $user['u_name'],
-            "role_id" => $user['role_id_fk'],
-            "role_name" => $user['role_name'],
-            "facility_id" => $user['fac_id_fk'],
-            "dept_id" => $user['dept_id'],
-            "dist_id" => $user['dist_id'],
-            "block_id" => $user['block_id'],
-            "division_id" => $user['division_id'],
-            "assessment_id" => $user['assessment_id'],
-            "token" => $token
-        ];
+        // Legacy callers now create the same centralized session as all modern
+        // authentication endpoints. Do not introduce a second $_SESSION[user]
+        // format with a different lifetime or storage handler.
+        SessionManager::login($user);
 
         return [
             "status" => true,
             "message" => "Login successful",
-            "data" => $_SESSION['user']
+            "data" => SessionManager::user()
         ];
     }
 
@@ -72,14 +61,14 @@ class AuthService {
      * Handles validate processing for this API workflow.
      */
     public static function validate() {
-        return $_SESSION['user'] ?? null;
+        return SessionManager::isLoggedIn() ? SessionManager::user() : null;
     }
 
     /**
      * Handles logout processing for this API workflow.
      */
     public static function logout() {
-        session_destroy();
+        SessionManager::logout();
         return true;
     }
 }

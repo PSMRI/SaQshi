@@ -35,6 +35,23 @@
         return `saqshi-state-${String(key || "summary").replace(/_/g, "-")}-${new Date().toISOString().slice(0, 10)}.csv`;
     }
 
+    function setDownloadBusy(button, busy) {
+        if (!button) return;
+        if (busy) {
+            button.dataset.downloadIcon = button.innerHTML;
+            button.disabled = true;
+            button.classList.add("is-downloading");
+            button.setAttribute("aria-busy", "true");
+            button.setAttribute("title", "Preparing download…");
+            button.innerHTML = '<i class="bi bi-arrow-repeat" aria-hidden="true"></i><span class="sq-sr-only">Preparing download</span>';
+            return;
+        }
+        button.disabled = false;
+        button.classList.remove("is-downloading");
+        button.removeAttribute("aria-busy");
+        button.innerHTML = button.dataset.downloadIcon || '<i class="bi bi-download"></i>';
+    }
+
     function renderExports(exports) {
         const list = Array.isArray(exports) && exports.length ? exports : [
             { key: "summary", title: "State Summary", description: "Summary counts for all state monitoring sections." },
@@ -121,7 +138,8 @@
         }
     }
 
-    async function downloadReport(key) {
+    async function downloadReport(key, button) {
+        setDownloadBusy(button, true);
         try {
             await SQ.api.download("/state/v1/reports.php", {
                 download: key
@@ -130,10 +148,13 @@
             if (SQ.toast) {
                 SQ.toast("Report download failed. Please try again.", "danger");
             }
+        } finally {
+            setDownloadBusy(button, false);
         }
     }
 
-    async function downloadActivity(key, month, year) {
+    async function downloadActivity(key, month, year, button) {
+        setDownloadBusy(button, true);
         try {
             await SQ.api.download("/state/v1/current_month_activity_export.php", {
                 activity: key,
@@ -144,6 +165,8 @@
             if (SQ.toast) {
                 SQ.toast("Activity download failed. Please try again.", "danger");
             }
+        } finally {
+            setDownloadBusy(button, false);
         }
     }
 
@@ -161,18 +184,23 @@
             if (!button) {
                 return;
             }
-            downloadReport(button.getAttribute("data-state-report-download"));
+            if (!button.disabled) {
+                downloadReport(button.getAttribute("data-state-report-download"), button);
+            }
         });
         document.getElementById("stateReportActivity")?.addEventListener("click", function (event) {
             const button = event.target.closest("[data-state-activity-download]");
             if (!button) {
                 return;
             }
-            downloadActivity(
-                button.getAttribute("data-state-activity-download"),
-                button.getAttribute("data-month"),
-                button.getAttribute("data-year")
-            );
+            if (!button.disabled) {
+                downloadActivity(
+                    button.getAttribute("data-state-activity-download"),
+                    button.getAttribute("data-month"),
+                    button.getAttribute("data-year"),
+                    button
+                );
+            }
         });
         load();
     }

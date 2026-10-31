@@ -104,21 +104,6 @@
         SQ.router.navigate("performance/indicator", params);
     }
 
-    function renderMonthStatus() {
-        const target = $("trendMonthRows");
-        if (!target) return;
-
-        target.innerHTML = state.monthStatus.length
-            ? state.monthStatus.slice(-12).map(row => `
-                <div class="sq-trend-month-card">
-                    <strong>${esc(shortMonth(row.period))}</strong>
-                    <span>${esc(state.selectedType)} <b>${esc(row.total_entries || 0)}</b></span>
-                    ${isReadonly() ? `<span>View only</span>` : `<a href="${esc(indicatorEntryUrl(state.selectedType, state.selectedType === "OUTCOME" ? state.departmentId : "", row.period))}">Edit month</a>`}
-                </div>
-            `).join("")
-            : `<div class="sq-trend-empty">No month-wise performance entries available.</div>`;
-    }
-
     function chartSvg(points, style) {
         const width = 300;
         const height = 90;
@@ -257,18 +242,11 @@
         const outcomeSeries = outcomeIsEffective
             ? (state.trends.EFFECTIVE || state.trends.OUTCOME || [])
             : (state.trends.OUTCOME || []);
-        setText("trendFacility", state.facility?.fac_name || "-");
-        setText("trendTotalMonths", state.summary?.total_months || 0);
-        setText("trendTotalEntries", state.summary?.total_entries || 0);
-        setText("trendLatestPeriod", state.summary?.latest_period ? shortMonth(state.summary.latest_period) : "-");
         if ($("trendDepartmentContainer")) $("trendDepartmentContainer").hidden = state.selectedType !== "OUTCOME";
-        document.querySelectorAll(".sq-trend-outcome-summary").forEach(el => { el.hidden = state.selectedType !== "OUTCOME"; });
-        setText("trendMonthStatusLabel", `${state.selectedType === "KPI" ? "KPI" : "Outcome"} entries by month`);
         if ($("trendOutcomeSection")) $("trendOutcomeSection").hidden = state.selectedType !== "OUTCOME";
         if ($("trendKpiSection")) $("trendKpiSection").hidden = state.selectedType !== "KPI";
         if ($("btnDownloadOutcomeTrend")) $("btnDownloadOutcomeTrend").hidden = readonly || state.selectedType !== "OUTCOME";
         if ($("btnDownloadKpiTrend")) $("btnDownloadKpiTrend").hidden = readonly || state.selectedType !== "KPI";
-        renderMonthStatus();
         const departmentName = state.departmentId ? $("trendDepartmentFilter")?.selectedOptions[0]?.textContent : "";
         setText("trendEffectiveTitle", `${outcomeIsEffective ? (state.effectiveLabel || "Outcome as KPI") : "Outcome"} Trends${departmentName ? ` — ${departmentName}` : ""}`);
         renderCharts("trendOutcomeCharts", filterByDepartment(outcomeSeries));
@@ -486,20 +464,24 @@
 
         state.facility = response?.data?.facility || {};
         state.summary = response?.data?.summary || {};
-        state.monthStatus = response?.data?.month_status || [];
         state.trends = response?.data?.indicator_trends || { KPI: [], OUTCOME: [], EFFECTIVE: [] };
         state.departments = response?.data?.trend_departments || [];
         state.effectiveType = response?.data?.effective_indicator_type || "KPI";
         state.effectiveLabel = response?.data?.effective_indicator_label || state.effectiveType || "Performance";
-        const outcomeDepartmentStatus = response?.data?.outcome_department_status || {};
-        setText("trendOutcomeDepartments", outcomeDepartmentStatus.total_departments || 0);
-        setText("trendCompletedOutcomeDepartments", outcomeDepartmentStatus.completed_departments || 0);
-        setText("trendSelectedPeriod", shortMonth(outcomeDepartmentStatus.period || currentPeriod()));
         renderDepartmentFilter();
         renderAll();
     }
 
+    function moveToolbarIntoPageHeader() {
+        const toolbar = $("trendHeaderToolbar");
+        const actions = $("sq-page-actions");
+        if (toolbar && actions && toolbar.parentElement !== actions) {
+            actions.appendChild(toolbar);
+        }
+    }
+
     function init() {
+        moveToolbarIntoPageHeader();
         const periodFilter = $("trendPeriodFilter");
         if (periodFilter && !periodFilter.value) periodFilter.value = currentPeriod();
         document.removeEventListener("click", handleEditLink);

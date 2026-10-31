@@ -13,6 +13,18 @@
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
     const state = { pager: null, rows: [], distribution: [], viewBy: "DIVISION", recordSearch: "", filterOptions: { divisions: [], districts: [], blocks: [] } };
+    let assessmentHeatMap = null, assessmentHeatLayer = null, assessmentHeatMask = null;
+    const biharDistrictDivision = {
+        "ARWAL": "MAGADH", "AURANGABAD": "MAGADH", "GAYA": "MAGADH", "JEHANABAD": "MAGADH", "NAWADA": "MAGADH",
+        "BANKA": "BHAGALPUR", "BHAGALPUR": "BHAGALPUR",
+        "BEGUSARAI": "MUNGER", "JAMUI": "MUNGER", "KHAGARIA": "MUNGER", "LAKHISARAI": "MUNGER", "MUNGER": "MUNGER", "SHEIKHPURA": "MUNGER",
+        "BHOJPUR": "PATNA", "BUXAR": "PATNA", "KAIMUR": "PATNA", "NALANDA": "PATNA", "PATNA": "PATNA", "ROHTAS": "PATNA",
+        "ARARIA": "PURNIA", "KATIHAR": "PURNIA", "KISHANGANJ": "PURNIA", "PURNIA": "PURNIA",
+        "MADHEPURA": "KOSI", "SAHARSA": "KOSI", "SUPAUL": "KOSI",
+        "DARBHANGA": "DARBHANGA", "MADHUBANI": "DARBHANGA", "SAMASTIPUR": "DARBHANGA",
+        "GOPALGANJ": "SARAN", "SARAN": "SARAN", "SIWAN": "SARAN",
+        "EAST_CHAMPARAN": "TIRHUT", "MUZAFFARPUR": "TIRHUT", "SHEOHAR": "TIRHUT", "SITAMARHI": "TIRHUT", "VAISHALI": "TIRHUT", "WEST_CHAMPARAN": "TIRHUT"
+    };
 
     function domainLabel(key, fallback) {
         return SQ.deployment && typeof SQ.deployment.label === "function"
@@ -175,23 +187,144 @@
     }
 
     function renderSummary(summary) {
+        const registeredFacilities = number(summary.registered_facilities);
+        const assessedFacilities = number(summary.facilities_with_assessment);
+        const activeFacilities = number(summary.active_facilities);
+        const completedFacilities = number(summary.completed_facilities);
+        const noAssessmentFacilities = number(summary.facilities_without_assessment);
+        const registeredPercent = function (value) { return registeredFacilities > 0 ? Math.round((number(value) / registeredFacilities) * 100) : 0; };
         document.getElementById("stateAssessSummary").innerHTML = `
-            <div class="sq-assess-kpi is-total"><span>Total</span><strong>${esc(summary.total || 0)}</strong></div>
-            <div class="sq-assess-kpi is-active"><span>Active</span><strong>${esc(summary.active || 0)}</strong></div>
-            <div class="sq-assess-kpi is-completed"><span>Completed</span><strong>${esc(summary.completed || 0)}</strong></div>
-            <div class="sq-assess-kpi is-cancelled"><span>Cancelled</span><strong>${esc(summary.cancelled || 0)}</strong></div>
-            <div class="sq-assess-kpi is-total"><span>Facilities with no assessment</span><strong>${esc(summary.facilities_without_assessment || 0)}</strong></div>
+            <div class="sq-assess-kpi is-total"><span>Total Assessments</span><strong>${esc(summary.total || 0)}</strong><small>${esc(assessedFacilities)} facilities assessed · ${esc(registeredPercent(assessedFacilities))}% of registered facilities</small></div>
+            <div class="sq-assess-kpi is-active"><span>Active Assessments</span><strong>${esc(summary.active || 0)}</strong><small>${esc(activeFacilities)} facilities · ${esc(registeredPercent(activeFacilities))}% of registered facilities</small></div>
+            <div class="sq-assess-kpi is-completed"><span>Completed Assessments</span><strong>${esc(summary.completed || 0)}</strong><small>${esc(completedFacilities)} facilities · ${esc(registeredPercent(completedFacilities))}% of registered facilities</small></div>
+            <div class="sq-assess-kpi is-cancelled"><span>Cancelled Assessments</span><strong>${esc(summary.cancelled || 0)}</strong><small>${esc(summary.cancelled_facilities || 0)} facilities with cancelled assessments</small></div>
+            <div class="sq-assess-kpi is-total"><span>Facilities with No Assessment</span><strong>${esc(noAssessmentFacilities)} / ${esc(registeredFacilities)}</strong><small>${esc(noAssessmentFacilities)} facilities · ${esc(registeredPercent(noAssessmentFacilities))}% of registered facilities</small></div>
         `;
+    }
+
+    function moveToolbarIntoPageHeader() {
+        const title = document.getElementById("sq-page-title");
+        const toolbar = document.querySelector(".sq-assessment-progress-page > .sq-state-toolbar");
+        if (!title || !toolbar || toolbar.classList.contains("sq-assessment-header-toolbar")) return;
+        const row = document.createElement("div");
+        row.className = "sq-assessment-page-title-row";
+        title.parentNode.insertBefore(row, title);
+        row.appendChild(title);
+        toolbar.classList.add("sq-assessment-header-toolbar");
+        row.appendChild(toolbar);
     }
 
     function renderDistribution() {
         const viewBy = state.viewBy || "DIVISION";
         document.getElementById("stateAssessDistributionTitle").textContent = `${viewBy.charAt(0) + viewBy.slice(1).toLowerCase()}-wise assessment completion`;
-        const rows = state.distribution || [];
+        const rows = (state.distribution || []).slice().sort(function (a, b) { return number(b.completion_percentage) - number(a.completion_percentage); });
         const target = document.getElementById("stateAssessDistribution");
         target.innerHTML = rows.length
-            ? `<div class="sq-state-progress-cards">${rows.map(row => { const value = percent(row.completion_percentage); const tone = value >= 70 ? "is-good" : (value >= 40 ? "is-watch" : "is-low"); const types = (row.facility_type_breakdown || []).map(item => `${item.count} ${item.type}`).join(" · "); return `<article class="sq-state-progress-card ${tone}"><strong>${esc(row.label)}</strong><b>${esc(row.completion_percentage)}%</b><div class="sq-state-mini-progress"><div><span style="width:${value}%"></span></div></div><small>${esc(row.completed)} / ${esc(row.total)} assessments · ${esc(row.facility_count)} facilities · Active ${esc(row.active_facilities)} · Completed ${esc(row.completed_facilities)} · Cancelled ${esc(row.cancelled_facilities)}</small><small class="sq-state-facility-type-breakdown">${esc(types)}</small></article>`; }).join("")}</div>`
+            ? `<div class="sq-assessment-heat-tiles">${rows.map(function (row, index) {
+                const value = percent(row.completion_percentage);
+                const tone = value >= 70 ? "is-good" : (value >= 40 ? "is-watch" : "is-low");
+                const types = row.facility_type_breakdown || [];
+                const typeSummary = types.map(item => `${item.count} ${item.type}`).join(" · ") || "No facility-type data";
+                return `<article class="sq-assessment-heat-tile ${tone}" tabindex="0" aria-label="${esc(row.label)} assessment completion details">
+                    <span>${esc(row.label)}</span><b>${esc(row.completion_percentage)}%</b>
+                    <div class="sq-assessment-heat-tooltip" role="tooltip"><strong>${esc(row.label)}</strong><span>Completed: <b>${esc(row.completed)} / ${esc(row.total)}</b> assessments</span><span>Facilities assessed: <b>${esc(row.facility_count)}</b></span><span>Status: Active <b>${esc(row.active)}</b> · Completed <b>${esc(row.completed)}</b> · Cancelled <b>${esc(row.cancelled)}</b></span><span>Facility types: ${esc(typeSummary)}</span></div>
+                </article>`;
+            }).join("")}</div>`
             : `<div class="sq-state-empty">No assessment records for the selected location.</div>`;
+    }
+
+    function districtKey(value) {
+        const key = String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]+/g, "_");
+        return ({ PASHCHIM_CHAMPARAN: "WEST_CHAMPARAN", PURBA_CHAMPARAN: "EAST_CHAMPARAN" })[key] || key;
+    }
+
+    function divisionForDistrict(value) {
+        const key = districtKey(value);
+        if (biharDistrictDivision[key]) return biharDistrictDivision[key];
+        const aliases = {
+            PURBI_CHAMPARAN: "TIRHUT", PURVI_CHAMPARAN: "TIRHUT", PURBACHAMPARAN: "TIRHUT", EASTCHAMPARAN: "TIRHUT",
+            PASCHIM_CHAMPARAN: "TIRHUT", PASHCHIMCHAMPARAN: "TIRHUT", WESTCHAMPARAN: "TIRHUT",
+            KAIMUR_BHABUA: "PATNA", KAIMUR_BHABHUA: "PATNA", SHEIKHPURA_DISTRICT: "MUNGER"
+        };
+        if (aliases[key]) return aliases[key];
+        const compactKey = key.replace(/_/g, "");
+        const knownKey = Object.keys(biharDistrictDivision).find(function (candidate) {
+            const compactCandidate = candidate.replace(/_/g, "");
+            return compactKey.includes(compactCandidate) || compactCandidate.includes(compactKey);
+        });
+        return knownKey ? biharDistrictDivision[knownKey] : "";
+    }
+
+    function heatColor(value) {
+        const score = number(value);
+        return score >= 70 ? "#16a34a" : (score >= 40 ? "#f59e0b" : "#dc2626");
+    }
+
+    function stateBoundaryHoles(boundary) {
+        const holes = [];
+        (boundary?.features || []).forEach(function (feature) {
+            const geometry = feature?.geometry;
+            if (geometry?.type === "Polygon" && Array.isArray(geometry.coordinates?.[0])) holes.push(geometry.coordinates[0]);
+            if (geometry?.type === "MultiPolygon") geometry.coordinates.forEach(function (polygon) { if (Array.isArray(polygon?.[0])) holes.push(polygon[0]); });
+        });
+        return holes.map(function (ring) { return ring.map(function (point) { return [Number(point[1]), Number(point[0])]; }).filter(function (point) { return Number.isFinite(point[0]) && Number.isFinite(point[1]); }); }).filter(function (ring) { return ring.length > 3; });
+    }
+
+    async function renderStateHeatMap() {
+        const canvas = document.getElementById("stateAssessDistrictMap");
+        if (!canvas || !window.L) return;
+        try {
+            const filters = queryParams();
+            const [mapResponse, districtResponse] = await Promise.all([
+                SQ.api.get("/state/v1/map.php", { map_mode: "presence" }, { loader: false, showError: false }),
+                SQ.api.get("/state/v1/assessment_progress.php", Object.assign({}, filters, { view_by: "DISTRICT", page: 1, per_page: 1 }), { loader: false, showError: false })
+            ]);
+            const config = mapResponse.data?.map_config || {};
+            if (!config.boundary_url) throw new Error("State boundary configuration is unavailable.");
+            const boundaryResponse = await fetch(config.boundary_url, { cache: "no-store" });
+            if (!boundaryResponse.ok) throw new Error("State boundary could not load.");
+            const boundaryPayload = await boundaryResponse.json();
+            const boundary = boundaryPayload.status === "success" ? boundaryPayload.data : boundaryPayload;
+            const scores = {};
+            (districtResponse.data?.distribution || []).forEach(function (row) { scores[districtKey(row.label)] = row; });
+            const viewBy = String(state.viewBy || "DISTRICT").toUpperCase();
+            const isDivisionView = viewBy === "DIVISION";
+            const divisionScores = {};
+            if (isDivisionView) (state.distribution || []).forEach(function (row) { divisionScores[districtKey(row.label)] = row; });
+            const mapTitle = document.getElementById("stateAssessMapTitle");
+            const mapSubtitle = document.getElementById("stateAssessMapSubtitle");
+            if (mapTitle) mapTitle.textContent = isDivisionView ? "Division assessment heat map" : "State assessment heat map";
+            if (mapSubtitle) mapSubtitle.textContent = isDivisionView
+                ? "Districts are coloured using their division's completed-assessment percentage."
+                : "District colours show completed-assessment percentage.";
+            if (!assessmentHeatMap) {
+                assessmentHeatMap = L.map("stateAssessDistrictMap", { zoomControl: false, attributionControl: false, scrollWheelZoom: false });
+                L.tileLayer(config.tile_url || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: Number(config.max_zoom) || 18 }).addTo(assessmentHeatMap);
+            }
+            if (assessmentHeatMask) assessmentHeatMap.removeLayer(assessmentHeatMask);
+            const holes = stateBoundaryHoles(boundary);
+            if (holes.length) assessmentHeatMask = L.polygon([[[-90, -360], [-90, 360], [90, 360], [90, -360]], ...holes], { stroke: false, fillColor: "#f8fafc", fillOpacity: 0.94, interactive: false }).addTo(assessmentHeatMap);
+            if (assessmentHeatLayer) assessmentHeatMap.removeLayer(assessmentHeatLayer);
+            assessmentHeatLayer = L.geoJSON(boundary, {
+                style: function (feature) {
+                    const name = feature?.properties?.district || feature?.properties?.DISTRICT || feature?.properties?.Dist_Name || feature?.properties?.DIST_NAME || "";
+                    const row = isDivisionView ? divisionScores[divisionForDistrict(name)] : scores[districtKey(name)];
+                    return { color: "#fff", weight: 1, fillColor: row ? heatColor(row.completion_percentage) : "#94a3b8", fillOpacity: row ? 0.74 : 0.55 };
+                },
+                onEachFeature: function (feature, layer) {
+                    const name = feature?.properties?.district || feature?.properties?.DISTRICT || feature?.properties?.Dist_Name || feature?.properties?.DIST_NAME || "District";
+                    const division = divisionForDistrict(name);
+                    const row = isDivisionView ? divisionScores[division] : scores[districtKey(name)];
+                    const nameLine = isDivisionView ? `${esc(name)} · ${esc(division || "Division")}` : esc(name);
+                    layer.bindTooltip(row ? `<strong>${nameLine}</strong><br>${esc(row.completion_percentage)}% completed<br>${esc(row.completed)} of ${esc(row.total)} assessments` : `<strong>${esc(name)}</strong><br>District could not be matched to the current assessment data.`, { sticky: true });
+                }
+            }).addTo(assessmentHeatMap);
+            const bounds = assessmentHeatLayer.getBounds();
+            if (bounds.isValid()) assessmentHeatMap.fitBounds(bounds, { padding: [7, 7] });
+            window.requestAnimationFrame(function () { assessmentHeatMap?.invalidateSize(); });
+        } catch (error) {
+            canvas.innerHTML = `<div class="sq-state-empty">${esc(error.message || "State heat map could not load.")}</div>`;
+        }
     }
 
     function renderRows(rows) {
@@ -202,16 +335,17 @@
         }) : rows;
         const schools = Object.values(visibleRows.reduce(function (map, row) {
             const key = String(row.fac_id_fk || row.NIN_no || row.fac_name || "unknown");
-            if (!map[key]) map[key] = { id: row.fac_id_fk, name: row.fac_name, code: row.NIN_no, state: row.state_name, division: row.division, district: row.district, block: row.block, rounds: {} };
+            if (!map[key]) map[key] = { key, id: row.fac_id_fk, name: row.fac_name, code: row.NIN_no, state: row.state_name, division: row.division, district: row.district, block: row.block, rounds: {} };
             const round = String(row.round_no || row.round_id || "Unassigned");
             if (!map[key].rounds[round]) map[key].rounds[round] = [];
             map[key].rounds[round].push(row);
             return map;
         }, {}));
         document.getElementById("stateAssessRows").innerHTML = schools.length
-            ? `<table class="sq-state-table"><thead><tr><th>Division</th><th>District</th><th>Block</th><th>NIN</th><th>Facility name</th><th>Assessments</th></tr></thead><tbody>${schools.map(function (school) {
+            ? `<table class="sq-state-table sq-assessment-facility-table"><thead><tr><th>Division</th><th>District</th><th>Block</th><th>NIN</th><th>Facility name</th><th>Assessments</th></tr></thead><tbody>${schools.map(function (school) {
                 const assessmentCount = Object.values(school.rounds).reduce((total, entries) => total + entries.length, 0);
-                return `<tr><td>${esc(school.division || "-")}</td><td>${esc(school.district || "-")}</td><td>${esc(school.block || "-")}</td><td>${esc(school.code || "-")}</td><td><strong>${esc(school.name || "School / Facility")}</strong><small>Facility ID: ${esc(school.id || "-")}</small></td><td>${esc(assessmentCount)}</td></tr><tr class="sq-state-facility-detail-row"><td colspan="6"><details class="sq-state-school-drill"><summary><span class="sq-state-expand-control">+</span> Show ${esc(assessmentCount)} assessment${assessmentCount === 1 ? "" : "s"}</summary>${Object.keys(school.rounds).map(function (round) {
+                const detailId = String(school.key || school.id || school.code || school.name || assessmentCount);
+                return `<tr><td><button type="button" class="sq-state-inline-expand" data-assess-expand="${esc(detailId)}" aria-expanded="false" aria-label="Show ${esc(assessmentCount)} assessments">+</button>${esc(school.division || "-")}</td><td>${esc(school.district || "-")}</td><td>${esc(school.block || "-")}</td><td>${esc(school.code || "-")}</td><td><strong>${esc(school.name || "School / Facility")}</strong><small>Facility ID: ${esc(school.id || "-")}</small></td><td>${esc(assessmentCount)}</td></tr><tr class="sq-state-facility-detail-row" data-assess-detail="${esc(detailId)}" hidden><td colspan="6"><div class="sq-state-school-drill">${Object.keys(school.rounds).map(function (round) {
                     const entries = school.rounds[round];
                     const completed = entries.filter(function (row) { return String(row.status || "").toUpperCase() === "COMPLETED"; });
                     const roundScore = completed[0]?.round_score;
@@ -221,15 +355,20 @@
                     const roundProgress = `${esc(entries.length)} assessment record${entries.length === 1 ? "" : "s"}`;
                     const roundButton = isEducationProfile() ? `View Assessment Round ${esc(round)} Domains` : `View Assessment Round ${esc(round)} ${esc(label)} Scores`;
                     const itemButton = isEducationProfile() ? "View class domains" : `View ${esc(label)} scores`;
-                    return `<details class="sq-state-round-drill"><summary>${roundTitle} · ${roundProgress} ${roundScore ? categoryBadge(roundScore.category) : ""}</summary><div class="sq-assessment-detail-wrap">${completed.length && hasRound && roundScore?.models?.length ? `<button type="button" class="sq-btn sq-btn-light" data-round-domain-dialog="${esc(completed[0].assessment_id)}">${roundButton}</button>` : ""}<table class="sq-assessment-detail-table"><thead><tr><th>Assessment</th><th>Status</th><th>Responses<br>0 / 1 / 2</th><th>Checkpoint completion</th><th>Score</th><th>Start / planned end</th><th>Completed / cancelled</th></tr></thead><tbody>${entries.map(function (row) {
+                    return `<details class="sq-state-round-drill"><summary>${roundTitle} · ${roundProgress} ${roundScore ? categoryBadge(roundScore.category) : ""}</summary><div class="sq-assessment-detail-wrap">${completed.length && hasRound && roundScore?.models?.length ? `<button type="button" class="sq-btn sq-btn-light" data-round-domain-dialog="${esc(completed[0].assessment_id)}">${roundButton}</button>` : ""}<table class="sq-assessment-detail-table"><thead><tr><th>Assessment</th><th>Status</th><th>Departments</th><th>Responses<br>0 / 1 / 2</th><th>Checkpoint completion</th><th>Score</th><th>Start / planned end</th><th>Completed / cancelled</th></tr></thead><tbody>${entries.map(function (row) {
                         const done = String(row.status || "").toUpperCase() === "COMPLETED";
+                        const departmentTotal = number(row.total_departments);
+                        const departmentCompleted = number(row.completed_departments);
+                        const departments = departmentTotal > 0
+                            ? `<strong>${esc(departmentCompleted)} / ${esc(departmentTotal)}</strong><small>completed departments</small>`
+                            : `<span>-</span><small>No departments available</small>`;
                         const total = number(row.total_checkpoints);
                         const completedCount = number(row.checkpoint_done);
                         const completion = total > 0 ? `${esc((completedCount * 100 / total).toFixed(2))}%<small>${esc(completedCount)} / ${esc(total)} checkpoints</small>` : `<span>Unknown</span><small>${esc(completedCount)} answered · checklist total unavailable</small>`;
                         const score = number(row.total_score) > 0 ? `${esc(number(row.score_percent).toFixed(2))}%<small>${esc(number(row.obtained_score))} / ${esc(number(row.total_score))} total possible</small>` : "-";
-                        return `<tr><td><strong>${esc(row.assessment_name || "Assessment")}</strong><small>ID ${esc(row.assessment_id)}</small>${done && row.model_score?.models?.length ? `<button type="button" class="sq-btn sq-btn-light sq-state-domain-button" data-model-dialog="${esc(row.assessment_id)}">${itemButton}</button>` : ""}</td><td>${esc(row.status || "-")}</td><td>${esc(number(row.response_zero))} / ${esc(number(row.response_one))} / ${esc(number(row.response_two))}</td><td>${completion}</td><td>${score}</td><td><small>Start: ${esc(row.start_date || "-")}</small><small>End: ${esc(row.end_date || "-")}</small></td><td><small>Completed: ${esc(row.completed_on || "-")}</small><small>Cancelled: ${esc(row.cancelled_on || "-")}</small></td></tr>`;
+                        return `<tr><td><strong>${esc(row.assessment_name || "Assessment")}</strong><small>ID ${esc(row.assessment_id)}</small>${done && row.model_score?.models?.length ? `<button type="button" class="sq-btn sq-btn-light sq-state-domain-button" data-model-dialog="${esc(row.assessment_id)}">${itemButton}</button>` : ""}</td><td>${esc(row.status || "-")}</td><td>${departments}</td><td>${esc(number(row.response_zero))} / ${esc(number(row.response_one))} / ${esc(number(row.response_two))}</td><td>${completion}</td><td>${score}</td><td><small>Start: ${esc(row.start_date || "-")}</small><small>End: ${esc(row.end_date || "-")}</small></td><td><small>Completed: ${esc(row.completed_on || "-")}</small><small>Cancelled: ${esc(row.cancelled_on || "-")}</small></td></tr>`;
                     }).join("")}</tbody></table></div></details>`;
-                }).join("")}</details></td></tr>`;
+                }).join("")}</div></td></tr>`;
             }).join("")}</tbody></table>`
             : `<div class="sq-state-empty">No School assessment records available.</div>`;
         /* Flat assessment table retained below for future export-only use. */
@@ -321,8 +460,26 @@
             }
             state.filterOptions = data.filter_options || { divisions: [], districts: [], blocks: [] };
             populateLocationFilters();
+            // Older PHP workers can briefly serve a cached assessment summary
+            // without registered_facilities. Read the lightweight facility
+            // summary only in that case, so the denominator never becomes 0.
+            if (!number(data.summary?.registered_facilities)) {
+                try {
+                    const facilityResponse = await SQ.api.get("/state/v1/facility_category.php", {
+                        division: document.getElementById("stateAssessDivision")?.value || "",
+                        district: document.getElementById("stateAssessDistrict")?.value || "",
+                        block: document.getElementById("stateAssessBlock")?.value || "",
+                        search: document.getElementById("stateAssessSearch")?.value || ""
+                    }, { loader: false, showError: false });
+                    data.summary = data.summary || {};
+                    data.summary.registered_facilities = number(facilityResponse.data?.total_facilities);
+                } catch (facilityError) {
+                    console.warn("Registered facility total could not be loaded", facilityError);
+                }
+            }
             renderSummary(data.summary || {});
             renderDistribution();
+            await renderStateHeatMap();
             renderRows(state.rows);
             state.pager.set(data.pagination || {}).render("stateAssessPager", "Facilities");
         } catch (error) {
@@ -375,6 +532,7 @@
 
     async function init() {
         try {
+            moveToolbarIntoPageHeader();
             if (SQ.deployment && typeof SQ.deployment.load === "function") {
                 await SQ.deployment.load();
                 SQ.deployment.applyLabels(document);
@@ -421,6 +579,18 @@
                 if (button) openDomainDialog(button.getAttribute("data-model-dialog"));
                 const roundButton = event.target.closest("[data-round-domain-dialog]");
                 if (roundButton) openDomainDialog(roundButton.getAttribute("data-round-domain-dialog"), true);
+                const expandButton = event.target.closest("[data-assess-expand]");
+                if (expandButton) {
+                    const detailId = expandButton.getAttribute("data-assess-expand");
+                    const detailRow = Array.from(document.querySelectorAll("[data-assess-detail]")).find(function (row) {
+                        return row.getAttribute("data-assess-detail") === detailId;
+                    });
+                    if (!detailRow) return;
+                    const willOpen = detailRow.hidden;
+                    detailRow.hidden = !willOpen;
+                    expandButton.textContent = willOpen ? "−" : "+";
+                    expandButton.setAttribute("aria-expanded", willOpen ? "true" : "false");
+                }
             });
             await load();
         } catch (error) {

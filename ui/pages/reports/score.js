@@ -340,11 +340,13 @@
                 return;
             }
 
-            const originalLabel = button.textContent;
+            const originalContent = button.innerHTML;
+            const originalTitle = button.title;
             state.isDownloading = true;
             button.disabled = true;
             button.setAttribute("aria-busy", "true");
-            button.textContent = "Please wait, downloading…";
+            button.title = "Preparing Excel download…";
+            button.innerHTML = '<i class="bi bi-arrow-repeat" aria-hidden="true"></i>';
 
             try {
                 await SQ.api.download(
@@ -359,7 +361,8 @@
                 state.isDownloading = false;
                 button.disabled = false;
                 button.removeAttribute("aria-busy");
-                button.textContent = originalLabel;
+                button.title = originalTitle;
+                button.innerHTML = originalContent;
             }
         });
     }

@@ -58,7 +58,8 @@
             running: false,
             retryTimer: null,
             retryDelay: 2000
-        }
+        },
+        keepAliveTimer: null
     };
 
     function $(id) {
@@ -90,6 +91,30 @@
         if (SQ.toast) {
             SQ.toast(message, type);
         }
+    }
+
+    function startSessionKeepAlive() {
+        if (state.keepAliveTimer || !SQ.api?.get) return;
+
+        const ping = async function () {
+            if (document.hidden || !navigator.onLine) return;
+            try {
+                await SQ.api.get("/auth/v1/me.php", {}, {
+                    loader: false,
+                    showError: false,
+                    redirectOnUnauthorized: true,
+                    timeout: 15000
+                });
+            } catch (error) {
+                // A real 401 is handled by the common API layer. Temporary
+                // network failures should not interrupt checklist entry.
+            }
+        };
+
+        state.keepAliveTimer = window.setInterval(ping, 5 * 60 * 1000);
+        document.addEventListener("visibilitychange", function () {
+            if (!document.hidden) ping();
+        });
     }
 
     async function explainCurrentCheckpoint() {
@@ -345,21 +370,20 @@
 
     function renderAssessment() {
         const assessment = state.assessment || {};
+        const assessmentName = assessment.assessment_name || "";
+        const actions = $("sq-page-actions");
+        let headerName = document.getElementById("assessmentHeaderName");
 
-        if ($("assessmentName")) {
-            $("assessmentName").textContent = assessment.assessment_name || "-";
+        if (actions && !headerName) {
+            headerName = document.createElement("strong");
+            headerName.id = "assessmentHeaderName";
+            headerName.className = "sq-assessment-header-name";
+            actions.appendChild(headerName);
         }
-
-        if ($("assessmentStatus")) {
-            $("assessmentStatus").textContent = assessment.status || "-";
-        }
-
-        if ($("assessmentFramework")) {
-            $("assessmentFramework").textContent = assessment.framework_code || "saqshi-nqas";
-        }
-
-        if ($("assessmentId")) {
-            $("assessmentId").textContent = assessment.assessment_id || "-";
+        if (headerName) {
+            headerName.textContent = assessmentName;
+            headerName.hidden = !assessmentName;
+            headerName.title = assessmentName || "";
         }
     }
 
@@ -982,7 +1006,16 @@
 
         $("btnPreviousCheckpoint").disabled = Boolean(position.is_first);
         $("btnSaveCheckpoint").hidden = state.readOnly;
-        $("btnNextCheckpoint").textContent = state.readOnly && position.is_last ? "Close View" : (position.is_last ? "Finish Scope" : "Next");
+        const nextButton = $("btnNextCheckpoint");
+        const closeView = state.readOnly && position.is_last;
+        const finishScope = position.is_last && !state.readOnly;
+        nextButton.textContent = closeView ? "Close View" : (finishScope ? "Finish Scope" : "Next");
+        nextButton.title = closeView
+            ? "Closes this completed, view-only checklist scope."
+            : (finishScope
+                ? "Saves the final response in this scope. This may complete the department or assessment when all requirements are finished."
+                : "Saves the current response and opens the next checkpoint.");
+        nextButton.setAttribute("aria-label", nextButton.title);
 
         show($("checklistState"), false);
         show($("checkpointPanel"), true);
@@ -1672,6 +1705,7 @@
             SQ.deployment.applyLabels(document);
         }
         bindEvents();
+        startSessionKeepAlive();
         window.addEventListener("online", function () {
             state.offlineSync.retryDelay = 2000;
             scheduleOfflineSync();

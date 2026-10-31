@@ -1,2 +1,25 @@
 <!-- SaQshi Open Source | State User Administration | users.html | Version 1.0.0 -->
-<section class="sq-state-page sq-state-users-page"><div class="sq-state-toolbar"><div class="sq-state-filters"><input type="search" class="sq-form-control" id="stateUsersSearch" placeholder="Search user, role, facility or NIN" aria-label="Search User, Role, Facility Or NIN" data-domain-placeholder="Search user, role, {facility} or {facility_code}" data-domain-aria-label="Search User, Role, {facility} Or {facility_code}"><button class="sq-btn sq-btn-primary" id="stateUserCreate" type="button" hidden>Create User</button><button class="sq-btn sq-btn-light" id="stateFacilityReference" type="button">School / Facility List</button><button class="sq-btn sq-btn-light" id="stateUsersExport" type="button">Export Users</button><button class="sq-btn sq-btn-light" id="statePendingCredentials" type="button" hidden>Download Pending Credentials</button><button class="sq-btn sq-btn-primary sq-users-icon-action" id="stateUsersRefresh" type="button" title="Refresh user list" aria-label="Refresh user list"><i class="bi bi-arrow-clockwise"></i></button></div></div><div class="sq-card"><div class="sq-card-header"><h3>User List</h3><div id="stateUsersPager"></div></div><div class="sq-card-body" id="stateUserRows"></div></div></section>
+<section class="sq-state-page sq-state-users-page">
+    <div class="sq-state-toolbar"><div class="sq-state-filters"><input type="search" class="sq-form-control" id="stateUsersSearch" placeholder="Search user, role, facility or NIN" aria-label="Search User, Role, Facility Or NIN" data-domain-placeholder="Search user, role, {facility} or {facility_code}" data-domain-aria-label="Search User, Role, {facility} Or {facility_code}"><button class="sq-btn sq-btn-primary" id="stateUserCreate" type="button" hidden>Create User</button><button class="sq-btn sq-btn-light" id="stateFacilityReference" type="button">School / Facility List</button><button class="sq-btn sq-btn-light" id="stateUsersExport" type="button">Export Users</button><button class="sq-btn sq-btn-light" id="statePendingCredentials" type="button" hidden>Download Pending Credentials</button><button class="sq-btn sq-btn-primary sq-users-icon-action" id="stateUsersRefresh" type="button" title="Refresh user list" aria-label="Refresh user list"><i class="bi bi-arrow-clockwise"></i></button></div></div>
+    <section class="sq-users-access-overview" aria-label="User access overview">
+        <div class="sq-users-metrics" id="stateUsersMetrics" aria-live="polite"></div>
+    </section>
+    <div class="sq-users-workspace">
+        <section class="sq-card sq-users-directory-card">
+            <div class="sq-card-header sq-users-directory-header">
+                <div><h3>User directory</h3><p>Manage user access, roles and facility assignment.</p></div>
+                <div id="stateUsersPager"></div>
+            </div>
+            <div class="sq-users-directory-tabs" role="tablist" aria-label="Filter users by access status">
+                <button type="button" class="is-active" data-user-status-filter="">All accounts</button>
+                <button type="button" data-user-status-filter="active">Active</button>
+                <button type="button" data-user-status-filter="inactive">Inactive</button>
+            </div>
+            <div class="sq-card-body" id="stateUserRows"></div>
+        </section>
+        <aside class="sq-card sq-users-attention-card" aria-labelledby="stateUsersAttentionTitle">
+            <div class="sq-card-header"><div><h3 id="stateUsersAttentionTitle">Access attention</h3><p>Items that may need an administrator review.</p></div></div>
+            <div class="sq-card-body" id="stateUsersAttention" aria-live="polite"></div>
+        </aside>
+    </div>
+</section>

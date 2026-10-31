@@ -112,12 +112,21 @@
 
     function renderContext() {
         const assessment = state.assessment || {};
-        const facility = state.facility || {};
+        const assessmentName = assessment.assessment_name || "";
+        const actions = $("sq-page-actions");
+        let headerName = document.getElementById("gapAnalysisAssessmentName");
 
-        setText("assessmentName", assessment.assessment_name || "-");
-        setText("assessmentStatus", statusText(assessment.status));
-        setText("assessmentFramework", assessment.framework_code || "-");
-        setText("facilityName", facility.fac_name || facility.facility_name || "-");
+        if (actions && !headerName) {
+            headerName = document.createElement("strong");
+            headerName.id = "gapAnalysisAssessmentName";
+            headerName.className = "sq-gap-header-assessment-name";
+            actions.appendChild(headerName);
+        }
+        if (headerName) {
+            headerName.textContent = assessmentName;
+            headerName.hidden = !assessmentName;
+            headerName.title = assessmentName || "";
+        }
     }
 
     function renderSummary() {

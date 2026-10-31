@@ -15,6 +15,7 @@
 .sq-upload-help-link{color:#b91c1c!important;font-weight:800;text-decoration:underline}.sq-upload-help-link:hover{color:#7f1d1d!important}
 
 .sq-offline-sync-status{margin:0 0 .4rem;padding:.35rem .55rem;border:1px solid #fbbf24;border-radius:6px;background:#fffbeb;color:#92400e;font-size:.72rem;font-weight:700}
+.sq-page-header .sq-assessment-header-name{display:inline-flex;align-items:center;max-width:min(46vw,560px);min-height:29px;padding:4px 10px;overflow:hidden;border:1px solid #bfd3ef;border-radius:6px;background:#f1f6ff;color:#173b69;font-size:12px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}@media(max-width:650px){.sq-page-header .sq-assessment-header-name{max-width:100%;font-size:11px}}
 
 body:has(.sq-checklist-page) .sq-page-content,
 body:has(.sq-checklist-page) .sq-content{

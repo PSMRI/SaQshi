@@ -11,8 +11,8 @@
     "required": true
   },
   "assets": {
-    "css": ["/ui/pages/performance/indicator.css?v=20260824-color-hierarchy-1"],
-    "js": ["/ui/pages/performance/indicator.js?v=20260824-facility-kpi-1"]
+    "css": ["/ui/pages/performance/indicator.css?v=20261030-history-heading-align-3"],
+    "js": ["/ui/pages/performance/indicator.js?v=20261030-formula-detail-4"]
   },
   "breadcrumb": [
     {"label": "Dashboard", "url": "/ui/dashboard.html"},

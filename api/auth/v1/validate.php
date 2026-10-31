@@ -6,14 +6,8 @@
  * Purpose: validate endpoint/support workflow.
  */
 
-require_once "../../../service/AuthService.php";
+require_once __DIR__ . '/../../auth_api.php';
 
-session_start();
+Security::requireMethod('GET');
 
-$user = AuthService::validate();
-
-if ($user) {
-    echo json_encode(["status" => true, "data" => $user]);
-} else {
-    echo json_encode(["status" => false, "message" => "Unauthorized"]);
-}
+Response::success('Session is valid', SessionManager::user());

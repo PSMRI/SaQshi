@@ -15,10 +15,10 @@
 
     "assets": {
         "css": [
-            "/ui/pages/facilityusers/users_facilities.css?v=20261025-compact-1"
+            "/ui/pages/facilityusers/users_facilities.css?v=20261030-header-actions-1"
         ],
         "js": [
-            "/ui/pages/facilityusers/users_facilities.js?v=20260822-location-icon-1"
+            "/ui/pages/facilityusers/users_facilities.js?v=20261030-header-actions-1"
         ]
     },
 

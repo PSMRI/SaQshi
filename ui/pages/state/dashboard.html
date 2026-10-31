@@ -1,20 +1,18 @@
 <!-- SaQshi Open Source | State Monitoring Dashboard | dashboard.html | Version 1.0.0 -->
 <section class="sq-state-page sq-state-dashboard-page">
     <div class="sq-state-toolbar">
-        <div>
-            <h3 id="stateMonitoringTitle">State Monitoring Dashboard</h3>
-        </div>
         <div class="sq-state-filters">
             <input type="search" class="sq-form-control" id="stateDashboardSearch" placeholder="Search facility or NIN" aria-label="Search Facility Or NIN" data-domain-placeholder="Search {facility} or {facility_code}" data-domain-aria-label="Search {facility} or {facility_code}">
             <button type="button" class="sq-btn sq-btn-primary" id="stateRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
         </div>
     </div>
     <div class="sq-state-kpis">
-        <div><span data-domain-template="Total {facilities}">Total Facilities</span><strong id="stateTotalFacilities">0</strong></div>
+        <div><span data-domain-template="Registered {facilities}">Registered Facilities</span><strong id="stateTotalFacilities">0</strong></div>
         <div><span>All Assessment Records</span><strong id="stateMonthAssessmentStarted">0</strong></div>
         <div><span>Assessments In Progress</span><strong id="stateMonthAssessmentProgress">0</strong></div>
         <div><span>Assessments Completed</span><strong id="stateMonthAssessmentCompleted">0</strong></div>
         <div><span>Assessments Cancelled</span><strong id="stateMonthAssessmentCancelled">0</strong></div>
+        <div><span>Facilities with Assessment</span><strong id="stateFacilitiesWithAssessment">0</strong></div>
         <div><span>Facilities with no assessment</span><strong id="stateFacilitiesWithoutAssessment">0</strong></div>
     </div>
     <div class="sq-state-category-kpis" id="stateSchoolCategoryCards" aria-label="School assessment category counts"></div>
@@ -24,5 +22,6 @@
         <div class="sq-card"><div class="sq-card-header"><h3 data-domain-template="{facility} Categories">Facility Categories</h3></div><div class="sq-card-body" id="stateFacilityTypes"></div></div>
         <div class="sq-card" id="stateCertificationCard"><div class="sq-card-header"><h3>Certification Status</h3></div><div class="sq-card-body" id="stateCertification"></div></div>
         <div class="sq-card"><div class="sq-card-header"><h3>Current Month Status</h3></div><div class="sq-card-body" id="statePerformance"></div></div>
+        <div class="sq-card"><div class="sq-card-header"><h3 title="Each facility is counted once using its latest completed assessment.">Latest Assessment Score by Facility</h3></div><div class="sq-card-body" id="stateLatestCompletedScoreBands"></div></div>
     </div>
 </section>

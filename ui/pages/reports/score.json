@@ -15,10 +15,10 @@
 
     "assets": {
         "css": [
-            "/ui/pages/reports/score.css?v=20260704-1"
+            "/ui/pages/reports/score.css?v=20261030-icon-actions-1"
         ],
         "js": [
-            "/ui/pages/reports/score.js?v=20261025-download-wait-1"
+            "/ui/pages/reports/score.js?v=20261030-icon-actions-1"
         ]
     },
 

@@ -12,29 +12,7 @@ License : GPL-3.0
 
 <div class="sq-page sq-checklist-page">
 
-    <div class="sq-card">
-        <div class="sq-card-body">
-            <div id="offlineSyncStatus" class="sq-offline-sync-status" hidden aria-live="polite"></div>
-            <div class="sq-assessment-summary">
-                <div class="sq-summary-item">
-                    <label>Assessment</label>
-                    <span id="assessmentName">-</span>
-                </div>
-                <div class="sq-summary-item">
-                    <label>Status</label>
-                    <span id="assessmentStatus">-</span>
-                </div>
-                <div class="sq-summary-item">
-                    <label>Framework</label>
-                    <span id="assessmentFramework">-</span>
-                </div>
-                <div class="sq-summary-item">
-                    <label>Assessment ID</label>
-                    <span id="assessmentId">-</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="offlineSyncStatus" class="sq-offline-sync-status" hidden aria-live="polite"></div>
 
     <div class="sq-card" id="checklistScopeCard">
         <div class="sq-card-header">
@@ -101,8 +79,8 @@ License : GPL-3.0
             <div id="concernChecklistContent" class="sq-concern-checklist-content"></div>
         </div>
         <div class="sq-card-footer sq-concern-actions">
-            <button type="button" class="sq-btn sq-btn-secondary" id="btnSaveConcernDraft">Save Draft</button>
-            <button type="button" class="sq-btn sq-btn-primary" id="btnSubmitConcern" data-domain-template="Submit {area_of_concern}">Submit Area of Concern</button>
+            <button type="button" class="sq-btn sq-btn-secondary" id="btnSaveConcernDraft" title="Saves the entered answers for this Area of Concern. You can return and edit them later; this does not complete the assessment." aria-label="Save draft: save entered answers for this Area of Concern without completing the assessment.">Save Draft</button>
+            <button type="button" class="sq-btn sq-btn-primary" id="btnSubmitConcern" data-domain-template="Submit {area_of_concern}" title="Checks that all mandatory answers are entered, saves this Area of Concern, then opens the next incomplete area. This does not final-submit the assessment." aria-label="Submit Area of Concern: validate mandatory answers, save them, and continue to the next incomplete area. This does not final-submit the assessment.">Submit Area of Concern</button>
         </div>
     </div>
 
@@ -150,13 +128,13 @@ License : GPL-3.0
         </div>
 
         <div class="sq-card-footer sq-checkpoint-actions">
-            <button type="button" class="sq-btn sq-btn-light" id="btnPreviousCheckpoint">
+            <button type="button" class="sq-btn sq-btn-light" id="btnPreviousCheckpoint" title="Opens the previous checkpoint. Unsaved changes on this checkpoint are not saved." aria-label="Back: open the previous checkpoint without saving changes.">
                 Back
             </button>
-            <button type="button" class="sq-btn sq-btn-secondary" id="btnSaveCheckpoint">
+            <button type="button" class="sq-btn sq-btn-secondary" id="btnSaveCheckpoint" title="Saves or updates the response for this checkpoint. You stay on the same checkpoint and can edit it again." aria-label="Save or update the current checkpoint response and remain on this checkpoint.">
                 Save / Update
             </button>
-            <button type="button" class="sq-btn sq-btn-primary" id="btnNextCheckpoint">
+            <button type="button" class="sq-btn sq-btn-primary" id="btnNextCheckpoint" title="Saves the current response and opens the next checkpoint. On the last checkpoint, it completes the scope and may complete the department or assessment." aria-label="Next: save the current response and open the next checkpoint.">
                 Next
             </button>
         </div>

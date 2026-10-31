@@ -74,6 +74,27 @@
         }
     }
 
+    function startPriorityRotation() {
+        if (state.priorityTimer || state.priorityRows.length <= 1) return;
+        state.priorityTimer = window.setInterval(function () {
+            state.priorityIndex = (state.priorityIndex + 1) % state.priorityRows.length;
+            showPriority(state.priorityRows[state.priorityIndex]);
+        }, 3000);
+    }
+
+    function bindPriorityHoverPause() {
+        const hero = document.querySelector(".sq-state-indicator-analytics-page .sq-state-support-hero");
+        if (!hero || hero.dataset.priorityHoverBound === "true") return;
+        hero.dataset.priorityHoverBound = "true";
+        hero.title = "Hover to pause priority rotation";
+        hero.addEventListener("mouseenter", function () {
+            if (!state.priorityTimer) return;
+            window.clearInterval(state.priorityTimer);
+            state.priorityTimer = null;
+        });
+        hero.addEventListener("mouseleave", startPriorityRotation);
+    }
+
     function renderPriority(data) {
         state.priorityRows = data.assessment?.rows || [];
         state.priorityIndex = 0;
@@ -82,12 +103,7 @@
             state.priorityTimer = null;
         }
         showPriority(state.priorityRows[0] || (data.areas_of_concern || [])[0] || null);
-        if (state.priorityRows.length > 1) {
-            state.priorityTimer = window.setInterval(function () {
-                state.priorityIndex = (state.priorityIndex + 1) % state.priorityRows.length;
-                showPriority(state.priorityRows[state.priorityIndex]);
-            }, 3000);
-        }
+        startPriorityRotation();
     }
 
     function renderStandardRisks(rows) {
@@ -347,7 +363,22 @@
         }), "capacity-building-roadmap.csv");
     }
 
+    function moveToolbarIntoPageHeader() {
+        const title = document.getElementById("sq-page-title");
+        const toolbar = document.querySelector(".sq-state-indicator-analytics-page > .sq-state-toolbar");
+        if (!title || !toolbar || toolbar.classList.contains("sq-indicator-header-toolbar")) return;
+
+        const row = document.createElement("div");
+        row.className = "sq-indicator-page-title-row";
+        title.parentNode.insertBefore(row, title);
+        row.appendChild(title);
+        toolbar.classList.add("sq-indicator-header-toolbar");
+        row.appendChild(toolbar);
+    }
+
     async function init() {
+        moveToolbarIntoPageHeader();
+        bindPriorityHoverPause();
         if (SQ.deployment && typeof SQ.deployment.load === "function") {
             await SQ.deployment.load();
             SQ.deployment.applyLabels(document);

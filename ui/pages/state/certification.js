@@ -20,11 +20,13 @@
         status: [],
         types: [],
         facilityTypes: [],
-        mix: { national: 0, conditionality: 0, state: 0 },
+        mix: { national: 0, conditionality: 0, state: 0, state_conditionality: 0 },
+        renewedByType: { national: 0, state: 0 },
         upgradedFromStateToNational: 0,
         breakdown: [],
         breakdownPage: 1,
         breakdownPerPage: 5,
+        breakdownView: "DIVISION",
         viewBy: "DISTRICT",
         filterOptions: { districts: [], blocks: [] },
         warning: "",
@@ -32,6 +34,7 @@
     };
 
     const statuses = ["CONDITIONAL", "CERTIFIED"];
+    const ALL_DISTRICTS_VALUE = "__ALL_DISTRICTS__";
 
     function domainLabel(key, fallback) {
         return SQ.deployment && typeof SQ.deployment.label === "function"
@@ -64,19 +67,49 @@
     }
 
     function populateLocationFilters() {
+        const division = document.getElementById("stateCertDivision");
         const district = document.getElementById("stateCertDistrict");
         const block = document.getElementById("stateCertBlock");
+        if (division) {
+            const selected = division.value;
+            division.innerHTML = `<option value="">All divisions</option>${(state.filterOptions.divisions || []).map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
+            division.value = (state.filterOptions.divisions || []).includes(selected) ? selected : "";
+        }
         if (district) {
             const selected = district.value;
-            district.innerHTML = `<option value="">All districts</option>${state.filterOptions.districts.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
-            district.value = state.filterOptions.districts.includes(selected) ? selected : "";
+            district.innerHTML = `<option value="${ALL_DISTRICTS_VALUE}">All districts</option>${state.filterOptions.districts.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
+            district.value = selected === ALL_DISTRICTS_VALUE || state.filterOptions.districts.includes(selected) ? selected : ALL_DISTRICTS_VALUE;
         }
         if (block) {
             const selected = block.value;
             block.innerHTML = `<option value="">All blocks</option>${state.filterOptions.blocks.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
-            block.disabled = !district?.value;
+            block.disabled = !district?.value || district.value === ALL_DISTRICTS_VALUE;
             block.value = state.filterOptions.blocks.includes(selected) ? selected : "";
         }
+    }
+
+    function groupedCertificationMix() {
+        const mix = {
+            national: Number(state.mix.national) || 0,
+            conditionality: Number(state.mix.conditionality) || 0,
+            state: Number(state.mix.state) || 0,
+            stateConditionality: Number(state.mix.state_conditionality) || 0
+        };
+        const conditionalFromStatus = state.status.reduce(function (total, row) {
+            const status = String(row.status || "").trim().toUpperCase();
+            return total + (['CONDITIONAL', 'CONDITIONAL CERTIFIED', 'CONDITIONALLY CERTIFIED'].includes(status)
+                ? (Number(row.count) || 0)
+                : 0);
+        }, 0);
+        const alreadyClassified = mix.conditionality + mix.stateConditionality;
+
+        // Old migrated conditional records did not always retain a type. They
+        // are State conditional unless explicitly recorded as National.
+        if (conditionalFromStatus > alreadyClassified) {
+            mix.stateConditionality += conditionalFromStatus - alreadyClassified;
+        }
+
+        return mix;
     }
 
     function renderCards() {
@@ -84,45 +117,63 @@
         state.status.forEach(row => {
             counts[row.status] = Number(row.count) || 0;
         });
-        const mix = {
-            national: Number(state.mix.national) || 0,
-            conditionality: Number(state.mix.conditionality) || 0,
-            state: Number(state.mix.state) || 0
-        };
+        const mix = groupedCertificationMix();
+        const renewed = state.renewedByType || {};
 
         const cards = [
             ["TOTAL FACILITIES", state.status.reduce((sum, row) => sum + (Number(row.count) || 0), 0), "is-total"],
             ["NOT CERTIFIED", counts["NOT CERTIFIED"] || 0, "is-not-certified"],
             ["EXPIRING SOON", counts["EXPIRING SOON"] || 0, "is-expiring"],
-            ["EXPIRED", counts.EXPIRED || 0, "is-expired"],
-            ["CERTIFIED — NATIONAL", mix.national, "is-national"],
-            ["NATIONAL CONDITIONALITY", mix.conditionality, "is-conditional"],
-            ["CERTIFIED — STATE", mix.state, "is-state"],
-            ["STATE → NATIONAL UPGRADES", state.upgradedFromStateToNational, "is-upgrade"]
+            ["EXPIRED", counts.EXPIRED || 0, "is-expired"]
         ];
 
-        html("stateCertCards", cards.map(card => `
+        const certificationCards = [
+            ["NATIONAL CERTIFICATION", mix.national, mix.conditionality, "is-national", renewed.national || 0],
+            ["STATE CERTIFICATION", mix.state, mix.stateConditionality, "is-state", renewed.state || 0],
+        ];
+
+        const standardCards = cards.map(card => `
             <div class="sq-cert-kpi ${esc(card[2])}">
                 <span>${esc(card[0])}</span>
                 <strong>${esc(card[1])}</strong>
             </div>
-        `).join(""));
+        `).join("");
+        const groupedCertificationCards = certificationCards.map(card => `
+            <div class="sq-cert-kpi sq-cert-kpi--split ${esc(card[3])}">
+                <span>${esc(card[0])}</span>
+                <strong>${esc(card[1] + card[2])}</strong>
+                <small><b>Certified</b><b>${esc(card[1])}</b></small>
+                <small><b>Conditional</b><b>${esc(card[2])}</b></small>
+                <em class="sq-cert-renewal-info">Renewed ${esc(card[4])}</em>
+            </div>
+        `).join("");
+        const upgradeCard = `
+            <div class="sq-cert-kpi is-upgrade">
+                <span>STATE → NATIONAL UPGRADES</span>
+                <strong>${esc(state.upgradedFromStateToNational)}</strong>
+                <i class="bi bi-graph-up-arrow sq-cert-upgrade-trend" aria-hidden="true"></i>
+            </div>
+        `;
+
+        html("stateCertCards", standardCards + groupedCertificationCards + upgradeCard);
     }
 
     function renderSummary() {
+        const mix = groupedCertificationMix();
         const counts = {
-            NATIONAL: Number(state.mix.national) || 0,
-            CONDITIONAL: Number(state.mix.conditionality) || 0,
-            STATE: Number(state.mix.state) || 0
+            NATIONAL: mix.national,
+            CONDITIONAL: mix.conditionality,
+            STATE: mix.state,
+            STATE_CONDITIONAL: mix.stateConditionality
         };
-        const total = counts.NATIONAL + counts.CONDITIONAL + counts.STATE;
+        const total = counts.NATIONAL + counts.CONDITIONAL + counts.STATE + counts.STATE_CONDITIONAL;
         if (!total) return html("stateCertRows", `<div class="sq-state-empty">No certification type data available.</div>`);
-        const national = counts.NATIONAL * 100 / total, conditionality = counts.CONDITIONAL * 100 / total;
+        const national = counts.NATIONAL * 100 / total, conditionality = counts.CONDITIONAL * 100 / total, statePercent = counts.STATE * 100 / total, stateConditionality = counts.STATE_CONDITIONAL * 100 / total;
         const facilityTypeMax = Math.max(...state.facilityTypes.map(row => Number(row.count) || 0), 1);
         const facilityTypes = state.facilityTypes.length
-            ? `<section class="sq-cert-facility-types"><h4>Facility type distribution</h4>${state.facilityTypes.map(row => `<div class="sq-cert-facility-type-row"><span>${esc(row.type)}</span><div class="sq-cert-facility-stacked"><i class="is-national" style="width:${(Number(row.national) || 0) * 100 / facilityTypeMax}%"></i><i class="is-conditionality" style="width:${(Number(row.conditionality) || 0) * 100 / facilityTypeMax}%"></i><i class="is-state" style="width:${(Number(row.state) || 0) * 100 / facilityTypeMax}%"></i></div><b>${esc(row.certified || 0)} / ${esc(row.count || 0)} (${esc(row.completion_percentage || 0)}%)<small>N ${esc(row.national || 0)} · C ${esc(row.conditionality || 0)} · S ${esc(row.state || 0)}</small></b></div>`).join("")}</section>`
+            ? `<section class="sq-cert-facility-types"><h4>Facility type distribution</h4>${state.facilityTypes.map(row => `<div class="sq-cert-facility-type-row"><span>${esc(row.type)}</span><div class="sq-cert-facility-stacked"><i class="is-national" style="width:${(Number(row.national) || 0) * 100 / facilityTypeMax}%"></i><i class="is-conditionality" style="width:${(Number(row.conditionality) || 0) * 100 / facilityTypeMax}%"></i><i class="is-state" style="width:${(Number(row.state) || 0) * 100 / facilityTypeMax}%"></i><i class="is-state-conditional" style="width:${(Number(row.state_conditionality) || 0) * 100 / facilityTypeMax}%"></i></div><b>${esc(row.certified || 0)} / ${esc(row.count || 0)} (${esc(row.completion_percentage || 0)}%)<small>N ${esc(row.national || 0)} · NC ${esc(row.conditionality || 0)} · S ${esc(row.state || 0)} · SC ${esc(row.state_conditionality || 0)}</small></b></div>`).join("")}</section>`
             : `<section class="sq-cert-facility-types"><h4>Facility type distribution</h4><div class="sq-state-empty">No facility type data available.</div></section>`;
-        return html("stateCertRows", `<div class="sq-cert-overview"><section class="sq-cert-mix-panel"><h4>Certification type mix</h4><div class="sq-cert-mix"><div class="sq-cert-donut" style="background:conic-gradient(#078b7a 0 ${national}%,#e59008 ${national}% ${national + conditionality}%,#3f5fc4 ${national + conditionality}% 100%)"></div></div><div class="sq-cert-legend"><div><i class="is-national"></i>Certified — National <b>${counts.NATIONAL} (${Math.round(national)}%)</b></div><div><i class="is-conditionality"></i>Conditional <b>${counts.CONDITIONAL} (${Math.round(conditionality)}%)</b></div><div><i class="is-state"></i>Certified — State <b>${counts.STATE} (${Math.round(counts.STATE * 100 / total)}%)</b></div></div></section>${facilityTypes}</div>`);
+        return html("stateCertRows", `<div class="sq-cert-overview"><section class="sq-cert-mix-panel"><h4>Certification type mix</h4><div class="sq-cert-mix"><div class="sq-cert-donut" style="background:conic-gradient(#078b7a 0 ${national}%,#e59008 ${national}% ${national + conditionality}%,#3f5fc4 ${national + conditionality}% ${national + conditionality + statePercent}%,#c026d3 ${national + conditionality + statePercent}% 100%)"></div></div><div class="sq-cert-legend"><div><i class="is-national"></i>Certified — National <b>${counts.NATIONAL} (${Math.round(national)}%)</b></div><div><i class="is-conditionality"></i>National conditionality <b>${counts.CONDITIONAL} (${Math.round(conditionality)}%)</b></div><div><i class="is-state"></i>Certified — State <b>${counts.STATE} (${Math.round(statePercent)}%)</b></div><div><i class="is-state-conditional"></i>State conditionality <b>${counts.STATE_CONDITIONAL} (${Math.round(stateConditionality)}%)</b></div></div></section>${facilityTypes}</div>`);
         /* legacy status summary retained below for reference */
         html("stateCertRows", state.status.length
             ? `<table class="sq-state-table">
@@ -146,23 +197,26 @@
         state.breakdownPage = Math.min(state.breakdownPage, totalPages);
         const start = (state.breakdownPage - 1) * state.breakdownPerPage;
         const pageRows = rows.slice(start, start + state.breakdownPerPage);
-        text("stateCertBreakdownTitle", `${viewBy.replace("_", " ").replace(/\b\w/g, char => char.toUpperCase())}-wise certification completion`);
+        text("stateCertBreakdownTitle", `Certification Comparison — ${viewBy.replace("_", " ").replace(/\b\w/g, char => char.toUpperCase())}`);
+        html("stateCertComparisonSwitch", ["DIVISION", "DISTRICT", "FACILITY_TYPE"].map(level =>
+            `<button class="sq-cert-comparison-option ${level === viewBy ? "is-active" : ""}" type="button" data-cert-comparison-view="${level}">${level === "FACILITY_TYPE" ? "Facility type" : level[0] + level.slice(1).toLowerCase()}</button>`
+        ).join(""));
 
         html("stateCertChart", rows.length
-            ? `<div class="sq-cert-bar-legend"><span><i class="is-national"></i>Certified — National</span><span><i class="is-conditionality"></i>Conditional</span><span><i class="is-state"></i>Certified — State</span></div><div class="sq-state-chart-bars">${pageRows.map(row => `
-                <button class="sq-state-chart-row" type="button" ${viewBy === "DISTRICT" ? `data-cert-breakdown-district="${esc(row.label ?? "")}" title="Show certification mix for ${esc(row.label ?? "this district")}"` : ""}>
+            ? `<div class="sq-cert-bar-legend"><span><i class="is-national"></i>Certified — National</span><span><i class="is-conditionality"></i>National conditionality</span><span><i class="is-state"></i>Certified — State</span><span><i class="is-state-conditional"></i>State conditionality</span></div><div class="sq-state-chart-bars">${pageRows.map(row => `
+                <button class="sq-state-chart-row" type="button" ${viewBy === "DIVISION" ? `data-cert-breakdown-division="${esc(row.label ?? "")}" title="Show districts for ${esc(row.label ?? "this division")}"` : (viewBy === "DISTRICT" ? `data-cert-breakdown-district="${esc(row.label ?? "")}" title="Show blocks for ${esc(row.label ?? "this district")}"` : "")}>
                     <span>${esc(row.label ?? row.status)}</span>
-                    <div class="sq-cert-stacked"><i class="is-national" style="width:${(row.national || 0) * 100 / max}%"></i><i class="is-conditionality" style="width:${(row.conditionality || 0) * 100 / max}%"></i><i class="is-state" style="width:${(row.state || 0) * 100 / max}%"></i></div>
-                    <b>${esc((row.certified ?? row.count) || 0)}/${esc((row.total ?? row.count) || 0)} (${esc(row.completion_percentage ?? row.percentage ?? 0)}%)<small>National ${esc(row.national || 0)} · Conditional ${esc(row.conditionality || 0)} · State ${esc(row.state || 0)}</small></b>
+                    <div class="sq-cert-stacked"><i class="is-national" style="width:${(row.national || 0) * 100 / max}%"></i><i class="is-conditionality" style="width:${(row.conditionality || 0) * 100 / max}%"></i><i class="is-state" style="width:${(row.state || 0) * 100 / max}%"></i><i class="is-state-conditional" style="width:${(row.state_conditionality || 0) * 100 / max}%"></i></div>
+                    <b>${esc((row.certified ?? row.count) || 0)}/${esc((row.total ?? row.count) || 0)} (${esc(row.completion_percentage ?? row.percentage ?? 0)}%)<small title="N = National; NC = National conditionality; S = State; SC = State conditionality">N ${esc(row.national || 0)} · NC ${esc(row.conditionality || 0)} · S ${esc(row.state || 0)} · SC ${esc(row.state_conditionality || 0)}</small></b>
                 </button>
             `).join("")}</div>`
             : `<div class="sq-state-empty">No comparison data.</div>`);
         html("stateCertBreakdownPager", rows.length > state.breakdownPerPage
-            ? `<div class="sq-state-pagination"><button class="sq-btn sq-btn-light sq-btn-sm" type="button" data-cert-breakdown-page="${state.breakdownPage - 1}" ${state.breakdownPage === 1 ? "disabled" : ""}>Previous</button><span>Showing ${start + 1}–${Math.min(start + state.breakdownPerPage, rows.length)} of ${rows.length}</span><button class="sq-btn sq-btn-light sq-btn-sm" type="button" data-cert-breakdown-page="${state.breakdownPage + 1}" ${state.breakdownPage === totalPages ? "disabled" : ""}>Next</button></div>`
+            ? `<div class="sq-state-pagination"><button class="sq-btn sq-btn-light sq-btn-sm sq-cert-page-icon" type="button" data-cert-breakdown-page="${state.breakdownPage - 1}" ${state.breakdownPage === 1 ? "disabled" : ""} aria-label="Previous page" title="Previous page"><i class="bi bi-chevron-left" aria-hidden="true"></i></button><span>${start + 1}–${Math.min(start + state.breakdownPerPage, rows.length)} / ${rows.length}</span><button class="sq-btn sq-btn-light sq-btn-sm sq-cert-page-icon" type="button" data-cert-breakdown-page="${state.breakdownPage + 1}" ${state.breakdownPage === totalPages ? "disabled" : ""} aria-label="Next page" title="Next page"><i class="bi bi-chevron-right" aria-hidden="true"></i></button></div>`
             : "");
         html("stateCertBreakdownBack", viewBy === "BLOCK"
             ? `<button class="sq-btn sq-btn-light sq-btn-sm" type="button" data-cert-show-districts><i class="bi bi-arrow-left"></i> District-wise</button>`
-            : "");
+            : (viewBy === "DISTRICT" ? `<button class="sq-btn sq-btn-light sq-btn-sm" type="button" data-cert-show-divisions><i class="bi bi-arrow-left"></i> Division-wise</button>` : ""));
     }
 
     function renderTable() {
@@ -212,7 +266,47 @@
         if (state.pager) {
             state.pager.render("stateCertPagerTop", "Showing");
             state.pager.render("stateCertPager", "Showing");
+            ["stateCertPagerTop", "stateCertPager"].forEach(function (id) {
+                const pager = document.getElementById(id);
+                const previous = pager?.querySelector("[data-sq-page='prev']");
+                const next = pager?.querySelector("[data-sq-page='next']");
+                if (previous) {
+                    previous.classList.add("sq-cert-history-page-icon", "is-previous");
+                    previous.setAttribute("aria-label", "Previous page");
+                    previous.setAttribute("title", "Previous page");
+                    previous.innerHTML = '<i class="bi bi-chevron-left" aria-hidden="true"></i>';
+                }
+                if (next) {
+                    next.classList.add("sq-cert-history-page-icon", "is-next");
+                    next.setAttribute("aria-label", "Next page");
+                    next.setAttribute("title", "Next page");
+                    next.innerHTML = '<i class="bi bi-chevron-right" aria-hidden="true"></i>';
+                }
+            });
         }
+    }
+
+    function renderVisualChart() {
+        const rows = state.breakdown.length ? state.breakdown : [];
+        const max = Math.max(...rows.map(row => Number(row.total ?? row.count) || 0), 1);
+        const viewBy = state.viewBy || "DIVISION";
+        const labels = { DIVISION: "Division", DISTRICT: "District", BLOCK: "Block", FACILITY_TYPE: "Facility type" };
+        const hasDistrict = Boolean(selectedDistrictFilter());
+        text("stateCertVisualTitle", `Certification Visual Comparison — ${labels[viewBy] || viewBy}`);
+        html("stateCertVisualSwitch", ["DIVISION", "DISTRICT", "BLOCK", "FACILITY_TYPE"].map(function (level) {
+            const disabled = level === "BLOCK" && !hasDistrict;
+            return `<button class="sq-cert-comparison-option ${level === viewBy ? "is-active" : ""}" type="button" data-cert-comparison-view="${level}" ${disabled ? "disabled title=\"Select a district to compare blocks\"" : ""}>${labels[level]}</button>`;
+        }).join(""));
+        const visualRows = rows;
+        html("stateCertVisualChart", visualRows.length
+            ? `<div class="sq-cert-visual-bars">${visualRows.map(function (row) {
+                const total = Number(row.total ?? row.count) || 0;
+                const pct = Math.round((Number(row.certified ?? row.count) || 0) * 100 / Math.max(total, 1));
+                const certified = (Number(row.national) || 0) + (Number(row.conditionality) || 0) + (Number(row.state) || 0) + (Number(row.state_conditionality) || 0);
+                const barHeight = Math.max(5, Math.min(90, Math.round(pct * 0.95)));
+                return `<div class="sq-cert-visual-bar" title="${esc(row.label || row.status || "")} — ${pct}% certified"><div class="sq-cert-visual-stack" style="height:${barHeight}%"><i class="is-national" style="height:${(Number(row.national) || 0) * 100 / Math.max(certified, 1)}%"></i><i class="is-conditionality" style="height:${(Number(row.conditionality) || 0) * 100 / Math.max(certified, 1)}%"></i><i class="is-state" style="height:${(Number(row.state) || 0) * 100 / Math.max(certified, 1)}%"></i><i class="is-state-conditional" style="height:${(Number(row.state_conditionality) || 0) * 100 / Math.max(certified, 1)}%"></i></div><b>${pct}%</b><span>${esc(row.label || row.status || "-")}</span></div>`;
+            }).join("")}</div>`
+            : `<div class="sq-state-empty">No comparison data for this view.</div>`);
     }
 
     function renderAll() {
@@ -220,18 +314,27 @@
         renderCards();
         renderSummary();
         renderChart();
+        renderVisualChart();
         renderTable();
+    }
+
+    function selectedDistrictFilter() {
+        const value = document.getElementById("stateCertDistrict")?.value || "";
+        return value === ALL_DISTRICTS_VALUE ? "" : value;
     }
 
     async function load() {
         try {
+            const selectedDivision = document.getElementById("stateCertDivision")?.value || "";
+            const selectedDistrict = selectedDistrictFilter();
             const response = await SQ.api.get("/state/v1/certification_summary.php", state.pager.params({
                 search: document.getElementById("stateCertSearch")?.value || "",
                 status: document.getElementById("stateCertFilter")?.value || "",
                 certification_type: document.getElementById("stateCertTypeFilter")?.value || "",
-                district: document.getElementById("stateCertDistrict")?.value || "",
+                division: selectedDivision,
+                district: selectedDistrict,
                 block: document.getElementById("stateCertBlock")?.value || "",
-                view_by: document.getElementById("stateCertDistrict")?.value ? "BLOCK" : "DISTRICT",
+                view_by: state.breakdownView === "FACILITY_TYPE" ? "FACILITY_TYPE" : (selectedDistrict ? "BLOCK" : state.breakdownView),
                 _: Date.now()
             }), {
                 loader: false,
@@ -242,11 +345,12 @@
             state.status = response.data?.status || [];
             state.types = response.data?.types || [];
             state.facilityTypes = response.data?.facility_types || [];
-            state.mix = response.data?.mix || { national: 0, conditionality: 0, state: 0 };
+            state.mix = response.data?.mix || { national: 0, conditionality: 0, state: 0, state_conditionality: 0 };
+            state.renewedByType = response.data?.renewed_by_type || { national: 0, state: 0 };
             state.upgradedFromStateToNational = Number(response.data?.upgraded_from_state_to_national) || 0;
             state.breakdown = response.data?.breakdown || [];
             state.viewBy = response.data?.view_by || "DISTRICT";
-            state.filterOptions = response.data?.filter_options || { districts: [], blocks: [] };
+            state.filterOptions = response.data?.filter_options || { divisions: [], districts: [], blocks: [] };
             state.warning = response.data?._warning || "";
             state.pager.set(response.data?.pagination || {
                 page: 1,
@@ -340,7 +444,8 @@
             const response = await SQ.api.get("/state/v1/certification_summary.php", {
                 _all_facilities: 1,
                 search: document.getElementById("stateCertSearch")?.value || "",
-                district: document.getElementById("stateCertDistrict")?.value || "",
+                division: document.getElementById("stateCertDivision")?.value || "",
+                district: selectedDistrictFilter(),
                 block: document.getElementById("stateCertBlock")?.value || "",
                 _: Date.now()
             }, { loader: true, showError: false });
@@ -419,9 +524,26 @@
             state.pager.reset();
             load();
         });
+        document.getElementById("stateCertDivision")?.addEventListener("change", function () {
+            const district = document.getElementById("stateCertDistrict");
+            const block = document.getElementById("stateCertBlock");
+            if (district) district.value = ALL_DISTRICTS_VALUE;
+            if (block) block.value = "";
+            state.breakdownView = this.value ? "DISTRICT" : "DIVISION";
+            state.pager.reset();
+            load();
+        });
         document.getElementById("stateCertDistrict")?.addEventListener("change", function () {
             const block = document.getElementById("stateCertBlock");
             if (block) block.value = "";
+            state.breakdownView = "DISTRICT";
+            state.pager.reset();
+            load();
+        });
+        document.getElementById("stateCertDistrict")?.addEventListener("click", function () {
+            if (this.value !== ALL_DISTRICTS_VALUE || state.breakdownView === "DISTRICT") return;
+            state.breakdownView = "DISTRICT";
+            state.breakdownPage = 1;
             state.pager.reset();
             load();
         });
@@ -446,6 +568,29 @@
                     state.breakdownPage = Number(breakdownButton.getAttribute("data-cert-breakdown-page")) || 1;
                     renderChart();
                 }
+                const comparisonButton = event.target.closest("[data-cert-comparison-view]");
+                if (comparisonButton) {
+                    const level = comparisonButton.getAttribute("data-cert-comparison-view") || "DIVISION";
+                    const divisionSelect = document.getElementById("stateCertDivision");
+                    const districtSelect = document.getElementById("stateCertDistrict");
+                    const blockSelect = document.getElementById("stateCertBlock");
+                    if (level === "BLOCK" && !selectedDistrictFilter()) {
+                        if (SQ.notification) SQ.notification.warning("Select a district before comparing blocks.");
+                        return;
+                    }
+                    state.breakdownView = level;
+                    if (level === "DIVISION") {
+                        if (divisionSelect) divisionSelect.value = "";
+                        if (districtSelect) districtSelect.value = ALL_DISTRICTS_VALUE;
+                        if (blockSelect) blockSelect.value = "";
+                    } else if (level === "DISTRICT") {
+                        if (districtSelect) districtSelect.value = ALL_DISTRICTS_VALUE;
+                        if (blockSelect) blockSelect.value = "";
+                    }
+                    state.breakdownPage = 1;
+                    state.pager.reset();
+                    load();
+                }
                 const districtButton = event.target.closest("[data-cert-breakdown-district]");
                 if (districtButton) {
                     const district = districtButton.getAttribute("data-cert-breakdown-district") || "";
@@ -456,12 +601,37 @@
                     state.pager.reset();
                     load();
                 }
+                const divisionButton = event.target.closest("[data-cert-breakdown-division]");
+                if (divisionButton) {
+                    const division = divisionButton.getAttribute("data-cert-breakdown-division") || "";
+                    const divisionSelect = document.getElementById("stateCertDivision");
+                    if (!division || !divisionSelect) return;
+                    divisionSelect.value = division;
+                    state.breakdownView = "DISTRICT";
+                    state.breakdownPage = 1;
+                    state.pager.reset();
+                    load();
+                }
                 const showDistrictsButton = event.target.closest("[data-cert-show-districts]");
                 if (showDistrictsButton) {
                     const districtSelect = document.getElementById("stateCertDistrict");
                     const blockSelect = document.getElementById("stateCertBlock");
-                    if (districtSelect) districtSelect.value = "";
+                    if (districtSelect) districtSelect.value = ALL_DISTRICTS_VALUE;
                     if (blockSelect) blockSelect.value = "";
+                    state.breakdownView = "DISTRICT";
+                    state.breakdownPage = 1;
+                    state.pager.reset();
+                    load();
+                }
+                const showDivisionsButton = event.target.closest("[data-cert-show-divisions]");
+                if (showDivisionsButton) {
+                    const divisionSelect = document.getElementById("stateCertDivision");
+                    const districtSelect = document.getElementById("stateCertDistrict");
+                    const blockSelect = document.getElementById("stateCertBlock");
+                    if (divisionSelect) divisionSelect.value = "";
+                    if (districtSelect) districtSelect.value = ALL_DISTRICTS_VALUE;
+                    if (blockSelect) blockSelect.value = "";
+                    state.breakdownView = "DIVISION";
                     state.breakdownPage = 1;
                     state.pager.reset();
                     load();

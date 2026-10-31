@@ -8,6 +8,7 @@
  */
 
 .sq-performance-page{display:flex;flex-direction:column;gap:.6rem}
+.sq-layout-main>.sq-page-header:has(.sq-performance-trend-header-toolbar){align-items:center}.sq-performance-trend-header-toolbar{align-items:flex-end;justify-content:flex-end;flex-wrap:nowrap;margin:0;padding:0}.sq-performance-trend-header-toolbar .sq-form-control{width:118px;min-height:30px;height:30px;padding:4px 7px;font-size:11px}.sq-performance-trend-header-toolbar .sq-trend-department-filter{gap:2px;font-size:10px}.sq-performance-trend-header-toolbar .sq-trend-department-filter .sq-form-control{width:145px}.sq-performance-trend-header-toolbar .sq-trend-toggle{min-height:30px;padding:4px 7px;font-size:11px;white-space:nowrap}.sq-performance-trend-header-toolbar .sq-trend-icon-button{width:30px;min-width:30px;height:30px;min-height:30px}.sq-performance-trend-header-toolbar .sq-trend-excel-button[aria-busy="true"]{width:auto;min-width:155px}@media(max-width:1200px){.sq-layout-main>.sq-page-header:has(.sq-performance-trend-header-toolbar){align-items:flex-start}.sq-performance-trend-header-toolbar{justify-content:flex-start;flex-wrap:wrap}}
 .sq-performance-page>.sq-card:first-child>.sq-card-header{align-items:center;gap:.7rem}
 .sq-performance-page>.sq-card:first-child>.sq-card-header>.sq-trend-toolbar{flex:1;max-width:none}
 .sq-performance-page>.sq-card:first-child>.sq-card-header h3{margin:0;font-size:1.1rem;line-height:1.1}
@@ -34,7 +35,7 @@
 .sq-trend-section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:.75rem;margin:.65rem 0 .4rem}
 .sq-trend-section-title h4{margin:0;color:var(--sq-text-primary);font-size:.88rem}
 .sq-trend-section-title span{color:var(--sq-text-muted);font-size:.68rem}
-.sq-trend-pdf-button{display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;border:1px solid #93c5fd;border-radius:6px;background:#fff;color:#1d4ed8;cursor:pointer}.sq-trend-pdf-button:hover{background:#dbeafe}.sq-trend-pdf-button:disabled{opacity:.6;cursor:wait}
+.sq-trend-pdf-button{position:relative;display:inline-grid;place-items:center;width:34px;min-width:34px;height:34px;min-height:34px;padding:0;border:1px solid #bfdbfe;border-radius:8px;background:#fff;color:#1d4ed8;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.06)}.sq-trend-pdf-button .sq-trend-pdf-file-icon{color:#dc2626;font-size:19px}.sq-trend-pdf-download-badge{position:absolute;right:-4px;bottom:-4px;display:grid;place-items:center;width:15px;height:15px;border:2px solid #fff;border-radius:50%;background:#2563eb;color:#fff;font-size:8px;line-height:1}.sq-trend-pdf-button:hover{border-color:#60a5fa;background:#eff6ff;box-shadow:0 2px 5px rgba(37,99,235,.18)}.sq-trend-pdf-button:disabled{opacity:.6;cursor:wait}
 .sq-trend-months{display:grid;grid-template-columns:repeat(6,minmax(112px,1fr));gap:.45rem}
 .sq-trend-month-card{display:grid;grid-template-columns:1fr 1fr;gap:.18rem .35rem;padding:.5rem .55rem;border:1px solid var(--sq-border);border-radius:8px;background:var(--sq-bg-surface)}
 .sq-trend-month-card strong{grid-column:1/-1;color:var(--sq-text-primary);font-size:.8rem}

@@ -12,7 +12,7 @@
 
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
-    const state = { pager: null };
+    const state = { pager: null, filterOptions: { divisions: [], districts: [], blocks: [] } };
 
     function esc(value) {
         return String(value ?? "")
@@ -91,8 +91,57 @@
 
     function queryParams() {
         return state.pager.params({
-            search: document.getElementById("stateCqiSearch")?.value || ""
+            search: document.getElementById("stateCqiSearch")?.value || "",
+            division: document.getElementById("stateCqiDivision")?.value || "",
+            district: document.getElementById("stateCqiDistrict")?.value || "",
+            block: document.getElementById("stateCqiBlock")?.value || ""
         });
+    }
+
+    function optionRows(select, rows, labelKey, valueKey, selected) {
+        if (!select) return;
+        select.innerHTML = `<option value="">All ${select.id === "stateCqiDivision" ? "divisions" : select.id === "stateCqiDistrict" ? "districts" : "blocks"}</option>${rows.map(row => `<option value="${esc(row[valueKey] || "")}">${esc(row[labelKey] || "")}</option>`).join("")}`;
+        select.value = rows.some(row => String(row[valueKey] || "") === String(selected || "")) ? selected : "";
+    }
+
+    function populateLocationFilters(resetChildren) {
+        const division = document.getElementById("stateCqiDivision");
+        const district = document.getElementById("stateCqiDistrict");
+        const block = document.getElementById("stateCqiBlock");
+        if (!division || !district || !block) return;
+
+        const selectedDivision = division.value;
+        const selectedDistrict = resetChildren ? "" : district.value;
+        const selectedBlock = resetChildren ? "" : block.value;
+        optionRows(division, state.filterOptions.divisions, "division_name", "division_name", selectedDivision);
+        const divisionRow = state.filterOptions.divisions.find(row => String(row.division_name) === String(division.value));
+        const districts = divisionRow
+            ? state.filterOptions.districts.filter(row => String(row.division_id) === String(divisionRow.division_id))
+            : state.filterOptions.districts;
+        optionRows(district, districts, "district_name", "district_name", selectedDistrict);
+        const districtRow = districts.find(row => String(row.district_name) === String(district.value));
+        const blocks = districtRow
+            ? state.filterOptions.blocks.filter(row => String(row.dist_id) === String(districtRow.dist_id))
+            : (divisionRow ? state.filterOptions.blocks.filter(row => String(row.division_id) === String(divisionRow.division_id)) : state.filterOptions.blocks);
+        optionRows(block, blocks, "block_name", "block_name", selectedBlock);
+        district.disabled = false;
+        block.disabled = !district.value;
+    }
+
+    async function loadLocationFilters() {
+        try {
+            const response = await SQ.api.get("/state/v1/user_scope_options.php", {}, { loader: false, showError: false });
+            const data = response.data || {};
+            state.filterOptions = {
+                divisions: Array.isArray(data.divisions) ? data.divisions : [],
+                districts: Array.isArray(data.districts) ? data.districts : [],
+                blocks: Array.isArray(data.blocks) ? data.blocks : []
+            };
+            populateLocationFilters(false);
+        } catch (error) {
+            // Search and CQI data remain usable if scope options are unavailable.
+            console.warn("CQI location filters could not be loaded", error);
+        }
     }
 
     function bindSearch(inputId) {
@@ -119,23 +168,23 @@
             ? `<table class="sq-state-table sq-state-cqi-table">
                 <thead>
                     <tr>
-                        <th>Sl. No.</th>
+                        <th>Sl.</th>
                         <th>District</th>
                         <th>Block</th>
-                        <th>Facility Name</th>
-                        <th>NIN No.</th>
-                        <th>Facility Type</th>
-                        <th>Assessment Name</th>
-                        <th>Assessment Status</th>
-                        <th>Score 0 Checkpoints</th>
-                        <th>Score 1 Checkpoints</th>
-                        <th>Action Plans Required<br><small>Score 0 + Score 1</small></th>
-                        <th>Action Plans Created</th>
-                        <th>Action Plans Closed</th>
-                        <th>Achievable Plans</th>
-                        <th>Non-achievable Plans</th>
-                        <th>Pending Action Plans<br><small>Required − Created</small></th>
-                        <th>Open Action Plans</th>
+                        <th>Facility</th>
+                        <th>NIN</th>
+                        <th>Type</th>
+                        <th>Assessment</th>
+                        <th>Status</th>
+                        <th>Score 0</th>
+                        <th>Score 1</th>
+                        <th title="Action Plans Required (Score 0 + Score 1)">Plans Required</th>
+                        <th>Plans Created</th>
+                        <th>Plans Closed</th>
+                        <th>Achievable</th>
+                        <th>Non-achievable</th>
+                        <th title="Pending Action Plans (Required − Created)">Plans Pending</th>
+                        <th>Open Plans</th>
                         <th>CQI Status</th>
                     </tr>
                 </thead>
@@ -215,25 +264,46 @@
     }
 
     function renderKpiBreakdown(rows) {
+        const normalizedRows = rows.map(row => ({
+            ...row,
+            facilities_with_action_plan_created_not_closed: Object.prototype.hasOwnProperty.call(row, "facilities_with_action_plan_created_not_closed")
+                ? num(row.facilities_with_action_plan_created_not_closed)
+                : Math.max(0, num(row.facilities_with_submitted_action_plan) - num(row.facilities_with_closed_action_plan))
+        }));
         const metrics = [
-            ["stateCqiTotalTypes", "facilities_submitted", "facilities"],
-            ["stateCqiPlanTypes", "action_plans_created", "plans"],
-            ["stateCqiMissingTypes", "action_plan_not_created", "facilities"],
-            ["stateCqiCompletedTypes", "facilities_completed", "facilities"]
+            ["stateCqiSubmittedForPlanTypes", "facilities_submitted_for_action_plan"],
+            ["stateCqiPlanCreatedNotClosedTypes", "facilities_with_action_plan_created_not_closed"],
+            ["stateCqiPlanClosedTypes", "facilities_with_closed_action_plan"],
+            ["stateCqiPlanNotStartedTypes", "facilities_action_plan_not_started"]
         ];
-        metrics.forEach(([id, metric, unit]) => {
+        metrics.forEach(([id, metric]) => {
             const target = document.getElementById(id);
             if (!target) return;
-            const types = rows
+            const types = normalizedRows
                 .filter(row => num(row[metric]) > 0)
                 .sort((a, b) => num(b[metric]) - num(a[metric]));
-            const visible = types.slice(0, 3);
-            const remaining = types.length - visible.length;
-            target.innerHTML = visible.length
-                ? visible.map(row => `<span><b>${esc(row.facility_type || "Unspecified")}</b><em>${num(row[metric]).toLocaleString()} ${unit}</em></span>`).join("")
-                    + (remaining ? `<small>+ ${remaining} other facility type${remaining === 1 ? "" : "s"}</small>` : "")
+            target.innerHTML = types.length
+                ? types.map(row => `<span title="${esc(row.facility_type || "Unspecified")}"><b>${esc(row.facility_type || "Unspecified")}</b><em>${num(row[metric]).toLocaleString()}</em></span>`).join("")
                 : "<span>No data available</span>";
         });
+    }
+
+    function createPager() {
+        if (SQ.pagination && typeof SQ.pagination.create === "function") {
+            return SQ.pagination.create({ page: 1, perPage: 10, onChange: load });
+        }
+
+        // The KPI request must still run if the optional pagination helper
+        // has not loaded yet. Pagination resumes after the next full reload.
+        const fallback = {
+            page: 1,
+            perPage: 10,
+            params() { return { page: this.page, per_page: this.perPage }; },
+            reset() { this.page = 1; return this; },
+            set() { return this; },
+            render() { return this; }
+        };
+        return fallback;
     }
 
     async function load() {
@@ -242,21 +312,28 @@
                 loader: false,
                 showError: false
             });
+            // The user may change route while the request is in flight. Do not
+            // update a CQI view that has already been removed by the router.
+            if (!document.getElementById("stateCqiRows") || !document.getElementById("stateCqiPager")) return;
             const data = response.data || {};
+            const createdNotClosed = Object.prototype.hasOwnProperty.call(data, "facilities_with_action_plan_created_not_closed")
+                ? num(data.facilities_with_action_plan_created_not_closed)
+                : Math.max(0, num(data.facilities_with_submitted_action_plan) - num(data.facilities_with_closed_action_plan));
 
-            setText("stateCqiTotal", data.facilities_submitted || 0);
-            setText("stateCqiDone", data.action_plans_created || 0);
-            setText("stateCqiHighPriority", data.action_plan_not_created || 0);
-            setText("stateCqiUnassigned", data.facilities_completed || 0);
+            setText("stateCqiSubmittedForPlan", data.facilities_submitted_for_action_plan || 0);
+            setText("stateCqiPlanCreatedNotClosed", createdNotClosed);
+            setText("stateCqiPlanClosed", data.facilities_with_closed_action_plan || 0);
+            setText("stateCqiPlanNotStarted", data.facilities_action_plan_not_started || 0);
             renderKpiBreakdown(data.facility_type_breakdown || []);
             const pagination = data.pagination || {};
             renderRows(data.rows || [], pagination.page || 1, pagination.per_page || 10);
             state.pager.set(pagination).render("stateCqiPager", "Showing");
         } catch (error) {
-            setText("stateCqiTotal", 0);
-            setText("stateCqiDone", 0);
-            setText("stateCqiHighPriority", 0);
-            setText("stateCqiUnassigned", 0);
+            if (!document.getElementById("stateCqiRows") || !document.getElementById("stateCqiPager")) return;
+            setText("stateCqiSubmittedForPlan", 0);
+            setText("stateCqiPlanCreatedNotClosed", 0);
+            setText("stateCqiPlanClosed", 0);
+            setText("stateCqiPlanNotStarted", 0);
             renderKpiBreakdown([]);
             const rowsTarget = document.getElementById("stateCqiRows");
             if (rowsTarget) rowsTarget.innerHTML =
@@ -265,18 +342,54 @@
         }
     }
 
+    function moveToolbarIntoPageHeader() {
+        const title = document.getElementById("sq-page-title");
+        const toolbar = document.querySelector(".sq-state-cqi-page > .sq-state-toolbar");
+        if (!title || !toolbar || toolbar.classList.contains("sq-cqi-header-toolbar")) return;
+
+        const row = document.createElement("div");
+        row.className = "sq-cqi-page-title-row";
+        title.parentNode.insertBefore(row, title);
+        row.appendChild(title);
+        toolbar.classList.add("sq-cqi-header-toolbar");
+        row.appendChild(toolbar);
+    }
+
     async function init() {
+        moveToolbarIntoPageHeader();
         if (SQ.deployment && typeof SQ.deployment.load === "function") {
-            await SQ.deployment.load();
-            SQ.deployment.applyLabels(document);
+            try {
+                await SQ.deployment.load();
+                SQ.deployment.applyLabels(document);
+            } catch (error) {
+                // Labels are optional; do not prevent the CQI API from loading.
+                console.warn("CQI deployment labels could not be applied", error);
+            }
         }
-        state.pager = SQ.pagination.create({ page: 1, perPage: 10, onChange: load });
+        state.pager = createPager();
         document.getElementById("stateCqiRefresh")?.addEventListener("click", function () {
             state.pager.reset();
             load();
         });
         document.getElementById("stateCqiDownload")?.addEventListener("click", downloadAllStatuses);
         bindSearch("stateCqiSearch");
+        document.getElementById("stateCqiDivision")?.addEventListener("change", function () {
+            populateLocationFilters(true);
+            state.pager.reset();
+            load();
+        });
+        document.getElementById("stateCqiDistrict")?.addEventListener("change", function () {
+            const block = document.getElementById("stateCqiBlock");
+            if (block) block.value = "";
+            populateLocationFilters(false);
+            state.pager.reset();
+            load();
+        });
+        document.getElementById("stateCqiBlock")?.addEventListener("change", function () {
+            state.pager.reset();
+            load();
+        });
+        await loadLocationFilters();
         await load();
     }
 

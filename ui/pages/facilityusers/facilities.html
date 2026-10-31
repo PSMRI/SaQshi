@@ -12,19 +12,13 @@ License : GPL-3.0
 
 <section class="sq-admin-facility">
     <form id="adminFacilityForm" class="sq-card sq-admin-facility-card" autocomplete="off">
-        <div class="sq-card-header">
-            <div>
-                <h3>Facility Details</h3>
-                <p>View and update assigned facility profile with geo coordinates.</p>
-            </div>
-            <div class="sq-facility-actions">
-                <button type="button" class="sq-btn sq-btn-light" id="btnRefreshFacility">
-                    Refresh
+        <div class="sq-facility-actions" id="facilityHeaderActions">
+                <button type="button" class="sq-btn sq-facility-icon-btn sq-facility-refresh-btn" id="btnRefreshFacility" title="Refresh facility details" aria-label="Refresh facility details">
+                    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
                 </button>
-                <button type="button" class="sq-btn sq-btn-primary" id="btnEditFacility">
-                    Edit
+                <button type="button" class="sq-btn sq-facility-icon-btn sq-facility-edit-btn" id="btnEditFacility" title="Edit facility details" aria-label="Edit facility details">
+                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
                 </button>
-            </div>
         </div>
 
         <div class="sq-card-body">

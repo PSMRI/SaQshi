@@ -2,20 +2,24 @@
 <section class="sq-state-page sq-state-cqi-page">
     <div class="sq-state-toolbar">
         <div class="sq-state-filters">
+            <select class="sq-form-control" id="stateCqiDivision" aria-label="Filter by division"><option value="">All divisions</option></select>
+            <select class="sq-form-control" id="stateCqiDistrict" aria-label="Filter by district"><option value="">All districts</option></select>
+            <select class="sq-form-control" id="stateCqiBlock" aria-label="Filter by block"><option value="">All blocks</option></select>
             <input type="search" class="sq-form-control" id="stateCqiSearch" placeholder="Search facility or NIN" aria-label="Search Facility Or NIN" data-domain-placeholder="Search {facility} or {facility_code}" data-domain-aria-label="Search {facility} or {facility_code}">
             <button class="sq-btn sq-btn-light sq-cqi-icon-action" id="stateCqiDownload" type="button" title="Download all CQI statuses" aria-label="Download all CQI statuses"><i class="bi bi-download"></i></button>
             <button class="sq-btn sq-btn-primary sq-cqi-icon-action" id="stateCqiRefresh" type="button" title="Refresh CQI data" aria-label="Refresh CQI data"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
     </div>
     <div class="sq-state-kpis">
-        <div><span>Facilities Submitted</span><strong id="stateCqiTotal">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiTotalTypes"></small></div>
-        <div><span>Action Plans Created</span><strong id="stateCqiDone">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiPlanTypes"></small></div>
-        <div><span>Action Plan Not Created</span><strong id="stateCqiHighPriority">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiMissingTypes"></small></div>
-        <div><span>Facilities CQI Completed</span><strong id="stateCqiUnassigned">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiCompletedTypes"></small></div>
+        <div><span>Facilities Requiring Action Plan</span><strong id="stateCqiSubmittedForPlan">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiSubmittedForPlanTypes"></small></div>
+        <div><span>Facilities with Action Plan Created but Not Closed</span><strong id="stateCqiPlanCreatedNotClosed">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiPlanCreatedNotClosedTypes"></small></div>
+        <div><span>Facilities with All Action Plans Created and Closed</span><strong id="stateCqiPlanClosed">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiPlanClosedTypes"></small></div>
+        <div><span>Facilities with Action Plan Not Started</span><strong id="stateCqiPlanNotStarted">0</strong><small class="sq-cqi-kpi-breakdown" id="stateCqiPlanNotStartedTypes"></small></div>
     </div>
-    <div class="sq-state-note" role="note">
-        <strong>How these values are counted:</strong> Only the latest active or completed assessment of each facility is considered. Cancelled assessments are excluded. Facilities Submitted = included assessment checklists; Action Plans Created = total plans created from those checklists; Action Plan Not Created = included facilities with no plan; Facilities CQI Completed = every plan is closed, marked achievable/non-achievable, and has a revised score.
-    </div>
+    <details class="sq-cqi-count-guide">
+        <summary>How these values are counted</summary>
+        <div>Only each facility's latest completed checklist is included. <strong>Facilities Requiring Action Plan</strong> means its checklist has at least one 0/1 checkpoint and therefore needs an action plan. <strong>Created but Not Closed</strong> means a plan exists but one or more plans are not yet closed. <strong>All Created and Closed</strong> means every created plan is marked Closed. <strong>Not Started</strong> means an action plan is needed but none was created. <strong>Requiring Action Plan = Created but Not Closed + All Created and Closed + Not Started.</strong></div>
+    </details>
     <div class="sq-card">
         <div class="sq-card-header">
             <h3>Facility Action Tracking Details</h3>

@@ -2,7 +2,8 @@
 <section class="sq-state-page">
     <div class="sq-state-toolbar">
         <div class="sq-state-filters">
-            <select class="sq-form-control" id="stateCertDistrict" aria-label="District filter"><option value="">All districts</option></select>
+            <select class="sq-form-control" id="stateCertDivision" aria-label="Division filter"><option value="">All divisions</option></select>
+            <select class="sq-form-control" id="stateCertDistrict" aria-label="District filter"><option value="__ALL_DISTRICTS__">All districts</option></select>
             <select class="sq-form-control" id="stateCertBlock" aria-label="Block filter" disabled><option value="">All blocks</option></select>
             <input type="search" class="sq-form-control" id="stateCertSearch" placeholder="Search facility, district, NIN" aria-label="Search Facility, District, NIN">
             <select class="sq-form-control" id="stateCertFilter" aria-label="State Cert Filter">
@@ -27,13 +28,18 @@
 
     <div class="sq-state-grid">
         <div class="sq-card">
-            <div class="sq-card-header"><h3 id="stateCertBreakdownTitle">District-wise certification completion</h3><div class="sq-cert-breakdown-actions"><div id="stateCertBreakdownBack"></div><div id="stateCertBreakdownPager"></div></div></div>
+            <div class="sq-card-header"><h3 id="stateCertBreakdownTitle">Certification Comparison</h3><div class="sq-cert-breakdown-actions"><div class="sq-cert-comparison-switch" id="stateCertComparisonSwitch"></div><div id="stateCertBreakdownBack"></div><div id="stateCertBreakdownPager"></div></div></div>
             <div class="sq-card-body" id="stateCertChart"></div>
         </div>
         <div class="sq-card">
             <div class="sq-card-header"><h3>Certification Mix</h3></div>
             <div class="sq-card-body" id="stateCertRows"></div>
         </div>
+    </div>
+
+    <div class="sq-card sq-cert-visual-card">
+        <div class="sq-card-header"><div><h3 id="stateCertVisualTitle">Certification Visual Comparison</h3><p>Classic chart: blue bar height shows certification completion percentage.</p></div><div class="sq-cert-comparison-switch" id="stateCertVisualSwitch"></div></div>
+        <div class="sq-card-body" id="stateCertVisualChart"></div>
     </div>
 
     <div class="sq-card">

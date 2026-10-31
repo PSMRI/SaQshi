@@ -15,10 +15,10 @@
 
     "assets": {
         "css": [
-            "/ui/pages/reports/progress.css?v=20261025-department-sheets-1"
+            "/ui/pages/reports/progress.css?v=20261031-header-tools-1"
         ],
         "js": [
-            "/ui/pages/reports/progress.js?v=20261025-department-sheets-1"
+            "/ui/pages/reports/progress.js?v=20261031-header-tools-1"
         ]
     },
 

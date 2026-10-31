@@ -92,6 +92,25 @@
     font-size:.72rem;
 }
 
+#btnRefreshAssessments{
+    display:grid;
+    place-items:center;
+    width:28px;
+    min-width:28px;
+    min-height:28px;
+    height:28px;
+    padding:0;
+    border-color:#2563eb;
+    background:#2563eb;
+    color:#fff;
+}
+
+#btnRefreshAssessments:hover{
+    border-color:#1d4ed8;
+    background:#1d4ed8;
+    color:#fff;
+}
+
 .sq-assessment-name{
     display:flex;
     flex-direction:column;
@@ -183,5 +202,9 @@
     .sq-list-tools .sq-form-control,
     .sq-list-tools .sq-btn{
         width:100%;
+    }
+
+    .sq-list-tools #btnRefreshAssessments{
+        width:28px;
     }
 }

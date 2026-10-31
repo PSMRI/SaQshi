@@ -39,6 +39,8 @@
     gap:.45rem;
 }
 
+.sq-admin-facility #facilityHeaderActions{display:none}
+
 .sq-facility-footer{
     justify-content:space-between;
 }
@@ -48,6 +50,24 @@
     padding:.32rem .65rem !important;
     font-size:.72rem !important;
 }
+
+.sq-facility-actions .sq-facility-icon-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:32px;
+    min-width:32px;
+    min-height:32px!important;
+    height:32px;
+    padding:0!important;
+    font-size:.9rem!important;
+}
+
+.sq-facility-icon-btn i{margin:0!important}
+.sq-facility-refresh-btn{background:#15803d!important;border-color:#15803d!important;color:#fff!important}
+.sq-facility-refresh-btn:hover,.sq-facility-refresh-btn:focus-visible{background:#166534!important;border-color:#166534!important;color:#fef08a!important}
+.sq-facility-edit-btn{background:#2563eb!important;border-color:#2563eb!important;color:#fff!important}
+.sq-facility-edit-btn:hover:not(:disabled),.sq-facility-edit-btn:focus-visible:not(:disabled){background:#1d4ed8!important;border-color:#1d4ed8!important;color:#fef08a!important}
 
 .sq-facility-context{
     display:grid;

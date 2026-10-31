@@ -1,7 +1,11 @@
 <?php
 
+require_once dirname(__DIR__) . '/bootstrap.php';
+
 /**
- * Provides auth middleware behavior for SaQshi API workflows.
+ * Compatibility middleware for legacy route-based APIs.
+ * All session handling is delegated to SessionManager so legacy routes share
+ * the same Redis-backed cookie and security policy as modern APIs.
  */
 class AuthMiddleware {
 
@@ -9,17 +13,8 @@ class AuthMiddleware {
      * Handles check processing for this API workflow.
      */
     public static function check() {
-        session_start();
-
-        if (!isset($_SESSION['user'])) {
-            echo json_encode([
-                "status" => false,
-                "message" => "Unauthorized"
-            ]);
-            exit;
-        }
-
-        return $_SESSION['user'];
+        SessionManager::requireLogin();
+        return SessionManager::user();
     }
 
     /**
@@ -28,7 +23,7 @@ class AuthMiddleware {
     public static function role($allowed_roles = []) {
         $user = self::check();
 
-        if (!in_array($user['role_name'], $allowed_roles)) {
+        if (!in_array($user['role_name'] ?? '', $allowed_roles, true)) {
             echo json_encode([
                 "status" => false,
                 "message" => "Forbidden - Role not allowed"

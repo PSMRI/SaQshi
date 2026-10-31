@@ -155,22 +155,22 @@
 
     function renderAssessment() {
         const assessment = state.assessment || {};
+        const actions = $("sq-page-actions");
 
-        if ($("assessmentName")) {
-            $("assessmentName").textContent = assessment.assessment_name || "-";
+        if (!actions) {
+            return;
         }
 
-        if ($("assessmentStatus")) {
-            $("assessmentStatus").textContent = assessment.status || "-";
+        let headerName = actions.querySelector(".sq-assessor-info-assessment-header");
+
+        if (!headerName) {
+            headerName = document.createElement("div");
+            headerName.className = "sq-assessor-info-assessment-header";
+            headerName.innerHTML = '<span>Assessment</span><strong></strong>';
+            actions.appendChild(headerName);
         }
 
-        if ($("assessmentFramework")) {
-            $("assessmentFramework").textContent = assessment.framework_code || "saqshi-nqas";
-        }
-
-        if ($("assessmentId")) {
-            $("assessmentId").textContent = assessment.assessment_id || "-";
-        }
+        headerName.querySelector("strong").textContent = assessment.assessment_name || "-";
     }
 
     function renderDepartmentOptions() {

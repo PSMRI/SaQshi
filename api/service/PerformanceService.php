@@ -593,6 +593,9 @@ class PerformanceService
         int $departmentId,
         string $departmentName
     ): array {
+        $formulaId = (int)($indicator['formula_id'] ?? 0);
+        $formula = FormulaEngine::findFormula($formulaId);
+
         return [
             'indicator_id' => (int)($indicator['indicator_id'] ?? $indicator['kpi_id'] ?? $indicator['outcome_id'] ?? 0),
             'indicator_code' => (string)($indicator['indicator_code'] ?? $indicator['kpi_code'] ?? $indicator['outcome_code'] ?? ''),
@@ -603,7 +606,8 @@ class PerformanceService
             'department_id' => $departmentId,
             'department_name' => $departmentName !== '' ? $departmentName : self::departmentName($departmentId),
             'frequency' => (string)($indicator['frequency'] ?? 'MONTHLY'),
-            'formula_id' => (int)($indicator['formula_id'] ?? 0),
+            'formula_id' => $formulaId,
+            'formula' => (string)($formula['source_expression'] ?? $formula['expression'] ?? ''),
             'precision' => (int)($indicator['precision'] ?? 2),
             'fields' => $indicator['fields'] ?? [],
             'validation' => $indicator['validation'] ?? [],

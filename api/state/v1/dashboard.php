@@ -13,7 +13,8 @@ try {
     $certificationSummary = ['total' => 0, 'status' => [], 'map_points' => []];
     $currentMonthStatus = [
         'assessment' => ['started' => 0, 'in_progress' => 0, 'completed' => 0],
-        'performance' => ['kpi_filled' => 0, 'outcome_filled' => 0]
+        'performance' => ['kpi_filled' => 0, 'outcome_filled' => 0],
+        'action_plans' => ['facilities_completed' => 0]
     ];
 
     try {
@@ -39,7 +40,15 @@ try {
         'total' => 0,
         'active' => 0,
         'completed' => 0,
-        'cancelled' => 0
+        'cancelled' => 0,
+        'facilities_with_assessment' => 0,
+        'facilities_without_assessment' => 0
+    ];
+    $latestCompletedScoreBands = [
+        'scored_facilities' => 0,
+        'below_60' => 0,
+        'from_60_to_below_80' => 0,
+        'at_or_above_80' => 0
     ];
     $schoolCategorySummary = [
         'total_scored' => 0,
@@ -56,6 +65,16 @@ try {
         }
 
         $assessmentSummary['_error'] = 'Assessment summary could not be loaded.';
+    }
+
+    try {
+        $latestCompletedScoreBands = StateDashboardService::latestCompletedScoreBands($con, $_GET);
+    } catch (Throwable $scoreBandsError) {
+        if (class_exists('ErrorHandler')) {
+            ErrorHandler::log('State dashboard latest completed score bands failed', [
+                'error' => $scoreBandsError->getMessage()
+            ]);
+        }
     }
 
     try {
@@ -81,6 +100,7 @@ try {
         'facility_category' => $facilityCategory,
         'certification_summary' => $certificationSummary,
         'assessment_summary' => $assessmentSummary,
+        'latest_completed_score_bands' => $latestCompletedScoreBands,
         'school_category_summary' => $schoolCategorySummary,
         'cqi_summary' => [
             'total_action_plans' => 0,

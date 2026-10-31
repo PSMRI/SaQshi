@@ -184,9 +184,33 @@ const SQ = window.SQ || {};
             document.body.appendChild(container);
         }
 
+        // A request may be reported by the API client and by the browser's
+        // unhandled-rejection handler at almost the same time. Re-use the
+        // visible notification instead of stacking duplicate messages.
+        const text = String(message || "");
+        const existing = Array.from(container.querySelectorAll(".sq-alert"))
+            .find(function (item) {
+                return item.dataset.sqToastMessage === text &&
+                    item.dataset.sqToastType === String(type);
+            });
+
+        if (existing) {
+            if (existing._sqToastTimer) {
+                clearTimeout(existing._sqToastTimer);
+            }
+            if (duration > 0) {
+                existing._sqToastTimer = setTimeout(function () {
+                    existing.remove();
+                }, duration);
+            }
+            return existing;
+        }
+
         const toast = document.createElement("div");
         toast.className = "sq-alert sq-alert-" + type + " sq-shadow-md sq-fade-in";
         toast.setAttribute("role", "status");
+        toast.dataset.sqToastMessage = text;
+        toast.dataset.sqToastType = String(type);
         toast.innerHTML = `
             <div class="sq-alert-content">
                 <div class="sq-alert-text">${SQ.escape(message)}</div>
@@ -201,7 +225,7 @@ const SQ = window.SQ || {};
         container.appendChild(toast);
 
         if (duration > 0) {
-            setTimeout(function () {
+            toast._sqToastTimer = setTimeout(function () {
                 toast.remove();
             }, duration);
         }

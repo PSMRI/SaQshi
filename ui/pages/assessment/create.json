@@ -15,7 +15,7 @@
 
     "assets": {
         "css": [
-            "/ui/pages/assessment/create.css?v=20260824-color-hierarchy-1"
+            "/ui/pages/assessment/create.css?v=20261031-single-screen-4"
         ],
         "js": [
             "/ui/pages/assessment/create.js?v=20260822-auto-name-date-1"
