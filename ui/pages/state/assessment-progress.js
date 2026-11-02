@@ -192,7 +192,10 @@
         const activeFacilities = number(summary.active_facilities);
         const completedFacilities = number(summary.completed_facilities);
         const noAssessmentFacilities = number(summary.facilities_without_assessment);
-        const registeredPercent = function (value) { return registeredFacilities > 0 ? Math.round((number(value) / registeredFacilities) * 100) : 0; };
+        const registeredPercent = function (value) {
+            if (registeredFacilities <= 0) return "0";
+            return ((number(value) / registeredFacilities) * 100).toFixed(2).replace(/\.00$/, "");
+        };
         document.getElementById("stateAssessSummary").innerHTML = `
             <div class="sq-assess-kpi is-total"><span>Total Assessments</span><strong>${esc(summary.total || 0)}</strong><small>${esc(assessedFacilities)} facilities assessed · ${esc(registeredPercent(assessedFacilities))}% of registered facilities</small></div>
             <div class="sq-assess-kpi is-active"><span>Active Assessments</span><strong>${esc(summary.active || 0)}</strong><small>${esc(activeFacilities)} facilities · ${esc(registeredPercent(activeFacilities))}% of registered facilities</small></div>
