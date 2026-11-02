@@ -114,12 +114,21 @@
 
     function renderContext() {
         const assessment = state.assessment || {};
-        const facility = state.facility || {};
+        const assessmentName = assessment.assessment_name || "";
+        const actions = $("sq-page-actions");
+        let headerName = document.getElementById("closureAssessmentHeaderName");
 
-        setText("closureAssessmentName", assessment.assessment_name || "-");
-        setText("closureAssessmentStatus", statusText(assessment.status));
-        setText("closureAssessmentFramework", assessment.framework_code || "-");
-        setText("closureFacilityName", facility.fac_name || facility.facility_name || "-");
+        if (actions && !headerName) {
+            headerName = document.createElement("strong");
+            headerName.id = "closureAssessmentHeaderName";
+            headerName.className = "sq-closure-header-assessment-name";
+            actions.appendChild(headerName);
+        }
+        if (headerName) {
+            headerName.textContent = assessmentName;
+            headerName.hidden = !assessmentName;
+            headerName.title = assessmentName || "";
+        }
     }
 
     function renderSummary() {

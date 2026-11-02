@@ -116,7 +116,7 @@ class CertificationService
         }
 
         if (!empty($filters['certification_type']) || !empty($filters['cert_type'])) {
-            $where[] = 'UPPER(cert_type) = ?';
+            $where[] = 'UPPER(TRIM(cert_type)) = ?';
             $params[] = strtoupper((string)($filters['certification_type'] ?? $filters['cert_type']));
             $types .= 's';
         }
@@ -323,7 +323,10 @@ class CertificationService
         $rows = self::list($con, $filters);
         $latest = [];
         foreach ($rows as $row) {
-            $type = $row['certification_type'];
+            $type = strtoupper(trim((string)($row['certification_type'] ?? '')));
+            if ($type === '') {
+                continue;
+            }
             if (!isset($latest[$type])) {
                 $latest[$type] = $row;
             }
@@ -403,7 +406,7 @@ class CertificationService
             'fac_nin' => isset($row['fac_nin']) ? (int)$row['fac_nin'] : null,
             'fac_name' => $row['fac_name'] ?? null,
             'fac_type' => $row['fac_type'] ?? null,
-            'certification_type' => strtoupper((string)($row['cert_type'] ?? '')),
+            'certification_type' => strtoupper(trim((string)($row['cert_type'] ?? ''))),
             'certification_date' => $row['date_of_ass'] ?? null,
             'applied_date' => $row['applied_date'] ?? null,
             'assessment_mode' => strtoupper((string)($row['ass_mod'] ?? '')),

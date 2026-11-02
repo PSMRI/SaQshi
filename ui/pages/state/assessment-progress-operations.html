@@ -1,0 +1,15 @@
+<section class="sq-state-page sq-assessment-preview-page" data-preview-type="operations">
+    <nav class="sq-assessment-preview-nav" aria-label="Assessment dashboard preview options">
+        <a href="/ui/dashboard.html?route=state%2Fassessment-progress">Original dashboard</a>
+        <a class="is-active" href="/ui/dashboard.html?route=state%2Fassessment-progress-operations">Option 2: Operations</a>
+        <span>Preview only — the original dashboard is unchanged.</span>
+    </nav>
+    <div class="sq-state-toolbar sq-assessment-preview-toolbar"><div class="sq-state-filters"><select class="sq-form-control" id="assessmentPreviewDivision"><option value="">All divisions</option></select><select class="sq-form-control" id="assessmentPreviewDistrict" disabled><option value="">All districts</option></select><button class="sq-btn sq-btn-primary sq-assess-icon-action" id="assessmentPreviewRefresh" type="button" title="Refresh" aria-label="Refresh"><i class="bi bi-arrow-clockwise"></i></button></div></div>
+    <div class="sq-assessment-preview-kpis" id="assessmentPreviewKpis"></div>
+    <div class="sq-assessment-operations-layout">
+        <section class="sq-card sq-assessment-ops-map"><div class="sq-card-header"><div><h3><i class="bi bi-map"></i> District assessment map</h3><p>Colour shows the completed-assessment percentage for each district.</p></div><a class="sq-btn sq-btn-light" href="/ui/dashboard.html?route=state%2Fmap">Full map</a></div><div class="sq-card-body"><div id="assessmentPreviewMap" class="sq-assessment-preview-map" aria-label="District assessment completion map"></div><div class="sq-assessment-map-legend"><span><i class="is-low"></i>Below 40%</span><span><i class="is-watch"></i>40–69%</span><span><i class="is-good"></i>70% and above</span></div></div></section>
+        <section class="sq-card sq-assessment-ops-attention"><div class="sq-card-header"><div><h3><i class="bi bi-exclamation-circle"></i> Attention needed</h3><p>Active assessments requiring the most follow-up.</p></div></div><div class="sq-card-body" id="assessmentPreviewAttention"></div></section>
+        <section class="sq-card sq-assessment-ops-score"><div class="sq-card-header"><div><h3>Completion snapshot</h3><p>Current facility assessment coverage.</p></div></div><div class="sq-card-body" id="assessmentPreviewLifecycle"></div></section>
+        <section class="sq-card sq-assessment-ops-district"><div class="sq-card-header"><div><h3>District coverage</h3><p>Assessment completion by district.</p></div></div><div class="sq-card-body" id="assessmentPreviewDistricts"></div></section>
+    </div>
+</section>

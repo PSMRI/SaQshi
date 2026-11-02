@@ -6,26 +6,12 @@
  * Purpose: session endpoint/support workflow.
  */
 
-include('db.php');
-session_start();
+require_once dirname(__DIR__, 2) . '/bootstrap.php';
+require_once __DIR__ . '/db.php';
 
-// Check if the user is logged in by verifying the session.
-if (!isset($_SESSION['u_name'])) {
-    header("Location: 404.php");
-    exit();
-}
+// Legacy include compatibility. Do not call PHP's native session_start();
+// SessionManager owns the cookie name, Redis store and timeout policy.
+SessionManager::requireLogin();
 
-$user_check = $_SESSION['u_name'];
-$stmt = $con->prepare("SELECT u_name FROM s_user WHERE u_name = ?");
-$stmt->bind_param("s", $user_check);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($row = $result->fetch_assoc()) {
-    $login_session = $row['u_name'];
-} else {
-    header("Location: 404.php");
-    exit();
-}
-
-$stmt->close();
+$user_check = SessionManager::username();
+$login_session = $user_check;

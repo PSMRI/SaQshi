@@ -86,6 +86,20 @@
             target.innerHTML = rows.length ? rows.map(renderRecord).join("") : `<div class="sq-cert-empty">No certification records available.</div>`;
         }
     }
+    function moveRefreshToPageHeader() {
+        const button = $("btnCertRefresh");
+        const actions = $("sq-page-actions");
+        const manage = actions?.querySelector('[data-sq-route="certification/manage"]');
+        if (manage) {
+            manage.classList.add("sq-cert-header-icon");
+            manage.title = "Manage certification";
+            manage.setAttribute("aria-label", "Manage certification");
+        }
+        if (button && actions && !actions.contains(button)) {
+            actions.appendChild(button);
+            button.style.display = "inline-flex";
+        }
+    }
     function payloadFromForm(form) {
         const data = Object.fromEntries(new FormData(form).entries());
         data.score = Number(data.score);
@@ -168,6 +182,7 @@
     }
     SQ.certificationDashboard = {
         init() {
+            moveRefreshToPageHeader();
             $("btnCertRefresh")?.addEventListener("click", loadDashboard);
             return loadDashboard().catch(console.error);
         }

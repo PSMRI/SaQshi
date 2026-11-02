@@ -33,6 +33,18 @@
         if (el) el.value = value ?? "";
     }
 
+    function moveToolbarIntoPageHeader() {
+        const title = document.getElementById("sq-page-title");
+        const toolbar = document.querySelector(".sq-assessor-admin > .sq-state-toolbar");
+        if (!title || !toolbar || toolbar.classList.contains("sq-assessor-header-toolbar")) return;
+        const row = document.createElement("div");
+        row.className = "sq-assessor-page-title-row";
+        title.parentNode.insertBefore(row, title);
+        row.appendChild(title);
+        toolbar.classList.add("sq-assessor-header-toolbar");
+        row.appendChild(toolbar);
+    }
+
     function assessorSearchValue() {
         return val("assessorSearch") || val("assessorTableSearch");
     }
@@ -369,6 +381,7 @@
     }
 
     async function init() {
+        moveToolbarIntoPageHeader();
         if (SQ.deployment && typeof SQ.deployment.load === "function") {
             await SQ.deployment.load();
             SQ.deployment.applyLabels(document);

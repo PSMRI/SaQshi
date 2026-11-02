@@ -12,7 +12,7 @@
 
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
-    const state = { pager: null, rows: [], canEditProfiles: false, canCreateUsers: false, canResetPasswords: false, editingUserId: 0, scopeOptions: null, creatingUser: false };
+    const state = { pager: null, rows: [], statusFilter: "", canEditProfiles: false, canCreateUsers: false, canResetPasswords: false, editingUserId: 0, scopeOptions: null, creatingUser: false };
 
     function downloadCsv(filename, headers, rows) {
         const quote = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
@@ -39,8 +39,50 @@
 
     function queryParams() {
         return state.pager.params({
-            search: document.getElementById("stateUsersSearch")?.value || ""
+            search: document.getElementById("stateUsersSearch")?.value || "",
+            status: state.statusFilter
         });
+    }
+
+    function number(value) {
+        return Number(value || 0);
+    }
+
+    function renderOverview(summary) {
+        const total = number(summary.total);
+        const active = number(summary.active);
+        const inactive = number(summary.inactive);
+        const linked = number(summary.facility_linked);
+        const unassigned = number(summary.unassigned);
+        const activeRate = total ? Math.round((active / total) * 100) : 0;
+
+        const metrics = [
+            ["Total accounts", total, "All user accounts in the current state scope.", "is-total", "bi-people"],
+            ["Active access", active, `${activeRate}% of accounts can sign in.`, "is-active", "bi-person-check"],
+            ["Inactive accounts", inactive, "Accounts currently unable to sign in.", "is-inactive", "bi-person-dash"],
+            [`${esc(domainLabel("facility", "Facility"))} linked`, linked, "Accounts assigned to a facility.", "is-linked", "bi-building-check"]
+        ];
+        const metricsTarget = document.getElementById("stateUsersMetrics");
+        if (metricsTarget) metricsTarget.innerHTML = metrics.map(([label, value, hint, tone, icon]) => `
+            <article class="sq-users-metric ${tone}">
+                <i class="bi ${icon}" aria-hidden="true"></i>
+                <span>${label}</span><strong>${value}</strong><small>${hint}</small>
+            </article>`).join("");
+
+        const attentionTarget = document.getElementById("stateUsersAttention");
+        if (attentionTarget) attentionTarget.innerHTML = `
+            <div class="sq-users-attention-item ${inactive ? "is-warning" : "is-clear"}">
+                <i class="bi ${inactive ? "bi-person-x" : "bi-check-circle"}" aria-hidden="true"></i>
+                <div><strong>${inactive ? `${inactive} inactive account${inactive === 1 ? "" : "s"}` : "No inactive accounts"}</strong><small>${inactive ? "Review whether these accounts should be reactivated or remain disabled." : "All listed accounts are active."}</small></div>
+            </div>
+            <div class="sq-users-attention-item ${unassigned ? "is-info" : "is-clear"}">
+                <i class="bi ${unassigned ? "bi-diagram-2" : "bi-building-check"}" aria-hidden="true"></i>
+                <div><strong>${unassigned} account${unassigned === 1 ? "" : "s"} without a facility link</strong><small>State, division and district roles may not require a facility assignment.</small></div>
+            </div>
+            <div class="sq-users-access-health">
+                <span>Access health</span><b>${activeRate}% active</b>
+                <div><i style="width:${activeRate}%"></i></div>
+            </div>`;
     }
 
     function statusBadge(isActive) {
@@ -95,6 +137,7 @@
             loader: false,
             showError: false
         });
+        renderOverview(response.data?.summary || {});
         renderRows(response.data?.rows || []);
         state.pager.set(response.data?.pagination || {}).render("stateUsersPager", "Showing");
         state.rows = response.data?.rows || [];
@@ -219,11 +262,11 @@
         document.querySelector(".sq-state-page")?.insertAdjacentHTML("beforeend", `
             <div class="sq-state-modal" id="stateUserCreateModal" hidden>
                 <div class="sq-state-modal-panel sq-user-profile-panel" role="dialog" aria-modal="true" aria-labelledby="stateUserCreateTitle">
-                    <div class="sq-card-header"><div><h3 id="stateUserCreateTitle">Create User</h3><p>Create a user with the correct monitoring scope.</p></div><button class="sq-btn sq-btn-light" type="button" data-user-create-close>Close</button></div>
+                    <div class="sq-card-header"><div><h3 id="stateUserCreateTitle"><i class="bi bi-person-plus-fill" aria-hidden="true"></i>Create User</h3><p>Create a user with the correct monitoring scope.</p></div><button class="sq-btn sq-btn-light" type="button" data-user-create-close>Close</button></div>
                     <form class="sq-card-body sq-state-cert-form" id="stateUserCreateForm">
-                        <div><label class="sq-form-label" for="createUserRole">Role *</label><select class="sq-form-control" id="createUserRole" required><option value="1">Facility User</option><option value="8">Block User</option><option value="4">District User</option><option value="5">Division User</option></select></div>
+                        <div><label class="sq-form-label sq-user-section-label" for="createUserRole"><i class="bi bi-person-badge" aria-hidden="true"></i>Role *</label><select class="sq-form-control" id="createUserRole" required><option value="1">Facility User</option><option value="8">Block User</option><option value="4">District User</option><option value="5">Division User</option></select></div>
                         <div id="createUserIdentity"><div><label class="sq-form-label" for="createUserFirstName">First Name *</label><input class="sq-form-control" id="createUserFirstName" required maxlength="100"></div><div><label class="sq-form-label" for="createUserLastName">Last Name</label><input class="sq-form-control" id="createUserLastName" maxlength="100"></div><div><label class="sq-form-label" for="createUserUsername">Username *</label><input class="sq-form-control" id="createUserUsername" required minlength="3" maxlength="100"></div><div id="createUserPasswordGroup"><label class="sq-form-label" for="createUserPassword">Temporary Password *</label><input class="sq-form-control" id="createUserPassword" type="password" required minlength="12" maxlength="128" autocomplete="new-password"><small>12-128 characters with upper-case, lower-case, number and special character. Do not use the user ID.</small><div class="sq-password-hardening" aria-live="polite"><div class="sq-password-hardening-head"><strong>Password hardening</strong><span id="createUserPasswordProgress">Start typing</span></div><div class="sq-password-meter" aria-hidden="true"><span id="createUserPasswordMeter"></span></div><div class="sq-password-rules" id="createUserPasswordRules"><span data-rule="length">12-128 characters</span><span data-rule="upper">Capital letter</span><span data-rule="lower">Lower-case letter</span><span data-rule="digit">Digit</span><span data-rule="special">Special character</span><span data-rule="repeat">No repeated sequence</span><span data-rule="identifier">Does not use user ID</span></div></div></div><div><label class="sq-form-label" for="createUserEmail">Email</label><input class="sq-form-control" id="createUserEmail" type="email" maxlength="190"></div><div><label class="sq-form-label" for="createUserMobile">Mobile</label><input class="sq-form-control" id="createUserMobile" maxlength="20"></div></div>
-                        <div class="sq-state-cert-form-wide" id="createFacilityScope"><p>For a Facility User, the NIN is automatically used as the user ID. Set a separate strong temporary password and share it only through an approved secure channel.</p><label class="sq-form-label" for="createUserFacilityDistrict">District *</label><select class="sq-form-control" id="createUserFacilityDistrict"></select><label class="sq-form-label" for="createUserFacilityBlock">Block *</label><select class="sq-form-control" id="createUserFacilityBlock" disabled></select><label class="sq-form-label" for="createUserFacilityNin">Facility *</label><select class="sq-form-control" id="createUserFacilityNin" disabled></select></div>
+                        <div class="sq-state-cert-form-wide" id="createFacilityScope"><p class="sq-user-facility-note"><i class="bi bi-info-circle-fill" aria-hidden="true"></i>For a Facility User, the NIN is automatically used as the user ID. Set a separate strong temporary password and share it only through an approved secure channel.</p><div class="sq-user-nin-lookup"><label class="sq-form-label sq-user-section-label" for="createUserFacilityNinLookup"><i class="bi bi-search" aria-hidden="true"></i>Find facility directly by NIN</label><div><input class="sq-form-control" id="createUserFacilityNinLookup" inputmode="numeric" maxlength="30" placeholder="Enter facility NIN"><button class="sq-btn sq-btn-primary" type="button" id="createUserFacilityNinFind">Find</button></div><small id="createUserFacilityNinHint">Or select the facility using Division, District and Block below.</small></div><section class="sq-user-facility-selection" aria-label="Select facility by location"><h4><i class="bi bi-geo-alt-fill" aria-hidden="true"></i>Or select facility by location</h4><div><label class="sq-form-label" for="createUserFacilityDivision">Division *</label><select class="sq-form-control" id="createUserFacilityDivision"></select></div><div><label class="sq-form-label" for="createUserFacilityDistrict">District *</label><select class="sq-form-control" id="createUserFacilityDistrict" disabled></select></div><div><label class="sq-form-label" for="createUserFacilityBlock">Block *</label><select class="sq-form-control" id="createUserFacilityBlock" disabled></select></div><div><label class="sq-form-label" for="createUserFacilityNin">Facility *</label><select class="sq-form-control" id="createUserFacilityNin" disabled></select></div></section></div>
                         <div class="sq-state-cert-form-wide" id="createHierarchyScope" hidden><div id="createBlockDistrictScope" hidden><label class="sq-form-label" for="createUserBlockDistrict">District *</label><select class="sq-form-control" id="createUserBlockDistrict"></select></div><label class="sq-form-label" for="createUserScope" id="createUserScopeLabel">Assigned Scope *</label><select class="sq-form-control" id="createUserScope"></select></div>
                         <div class="sq-state-cert-form-wide sq-state-modal-actions"><button class="sq-btn sq-btn-primary" type="submit">Create User</button><button class="sq-btn sq-btn-light" type="button" data-user-create-close>Cancel</button></div>
                     </form>
@@ -234,13 +277,22 @@
         // outside it so the form remains completable for this role.
         const passwordGroup = document.getElementById("createUserPasswordGroup");
         const facilityScope = document.getElementById("createFacilityScope");
-        if (passwordGroup && facilityScope) facilityScope.after(passwordGroup);
+        if (passwordGroup && facilityScope) {
+            passwordGroup.classList.add("sq-state-cert-form-wide");
+            facilityScope.after(passwordGroup);
+        }
+        const roleField = document.getElementById("createUserRole")?.closest("div");
+        const ninLookup = document.querySelector("#createFacilityScope .sq-user-nin-lookup");
+        if (roleField && ninLookup) roleField.after(ninLookup);
         document.getElementById("stateUserCreateModal")?.addEventListener("click", event => { if (event.target === event.currentTarget || event.target.closest("[data-user-create-close]")) event.currentTarget.hidden = true; });
         document.getElementById("createUserRole")?.addEventListener("change", renderCreateScope);
         document.getElementById("createUserBlockDistrict")?.addEventListener("change", renderBlockUserBlocks);
+        document.getElementById("createUserFacilityDivision")?.addEventListener("change", renderFacilityDistricts);
         document.getElementById("createUserFacilityDistrict")?.addEventListener("change", renderFacilityBlocks);
         document.getElementById("createUserFacilityBlock")?.addEventListener("change", renderFacilities);
         document.getElementById("createUserFacilityNin")?.addEventListener("change", renderPasswordHardening);
+        document.getElementById("createUserFacilityNinFind")?.addEventListener("click", findFacilityByNin);
+        document.getElementById("createUserFacilityNinLookup")?.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); findFacilityByNin(); } });
         document.getElementById("createUserPassword")?.addEventListener("input", renderPasswordHardening);
         document.getElementById("stateUserCreateForm")?.addEventListener("submit", createUser);
         renderPasswordHardening();
@@ -280,10 +332,12 @@
         const scopeLabel = document.getElementById("createUserScopeLabel");
         const blockDistrictScope = document.getElementById("createBlockDistrictScope");
         const identity = document.getElementById("createUserIdentity");
+        const ninLookup = document.querySelector("#stateUserCreateForm > .sq-user-nin-lookup");
         const sets = roleId === 5 ? (state.scopeOptions?.divisions || []) : roleId === 4 ? (state.scopeOptions?.districts || []) : [];
         if (facility) facility.hidden = roleId !== 1;
         if (hierarchy) hierarchy.hidden = ![4, 5, 8].includes(roleId);
         if (identity) identity.hidden = roleId === 1;
+        if (ninLookup) ninLookup.hidden = roleId !== 1;
         if (blockDistrictScope) blockDistrictScope.hidden = roleId !== 8;
         ["createUserFirstName", "createUserUsername", "createUserPassword"].forEach(id => {
             const input = document.getElementById(id);
@@ -293,7 +347,10 @@
             input.disabled = id !== "createUserPassword" && roleId === 1;
             input.required = id === "createUserPassword" || roleId !== 1;
         });
-        if (roleId === 1) renderFacilityDistricts();
+        if (roleId === 1) {
+            renderFacilityDivisions();
+            showFacilityNinHint("Or select the facility using Division, District and Block below.", "");
+        }
         if (!select) return;
         if (roleId === 8) {
             if (scopeLabel) scopeLabel.textContent = "Block *";
@@ -329,11 +386,21 @@
     function renderFacilityDistricts() {
         const select = document.getElementById("createUserFacilityDistrict");
         if (!select) return;
-        select.innerHTML = optionRows(state.scopeOptions?.districts || [], "Select district", "dist_id", "district_name");
+        const divisionId = Number(document.getElementById("createUserFacilityDivision")?.value || 0);
+        const districts = (state.scopeOptions?.districts || []).filter(row => Number(row.division_id) === divisionId);
+        select.innerHTML = optionRows(districts, divisionId ? "Select district" : "Select division first", "dist_id", "district_name");
+        select.disabled = !divisionId;
         document.getElementById("createUserFacilityBlock").innerHTML = '<option value="">Select block</option>';
         document.getElementById("createUserFacilityBlock").disabled = true;
         document.getElementById("createUserFacilityNin").innerHTML = '<option value="">Select facility</option>';
         document.getElementById("createUserFacilityNin").disabled = true;
+    }
+
+    function renderFacilityDivisions() {
+        const select = document.getElementById("createUserFacilityDivision");
+        if (!select) return;
+        select.innerHTML = optionRows(state.scopeOptions?.divisions || [], "Select division", "division_id", "division_name");
+        renderFacilityDistricts();
     }
 
     function renderFacilityBlocks() {
@@ -355,6 +422,40 @@
             return `<option value="${esc(row.NIN_no)}">${esc(row.fac_name)} — ${esc(facilityType)} — NIN ${esc(row.NIN_no)}</option>`;
         }).join("");
         select.disabled = !blockId;
+    }
+
+    function showFacilityNinHint(message, tone) {
+        const hint = document.getElementById("createUserFacilityNinHint");
+        if (!hint) return;
+        hint.textContent = message;
+        hint.className = tone ? `is-${tone}` : "";
+    }
+
+    function findFacilityByNin() {
+        const nin = document.getElementById("createUserFacilityNinLookup")?.value.trim() || "";
+        if (!nin) {
+            showFacilityNinHint("Enter a facility NIN to find it.", "error");
+            return;
+        }
+        const facility = (state.scopeOptions?.facilities || []).find(row => String(row.NIN_no || "").trim() === nin);
+        if (!facility) {
+            showFacilityNinHint("No facility was found for this NIN. Check the number or select it below.", "error");
+            return;
+        }
+        const division = document.getElementById("createUserFacilityDivision");
+        const district = document.getElementById("createUserFacilityDistrict");
+        const block = document.getElementById("createUserFacilityBlock");
+        const facilitySelect = document.getElementById("createUserFacilityNin");
+        if (!division || !district || !block || !facilitySelect) return;
+        division.value = String(facility.division_id || "");
+        renderFacilityDistricts();
+        district.value = String(facility.dist_id || "");
+        renderFacilityBlocks();
+        block.value = String(facility.block_id || "");
+        renderFacilities();
+        facilitySelect.value = String(facility.NIN_no || "");
+        renderPasswordHardening();
+        showFacilityNinHint(`Selected: ${facility.fac_name || "Facility"} · ${facility.NIN_no}`, "success");
     }
 
     async function openCreateUser() {
@@ -447,6 +548,17 @@
         });
     }
 
+    function bindStatusTabs() {
+        document.querySelector(".sq-users-directory-tabs")?.addEventListener("click", function (event) {
+            const button = event.target.closest("[data-user-status-filter]");
+            if (!button) return;
+            state.statusFilter = button.getAttribute("data-user-status-filter") || "";
+            document.querySelectorAll("[data-user-status-filter]").forEach(item => item.classList.toggle("is-active", item === button));
+            state.pager.reset();
+            load();
+        });
+    }
+
     function bindActions() {
         document.getElementById("stateUserRows")?.addEventListener("click", function (event) {
             const resetButton = event.target.closest("[data-user-password-reset]");
@@ -459,7 +571,21 @@
         });
     }
 
+    function moveToolbarIntoPageHeader() {
+        const title = document.getElementById("sq-page-title");
+        const toolbar = document.querySelector(".sq-state-users-page > .sq-state-toolbar");
+        if (!title || !toolbar || toolbar.classList.contains("sq-users-header-toolbar")) return;
+
+        const row = document.createElement("div");
+        row.className = "sq-users-page-title-row";
+        title.parentNode.insertBefore(row, title);
+        row.appendChild(title);
+        toolbar.classList.add("sq-users-header-toolbar");
+        row.appendChild(toolbar);
+    }
+
     async function init() {
+        moveToolbarIntoPageHeader();
         if (SQ.deployment && typeof SQ.deployment.load === "function") {
             await SQ.deployment.load();
             SQ.deployment.applyLabels(document);
@@ -468,9 +594,10 @@
         state.canEditProfiles = Number(currentUser?.role_id) === 11;
         state.canCreateUsers = [9, 11].includes(Number(currentUser?.role_id));
         state.canResetPasswords = Number(currentUser?.role_id) === 9;
-        state.pager = SQ.pagination.create({ page: 1, perPage: 50, onChange: load });
+        state.pager = SQ.pagination.create({ page: 1, perPage: 10, onChange: load });
         bindActions();
         bindSearch();
+        bindStatusTabs();
         document.getElementById("stateUsersRefresh")?.addEventListener("click", function () {
             state.pager.reset();
             load();

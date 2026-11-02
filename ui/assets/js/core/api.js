@@ -282,8 +282,11 @@
             if (response.status === 401) {
                 clearSession();
 
-                if (SQ.toast) {
-                    SQ.toast("Session expired. Please login again.", "danger");
+                // Let request() display this once. Showing a toast here as
+                // well caused the same expiry notice to be shown twice.
+                if (result && typeof result === "object") {
+                    result._sqUnauthorized = true;
+                    result.message = "Session expired. Please login again.";
                 }
 
                 if (options.redirectOnUnauthorized !== false) {

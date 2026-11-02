@@ -24446,6 +24446,1496 @@
       "decimal_supported": true,
       "denominator_zero_allowed": false,
       "is_active": true
+    },
+    {
+      "formula_id": 6465,
+      "formula_code": "FORMULA_6465",
+      "formula_name": "UPHC - OPD Per Month",
+      "source_expression": "Total number of patients attended in OPD for the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6466,
+      "formula_code": "FORMULA_6466",
+      "formula_name": "UPHC - Lab tests done per 1000 OPD Patients",
+      "source_expression": "numerator/denominator",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6467,
+      "formula_code": "FORMULA_6467",
+      "formula_name": "UPHC - Number of ANC conducted per month",
+      "source_expression": "Total number of ANC conducted during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6468,
+      "formula_code": "FORMULA_6468",
+      "formula_name": "UPHC - Proportion of Vulnerable Population patient attended OPD",
+      "source_expression": "Total number of vulnerable patients attended in OPD/Total number of OPD Patients",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6469,
+      "formula_code": "FORMULA_6469",
+      "formula_name": "UPHC - Number of outreach session conducted per ANM",
+      "source_expression": "Total number of outreach sessions/Total number of ANMs",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6470,
+      "formula_code": "FORMULA_6470",
+      "formula_name": "UPHC - Drop out rate of DPT vaccination\nThis can be replaced with Drop out rate for Penta",
+      "source_expression": "(denominator-numerator)*100/denominator",
+      "expression": "(D-N)*100/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6471,
+      "formula_code": "FORMULA_6471",
+      "formula_name": "UPHC - Number of Stock out drugs",
+      "source_expression": "Calculate Sum of stock out days for each drugs as per EDL of UPHC",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6472,
+      "formula_code": "FORMULA_6472",
+      "formula_name": "UPHC - Consultation time at OPD",
+      "source_expression": "Calculate consultation time at OPD through time motion study by taking average consultation time in 30 cases.",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6473,
+      "formula_code": "FORMULA_6473",
+      "formula_name": "UPHC - Percentage of high risk pregnancy detected during ANC",
+      "source_expression": "Total number of High risk pregnancy detected during ANC*100/Total number of ANC registered during the month",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6474,
+      "formula_code": "FORMULA_6474",
+      "formula_name": "UPHC - Antibiotic Consumption Rate",
+      "source_expression": "Total number of prescription with Antibiotics*100/Total number of Prescription audited",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6475,
+      "formula_code": "FORMULA_6475",
+      "formula_name": "UPHC - Percentage of AEFI cases reported",
+      "source_expression": "Total number of AEFI cases reported*100/Total number of immunization done",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6476,
+      "formula_code": "FORMULA_6476",
+      "formula_name": "UPHC - IUCD Complication Rate",
+      "source_expression": "Total number of clients returns with complication*100/Total number of IUCD inserted",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6477,
+      "formula_code": "FORMULA_6477",
+      "formula_name": "UPHC - Proportion of TB patient on DOTs completing their treatment successfully",
+      "source_expression": "Number of TB cases notified in a specified time period that were successfully treated/Number of TB cases notified in the same time period",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6478,
+      "formula_code": "FORMULA_6478",
+      "formula_name": "UPHC - Patient Satisfaction Score (OPD)",
+      "source_expression": "numerator/denominator",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6479,
+      "formula_code": "FORMULA_6479",
+      "formula_name": "UPHC - Registration to drug time",
+      "source_expression": "Average time taken from the moment patient joined the queue at registration counter to receiving of drugs from pharmacy\n\nTo be calculated by Time motion study on statistically adequate sample (At least 30)",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6480,
+      "formula_code": "FORMULA_6480",
+      "formula_name": "UPHC - Follow-up rate",
+      "source_expression": "Total number of follow-up cases*100/ Total number of OPD",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6481,
+      "formula_code": "FORMULA_6481",
+      "formula_name": "UPHC - OPD Per Day",
+      "source_expression": "Total daily OPD added for the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6482,
+      "formula_code": "FORMULA_6482",
+      "formula_name": "UPHC - ARSH OPD per month",
+      "source_expression": "Total number of ARSH patients in ARSH clinics for the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6483,
+      "formula_code": "FORMULA_6483",
+      "formula_name": "UPHC - AYUSH OPD per month",
+      "source_expression": "Total number of AYUSH patients in AYUSH clinics for the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6484,
+      "formula_code": "FORMULA_6484",
+      "formula_name": "UPHC - OPD Per Doctor",
+      "source_expression": "Total number of Patient consulted in  OPD/Total number of doctor appointed in UPHC",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6485,
+      "formula_code": "FORMULA_6485",
+      "formula_name": "UPHC - Percentage of follow up patients",
+      "source_expression": "Total number of follow-up cases*100/ Total number of OPD",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6486,
+      "formula_code": "FORMULA_6486",
+      "formula_name": "UPHC - Consultation time in OPD",
+      "source_expression": "Calculate consultation time at OPD through time motion study by taking average consultation time in 30 cases.",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6487,
+      "formula_code": "FORMULA_6487",
+      "formula_name": "UPHC - Percentage of OPD cases treated with Antibiotic",
+      "source_expression": "Total number of prescription with Antibiotics*100/Total number of Prescription audited",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6488,
+      "formula_code": "FORMULA_6488",
+      "formula_name": "UPHC - Waiting time for consultation at OPD",
+      "source_expression": "Mean of waiting time for the derived sample observed in time motion study done at peak hours on sample basis (at least 30)",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6490,
+      "formula_code": "FORMULA_6490",
+      "formula_name": "UPHC - Number of ANC conducted per month",
+      "source_expression": "Total number of ANC conducted during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6491,
+      "formula_code": "FORMULA_6491",
+      "formula_name": "UPHC - Number of moderate and severely anaemic cases line listed",
+      "source_expression": "Total number of cases with moderate and severe anaemia detected and listed in ANC register\n(7–11 g/dl Moderate anaemia\nLess than 7 g/dl Severe anaemia)",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6492,
+      "formula_code": "FORMULA_6492",
+      "formula_name": "UPHC - Percentage of missed out ANC",
+      "source_expression": "Total Number of ANC conducted during the month*100/Total estimated ANC",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6493,
+      "formula_code": "FORMULA_6493",
+      "formula_name": "UPHC - Percentage of anaemia cases treated successfully at PHC",
+      "source_expression": "Total number of anaemic cases treated successfully*100/Total anaemic cases",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6494,
+      "formula_code": "FORMULA_6494",
+      "formula_name": "UPHC - Percentage of high risk pregnancies detected during ANC",
+      "source_expression": "Total number of High risk pregnancy detected during ANC*100/Total number of ANC registered during the month",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6496,
+      "formula_code": "FORMULA_6496",
+      "formula_name": "UPHC - Number of children attended the OPD per month",
+      "source_expression": "Total number of Children attended the OPD during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6497,
+      "formula_code": "FORMULA_6497",
+      "formula_name": "UPHC - Percentage of new-born stabilized & referred for treatment to higher facility",
+      "source_expression": "Total number of children stabilized & referred*100/Total number of children attended the OPD during the month",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6498,
+      "formula_code": "FORMULA_6498",
+      "formula_name": "UPHC - Percentage of children with acute malnutrition referred to NRCs",
+      "source_expression": "Total number of malnourished children referred to NRC*100/Total number of malnourished children attended the OPD",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6499,
+      "formula_code": "FORMULA_6499",
+      "formula_name": "UPHC - Percentage of children treated with anaemia",
+      "source_expression": "Total number of anaemic cases treated successfully*100/Total anaemic children attended OPD",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6500,
+      "formula_code": "FORMULA_6500",
+      "formula_name": "UPHC - Percentage of New-born/children followed up after referral",
+      "source_expression": "Total number of children followed up*100/Total number of children referred",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6501,
+      "formula_code": "FORMULA_6501",
+      "formula_name": "UPHC - Percentage of Children with diarrhoea treated with ORS and Zn",
+      "source_expression": "Total number of children treated with ORS and Zinc*100/Total number of Children with Diarrhoea",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6503,
+      "formula_code": "FORMULA_6503",
+      "formula_name": "UPHC - Percentage of drugs available against EDL",
+      "source_expression": "(Total number of essential drugs available*100/Total number drugs in EDL)",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6504,
+      "formula_code": "FORMULA_6504",
+      "formula_name": "UPHC - Number of Stock out drugs",
+      "source_expression": "Total number of Stock outs of  drugs as per EDL",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6505,
+      "formula_code": "FORMULA_6505",
+      "formula_name": "UPHC - Percentage of drugs expired during month",
+      "source_expression": "(Total number of drugs expired *100/ Total number of drugs available in UPHC)",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6506,
+      "formula_code": "FORMULA_6506",
+      "formula_name": "UPHC - Antibiotic Prescription rate",
+      "source_expression": "Total number of prescription with antibiotic prescribed during prescription audit*100/Total number of prescription audited",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6508,
+      "formula_code": "FORMULA_6508",
+      "formula_name": "UPHC - No. of follow up cases",
+      "source_expression": "Total old cases visited the OPD for follow up during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6509,
+      "formula_code": "FORMULA_6509",
+      "formula_name": "UPHC - Proportion of Vulnerable patient attended",
+      "source_expression": "Total number of vulnerable patients attended in OPD/Total number of OPD Patients",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6510,
+      "formula_code": "FORMULA_6510",
+      "formula_name": "UPHC - No. of Needle Stick Injury reported every month",
+      "source_expression": "Total number of incidences of needle stick injuries reported during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6511,
+      "formula_code": "FORMULA_6511",
+      "formula_name": "UPHC - Patient Satisfaction Score for OPD",
+      "source_expression": "numerator/denominator",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6512,
+      "formula_code": "FORMULA_6512",
+      "formula_name": "UPHC - Registration to drug time (Average)",
+      "source_expression": "Mean of waiting time for the derived sample observed in time motion study done at peak hours on sample basis (at least  5% patients but not less than 30)",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6513,
+      "formula_code": "FORMULA_6513",
+      "formula_name": "UPHC - Follow-up rate",
+      "source_expression": "Total old cases visited the OPD for follow up*100 /Total patient attended in OPD for the month",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6514,
+      "formula_code": "FORMULA_6514",
+      "formula_name": "UPHC - Number of children immunized per month",
+      "source_expression": "Total number of Children received immunization during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6515,
+      "formula_code": "FORMULA_6515",
+      "formula_name": "UPHC - Drop out rate of DPT vaccination\nThis can be replaced with Drop out rate for Penta",
+      "source_expression": "(denominator-numerator)*100/denominator",
+      "expression": "(D-N)*100/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6516,
+      "formula_code": "FORMULA_6516",
+      "formula_name": "UPHC - Percentage of AEFI cases reported",
+      "source_expression": "Total number of AEFI cases reported*100/Total number AEFI",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6517,
+      "formula_code": "FORMULA_6517",
+      "formula_name": "UPHC - Number of Needle stick injuries reported",
+      "source_expression": "Total number of incidences of needle stick injuries reported during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6519,
+      "formula_code": "FORMULA_6519",
+      "formula_name": "UPHC - IUCD inserted per 1000 eligible couple",
+      "source_expression": "Total number of IUCD inserted*1000/Total eligible female",
+      "expression": "(N*1000)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6520,
+      "formula_code": "FORMULA_6520",
+      "formula_name": "UPHC - Number of abortion conducted per month",
+      "source_expression": "Total number of abortion conducted in the UPHC during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6521,
+      "formula_code": "FORMULA_6521",
+      "formula_name": "UPHC - Number of clients provided Emergency Contraceptive Pills",
+      "source_expression": "Total number of clients provided with Emergency Contraceptive Pills during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6522,
+      "formula_code": "FORMULA_6522",
+      "formula_name": "UPHC - Percentage of Client accepted limiting method out of total counselled",
+      "source_expression": "Total number of clients accepted limiting method of family planning*100/Total number of clients counselled",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6523,
+      "formula_code": "FORMULA_6523",
+      "formula_name": "UPHC - Percentage of Client returned for follow-up",
+      "source_expression": "Total number of old clients visited*100/Total number of clients",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6524,
+      "formula_code": "FORMULA_6524",
+      "formula_name": "UPHC - IUCD Complication Rate",
+      "source_expression": "Total number of clients returns with complication*100/Total number of IUCD inserted",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6526,
+      "formula_code": "FORMULA_6526",
+      "formula_name": "UPHC - Number of new registered cases per 1000 population under RNTCP",
+      "source_expression": "Total number of new Registered cases under RNTCP*1000/Total Population",
+      "expression": "(N*1000)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6527,
+      "formula_code": "FORMULA_6527",
+      "formula_name": "UPHC - Number of new registered cases per 1000 population under NVDCP",
+      "source_expression": "Total number of new Registered cases under NVDCP*1000/Total Population",
+      "expression": "(N*1000)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6528,
+      "formula_code": "FORMULA_6528",
+      "formula_name": "UPHC - Number of new registered cases per 1000 population under NLEP",
+      "source_expression": "Total number of new Registered cases under NLEP*1000/Total Population",
+      "expression": "(N*1000)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6529,
+      "formula_code": "FORMULA_6529",
+      "formula_name": "UPHC - Failure rate including death and defaults under RNTCP",
+      "source_expression": "numerator/denominator",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6530,
+      "formula_code": "FORMULA_6530",
+      "formula_name": "UPHC - Percentage of suspected TB cases are referred to HIV",
+      "source_expression": "Total number of suspected cases referred for HIV testing*100/Total number of suspected cases",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6531,
+      "formula_code": "FORMULA_6531",
+      "formula_name": "UPHC - Multi Drug Treatment Completion rate under NLEP",
+      "source_expression": "Number of cases who completed MDT within 9 months × 100/Number of cases who started MDT in the year",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6532,
+      "formula_code": "FORMULA_6532",
+      "formula_name": "UPHC - Proportion of TB patient on DOTs completing their treatment successfully",
+      "source_expression": "Number of TB cases notified in a specified time period that were successfully treated/Number of TB cases notified in the same time period",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6534,
+      "formula_code": "FORMULA_6534",
+      "formula_name": "UPHC - Number of patient attended OPD for any NCD",
+      "source_expression": "Total number of patients with NCD attended in OPD for the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6535,
+      "formula_code": "FORMULA_6535",
+      "formula_name": "UPHC - Diabetic patient OPD per month",
+      "source_expression": "Total number of patients with Diabetes attended in OPD for the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6536,
+      "formula_code": "FORMULA_6536",
+      "formula_name": "UPHC - Number of elderly patient attended the OPD",
+      "source_expression": "Total number of patients with Diabetes attended in OPD for the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6537,
+      "formula_code": "FORMULA_6537",
+      "formula_name": "UPHC - Percentage of cases referred to higher facility for NCD",
+      "source_expression": "Total number of Patient referred for NCD*100/Total NCD patients",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6538,
+      "formula_code": "FORMULA_6538",
+      "formula_name": "UPHC - Number of Diabetic cases identified",
+      "source_expression": "Total number of new diabetic cases identified during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6539,
+      "formula_code": "FORMULA_6539",
+      "formula_name": "UPHC - Number of Hypertensive cases identified",
+      "source_expression": "Total number of new Hypertensive cases identified during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6540,
+      "formula_code": "FORMULA_6540",
+      "formula_name": "UPHC - Number of cancer cases identified",
+      "source_expression": "Total number of new cancer cases identified during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6542,
+      "formula_code": "FORMULA_6542",
+      "formula_name": "UPHC - Number of emergency cases attended per month",
+      "source_expression": "Total number of emergency cases attended for the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6543,
+      "formula_code": "FORMULA_6543",
+      "formula_name": "UPHC - Minor Procedure conducted per month",
+      "source_expression": "Total Number of minor procedure conducted",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6544,
+      "formula_code": "FORMULA_6544",
+      "formula_name": "UPHC - Number of Anti Rabies Vaccine administered per month",
+      "source_expression": "Total number of vials of Anti rabies vaccine administered during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6545,
+      "formula_code": "FORMULA_6545",
+      "formula_name": "UPHC - Number of injection abscess reported per month",
+      "source_expression": "Total number of Patient reported injection abscess*100/Total injection administered",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6546,
+      "formula_code": "FORMULA_6546",
+      "formula_name": "UPHC - Percentage of Emergency cases referred out",
+      "source_expression": "numerator/denominator",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6547,
+      "formula_code": "FORMULA_6547",
+      "formula_name": "UPHC - Percentage of cases referred through free referral transport",
+      "source_expression": "Total number of patient referred through free ambulance*100/Total number of Patient referred",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6549,
+      "formula_code": "FORMULA_6549",
+      "formula_name": "UPHC - Number of test done per 1000 OPD",
+      "source_expression": "(Total no. of test done in the laboratory*100/Total OPD)",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6550,
+      "formula_code": "FORMULA_6550",
+      "formula_name": "UPHC - Number of HB test done per ANC",
+      "source_expression": "numerator*100/denominator",
+      "expression": "(N*100)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6551,
+      "formula_code": "FORMULA_6551",
+      "formula_name": "UPHC - Number of AFB examined per month",
+      "source_expression": "Total number of AFB examined during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6552,
+      "formula_code": "FORMULA_6552",
+      "formula_name": "UPHC - Number of blood smear examined per 1000 population for Malaria",
+      "source_expression": "Total number of blood smear examined for malaria*1000/Total OPD Patients",
+      "expression": "(N*1000)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6553,
+      "formula_code": "FORMULA_6553",
+      "formula_name": "UPHC - Number of HIV test done per 1000 OPD",
+      "source_expression": "Total number of HIV test done*1000/Total OPD Patients",
+      "expression": "(N*1000)/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6554,
+      "formula_code": "FORMULA_6554",
+      "formula_name": "UPHC - Number of stock out incidences of Reagents and Kits",
+      "source_expression": "Total number of stock out days for all reagents and kits available in laboratory during the month.\n(Stock out days means number of days particular reagent/kits not available)",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6555,
+      "formula_code": "FORMULA_6555",
+      "formula_name": "UPHC - Number of Hb reported less than 7gm%",
+      "source_expression": "Total number of Hb test done for ANC that was reported <7gm%",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6556,
+      "formula_code": "FORMULA_6556",
+      "formula_name": "UPHC - Number of rapid diagnostic kits discarded because of unsatisfactory results",
+      "source_expression": "Total number of discarded rapid diagnostic kits because of unsatisfactory results",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6557,
+      "formula_code": "FORMULA_6557",
+      "formula_name": "UPHC - Monthly blood examination rate",
+      "source_expression": "N",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6558,
+      "formula_code": "FORMULA_6558",
+      "formula_name": "UPHC - Waiting time for sample collection",
+      "source_expression": "Mean of waiting time for the derived sample observed in time motion study done at peak hours on sample basis (at least 30)",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6560,
+      "formula_code": "FORMULA_6560",
+      "formula_name": "UPHC - Number of Special out reach session conducted per month",
+      "source_expression": "Total number of special outreach session conducted during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6561,
+      "formula_code": "FORMULA_6561",
+      "formula_name": "UPHC - Number of MAS meeting conducted per month",
+      "source_expression": "Total number of mass meetings conducted during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6562,
+      "formula_code": "FORMULA_6562",
+      "formula_name": "UPHC - Number of Outreach session conducted per ANM",
+      "source_expression": "Total number of outreach sessions/Total number of ANMs",
+      "expression": "N/D",
+      "variables": [
+        "N",
+        "D"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6563,
+      "formula_code": "FORMULA_6563",
+      "formula_name": "UPHC - Number of home visits conducted by ASHA",
+      "source_expression": "Total number of home visits conducted by all ASHAs during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
+    },
+    {
+      "formula_id": 6564,
+      "formula_code": "FORMULA_6564",
+      "formula_name": "UPHC - Number of home visits conducted by ANMs",
+      "source_expression": "Total number of home visits conducted by all ANMs during the month",
+      "expression": "N",
+      "variables": [
+        "N"
+      ],
+      "result_field": "R",
+      "precision": 2,
+      "rounding": "HALF_UP",
+      "decimal_supported": true,
+      "denominator_zero_allowed": false,
+      "is_active": true
     }
   ]
 }

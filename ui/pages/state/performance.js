@@ -262,7 +262,21 @@
         }
     }
 
+    function moveToolbarIntoPageHeader() {
+        const title = document.getElementById("sq-page-title");
+        const toolbar = document.querySelector(".sq-state-performance-page > .sq-state-toolbar");
+        if (!title || !toolbar || toolbar.classList.contains("sq-performance-header-toolbar")) return;
+
+        const row = document.createElement("div");
+        row.className = "sq-performance-page-title-row";
+        title.parentNode.insertBefore(row, title);
+        row.appendChild(title);
+        toolbar.classList.add("sq-performance-header-toolbar");
+        row.appendChild(toolbar);
+    }
+
     async function init() {
+        moveToolbarIntoPageHeader();
         if (SQ.deployment && typeof SQ.deployment.load === "function") {
             // Deployment labels are optional; they must not prevent the performance data request.
             Promise.resolve(SQ.deployment.load())

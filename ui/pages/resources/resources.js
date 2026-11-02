@@ -46,9 +46,10 @@
         const buttons = numbers.map(number => `${previous && number - previous > 1 ? '<span class="sq-resource-page-gap">…</span>' : ""}<button type="button" class="sq-resource-page ${number === page ? "is-active" : ""}" data-resource-page="${number}" ${number === page ? "aria-current=page" : ""}>${number}</button>` + (previous = number, "")).join("");
         target.innerHTML = `<span>Showing ${start}–${end} of ${total}</span><div><button type="button" class="sq-resource-page" data-resource-page="${page - 1}" ${page === 1 ? "disabled" : ""}>Previous</button>${buttons}<button type="button" class="sq-resource-page" data-resource-page="${page + 1}" ${page === pages ? "disabled" : ""}>Next</button></div>`;
     }
-    function render(resources) {
+    function render(resources, total) {
         const list = document.getElementById("resourcesList");
-        document.getElementById("resourceCount").textContent = `${resources.length} resource${resources.length === 1 ? "" : "s"}`;
+        const count = Number(total ?? resources.length);
+        document.getElementById("resourceCount").textContent = `${count} resource${count === 1 ? "" : "s"}`;
         if (!resources.length) { list.innerHTML = '<div class="sq-resources-empty"><i class="bi bi-folder2-open"></i><p>No resources match your search.</p></div>'; return; }
         list.innerHTML = `<div class="sq-resource-table-wrap"><table class="sq-resource-table"><thead><tr><th>Resource</th><th>File type</th><th>Applicable for</th><th>Download</th><th>Downloads</th><th>Uploaded at</th>${canManage ? "<th></th>" : ""}</tr></thead><tbody>${resources.map(resource => `<tr><td><div class="sq-resource-name-cell"><span class="sq-resource-file-visual">${fileVisual(resource)}</span><div><strong>${esc(resource.title)}</strong>${resource.description ? `<small>${esc(resource.description)}</small>` : ""}</div></div></td><td><span class="sq-resource-type">${esc(typeLabel(resource.resource_type))}</span><small>${esc(resource.original_name)} · ${esc(fileSize(resource.file_size))}</small></td><td><span class="sq-resource-applicability">${esc(resource.fac_type_code || resource.fac_type_name || "Others")}</span></td><td><a class="sq-resource-download" href="${esc(resource.download_url)}" data-resource-download title="Download ${esc(resource.title)}"><i class="bi bi-download"></i></a></td><td><span class="sq-resource-download-count" data-resource-download-count="${Number(resource.resource_id)}">${Number(resource.download_count || 0)}</span></td><td>${esc(fileDate(resource.created_on))}</td>${canManage ? `<td><button class="sq-btn sq-btn-danger" type="button" data-resource-delete="${Number(resource.resource_id)}" aria-label="Delete ${esc(resource.title)}"><i class="bi bi-trash"></i></button></td>` : ""}</tr>`).join("")}</tbody></table></div>`;
     }
@@ -58,7 +59,7 @@
         document.getElementById("resourcesAdminPanel").hidden = !canManage;
         renderTabs(data.facility_types || [], data.counts || {});
         renderApplicableTypes(data.facility_types || []);
-        render(Array.isArray(data.resources) ? data.resources : []);
+        render(Array.isArray(data.resources) ? data.resources : [], data.pagination?.total);
         renderPagination(data.pagination || {});
     }
     function updateProgress(percent, label) {
@@ -149,6 +150,9 @@
         if (count) count.textContent = String(Number(count.textContent || 0) + 1);
     }
     async function init() {
+        const resourceCount = document.getElementById("resourceCount");
+        const pageActions = document.getElementById("sq-page-actions");
+        if (resourceCount && pageActions && !pageActions.contains(resourceCount)) pageActions.appendChild(resourceCount);
         document.getElementById("resourceUploadForm")?.addEventListener("submit", upload);
         document.getElementById("resourceChooseFile")?.addEventListener("click", () => document.getElementById("resourceUploadFile")?.click());
         document.getElementById("resourceUploadFile")?.addEventListener("change", updateSelectedFileName);

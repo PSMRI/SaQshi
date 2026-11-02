@@ -11,9 +11,15 @@
         </div>
     </div>
     <div class="sq-state-kpis" id="stateAssessSummary"></div>
-    <div class="sq-card sq-assessment-distribution">
-        <div class="sq-card-header"><h3 id="stateAssessDistributionTitle">Division-wise assessment completion</h3><label>View progress by <select class="sq-form-control" id="stateAssessViewBy" aria-label="View progress by"><option value="AUTO">Automatic</option><option value="DIVISION">Division</option><option value="DISTRICT">District</option><option value="BLOCK">Block</option></select></label></div>
-        <div class="sq-card-body" id="stateAssessDistribution"></div>
+    <div class="sq-assessment-completion-grid">
+        <section class="sq-card sq-assessment-distribution">
+            <div class="sq-card-header"><h3 id="stateAssessDistributionTitle">Division-wise assessment completion</h3><label>View progress by <select class="sq-form-control" id="stateAssessViewBy" aria-label="View progress by"><option value="AUTO">Automatic</option><option value="DIVISION">Division</option><option value="DISTRICT">District</option><option value="BLOCK">Block</option></select></label></div>
+            <div class="sq-card-body" id="stateAssessDistribution"></div>
+        </section>
+        <section class="sq-card sq-assessment-state-heat-card">
+            <div class="sq-card-header"><div><h3 id="stateAssessMapTitle">State assessment heat map</h3><small id="stateAssessMapSubtitle">District colours show completed-assessment percentage.</small></div></div>
+            <div class="sq-card-body"><div id="stateAssessDistrictMap" class="sq-assessment-state-heat-map" aria-label="State district assessment heat map"></div><div class="sq-assessment-map-legend"><span><i class="is-low"></i>Below 40%</span><span><i class="is-watch"></i>40–69%</span><span><i class="is-good"></i>70% and above</span><span><i class="is-unmapped"></i>Not matched</span></div></div>
+        </section>
     </div>
     <div class="sq-card">
         <div class="sq-card-header">

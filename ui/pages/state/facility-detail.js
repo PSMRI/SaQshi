@@ -364,7 +364,21 @@
         });
     }
 
+    function moveToolbarIntoPageHeader() {
+        const title = document.getElementById("sq-page-title");
+        const toolbar = document.querySelector(".sq-state-facility-detail-page > .sq-state-toolbar");
+        if (!title || !toolbar || toolbar.classList.contains("sq-facility-detail-header-toolbar")) return;
+
+        const row = document.createElement("div");
+        row.className = "sq-facility-detail-page-title-row";
+        title.parentNode.insertBefore(row, title);
+        row.appendChild(title);
+        toolbar.classList.add("sq-facility-detail-header-toolbar");
+        row.appendChild(toolbar);
+    }
+
     async function init() {
+        moveToolbarIntoPageHeader();
         if (SQ.deployment && typeof SQ.deployment.load === "function") {
             await SQ.deployment.load();
             SQ.deployment.applyLabels(document);

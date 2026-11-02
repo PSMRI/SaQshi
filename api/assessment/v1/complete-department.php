@@ -31,6 +31,8 @@ require_once __DIR__ . '/../../service/AssessmentSectionAssignmentService.php';
 
 Security::requireMethod('POST');
 
+$transactionStarted = false;
+
 try {
 
     $request = Security::jsonInput();
@@ -273,6 +275,11 @@ try {
     /*
      * 5. Complete department
      */
+    if (!$con->begin_transaction()) {
+        Response::serverError('Unable to begin department completion transaction: ' . $con->error);
+    }
+    $transactionStarted = true;
+
     $sqlComplete = "
         UPDATE assessment_department
         SET
@@ -297,6 +304,11 @@ try {
 
     AssessmentSectionAssignmentService::complete($con, $assessmentId, $deptId);
 
+    if (!$con->commit()) {
+        throw new RuntimeException('Unable to commit department completion: ' . $con->error);
+    }
+    $transactionStarted = false;
+
     Response::success(
         'Department assessment completed successfully',
         [
@@ -311,6 +323,10 @@ try {
     );
 
 } catch (Throwable $e) {
+
+    if ($transactionStarted && isset($con) && $con instanceof mysqli) {
+        $con->rollback();
+    }
 
     Response::serverError($e->getMessage());
 }

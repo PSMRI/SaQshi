@@ -30,9 +30,11 @@ class SessionManager
     private const REMEMBER_ME_TIMEOUT = 2592000;
 
     /**
-     * Regenerate session ID every 10 minutes.
+     * Rotate the session ID during long-lived active sessions. Login still
+     * rotates immediately; periodic rotation is less frequent to avoid racing
+     * concurrent checklist API calls.
      */
-    private const REGENERATE_INTERVAL = 600;
+    private const REGENERATE_INTERVAL = 1800;
 
     /**
      * Start secure session.
@@ -73,7 +75,11 @@ class SessionManager
         // deliberate recovery path; a final failure is still reported clearly.
         $started = @session_start();
 
-        if (!$started && strtolower((string)(self::config()['driver'] ?? '')) === 'redis') {
+        // Never silently switch an established production session from Redis to
+        // a local file on one failed request. The next request would return to
+        // Redis and appear logged out. File fallback is opt-in for local/dev.
+        $allowFileFallback = !empty(self::config()['files']['fallback_on_redis_failure']);
+        if (!$started && strtolower((string)(self::config()['driver'] ?? '')) === 'redis' && $allowFileFallback) {
             $configuredPath = trim((string)(self::config()['files']['path'] ?? ''));
             $paths = array_values(array_unique(array_filter([
                 $configuredPath,
@@ -397,7 +403,10 @@ class SessionManager
         }
 
         if ((time() - (int)$_SESSION['last_regenerated']) > self::REGENERATE_INTERVAL) {
-            session_regenerate_id(true);
+            // Retain the old ID temporarily. Checklist pages issue concurrent
+            // requests and deleting it immediately can cause an intermittent
+            // 401/logout for a request already in flight.
+            session_regenerate_id(false);
             $_SESSION['last_regenerated'] = time();
         }
     }
@@ -407,12 +416,21 @@ class SessionManager
      */
     private static function isSameClient(): bool
     {
-        if (!isset($_SESSION['ip_hash'], $_SESSION['user_agent_hash'])) {
-            return true;
+        if (isset($_SESSION['user_agent_hash'])
+            && !hash_equals($_SESSION['user_agent_hash'], self::hashUserAgent())) {
+            return false;
         }
 
-        return hash_equals($_SESSION['ip_hash'], self::hashClientIp())
-            && hash_equals($_SESSION['user_agent_hash'], self::hashUserAgent());
+        // Hospital networks, mobile connections and reverse proxies can change
+        // REMOTE_ADDR during an active session. Treat it as an audit signal,
+        // not an automatic logout, while retaining User-Agent validation.
+        $currentIpHash = self::hashClientIp();
+        if (isset($_SESSION['ip_hash']) && !hash_equals($_SESSION['ip_hash'], $currentIpHash)) {
+            error_log('[SaQshi] Session client IP changed for user ' . (int)($_SESSION['u_id'] ?? 0));
+            $_SESSION['ip_hash'] = $currentIpHash;
+        }
+
+        return true;
     }
 
     /**

@@ -15,8 +15,8 @@
     "result_readonly": true,
     "decimal_supported": true
   },
-  "facility_type_count": 7,
-  "indicator_total": 1296,
+  "facility_type_count": 8,
+  "indicator_total": 1370,
   "facility_types": [
     {
       "facility_type_id": 1,
@@ -64067,6 +64067,3376 @@
               "validation": {
                 "numerator_required": true,
                 "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "facility_type_id": 5,
+      "fac_type_id": 5,
+      "facility_type_name": "UPHC",
+      "facilities_type": "UPHC",
+      "fac": "UPHC",
+      "department_count": 12,
+      "departments": [
+        {
+          "department_id": 43,
+          "department_name": "General Clinic",
+          "indicator_count": 8,
+          "indicators": [
+            {
+              "indicator_id": 6791,
+              "indicator_code": "OUTCOME_6791",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "OPD Per Day",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6481,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6792,
+              "indicator_code": "OUTCOME_6792",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "ARSH OPD per month",
+              "frequency": "MONTHLY",
+              "source": "ARSH Clinic Register",
+              "formula_id": 6482,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6793,
+              "indicator_code": "OUTCOME_6793",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "AYUSH OPD per month",
+              "frequency": "MONTHLY",
+              "source": "AYUSH OPD Register",
+              "formula_id": 6483,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6794,
+              "indicator_code": "OUTCOME_6794",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "OPD Per Doctor",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6484,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of patients attended in OPD",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of doctors available in the hospital\nInclusion: Regular, contractual, Part Time",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6795,
+              "indicator_code": "OUTCOME_6795",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of follow up patients",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6485,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of old patients during the month came for follow-up in OPD",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of OPD patients (Both Old and New)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6796,
+              "indicator_code": "OUTCOME_6796",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Consultation time in OPD",
+              "frequency": "MONTHLY",
+              "source": "Time Motion Study",
+              "formula_id": 6486,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "The time taken from patient entered in OPD consultation room to the complete consultation by the MO or specialist in the OPD",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6797,
+              "indicator_code": "OUTCOME_6797",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of OPD cases treated with Antibiotic",
+              "frequency": "MONTHLY",
+              "source": "Prescription Audit Record",
+              "formula_id": 6487,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of Prescription found with Antibiotics during prescription audit",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of Prescription audited",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6798,
+              "indicator_code": "OUTCOME_6798",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Waiting time for consultation at OPD",
+              "frequency": "MONTHLY",
+              "source": "Time Motion Study",
+              "formula_id": 6488,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Waiting time at OPD will be the moment patient entered in Queue to finally being consulted by MO",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 44,
+          "department_name": "Maternity Health",
+          "indicator_count": 5,
+          "indicators": [
+            {
+              "indicator_id": 6800,
+              "indicator_code": "OUTCOME_6800",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of ANC conducted per month",
+              "frequency": "MONTHLY",
+              "source": "ANC register",
+              "formula_id": 6490,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6801,
+              "indicator_code": "OUTCOME_6801",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of moderate and severely anaemic cases line listed",
+              "frequency": "MONTHLY",
+              "source": "ANC register",
+              "formula_id": 6491,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6802,
+              "indicator_code": "OUTCOME_6802",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of missed out ANC",
+              "frequency": "MONTHLY",
+              "source": "ANC register",
+              "formula_id": 6492,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of ANC conducted during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of estimated ANC during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6803,
+              "indicator_code": "OUTCOME_6803",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of anaemia cases treated successfully at PHC",
+              "frequency": "MONTHLY",
+              "source": "ANC register",
+              "formula_id": 6493,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of anaemia cases treated successfully during the month\nInclusion: Moderate and Severe(A haemoglobin level of less than 11 g/dl at any time during pregnancy is termed anaemia. A haemoglobin level of less than 7 g/dl is severe anaemia)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of anaemic cases during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6804,
+              "indicator_code": "OUTCOME_6804",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of high risk pregnancies detected during ANC",
+              "frequency": "MONTHLY",
+              "source": "ANC register",
+              "formula_id": 6494,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of high risk pregnancy detected during ANC\nInclusions:- Pregnancy induced hypertension, pre-eclampsia, Pre-eclampsia toxaemia, Syphilis/ HIV Positive, Gestational Diabetes Mellitus, Hypothyroidism, Young primi ( less than 20 years) or Elderly gravida ( more than 35 years), Twin / Multiple pregnancy, Malpresentation,Previous LSCS, Low lying placenta, Placenta Previa, Positive Bad obstetric history (History of still birth, abortion, congenital malformation, obstructed labor,premature birth etc.),Rh negative, Patient with History of any current systemic illness(es)/past history of illness",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of ANC registered during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 45,
+          "department_name": "New Born & Child Health",
+          "indicator_count": 6,
+          "indicators": [
+            {
+              "indicator_id": 6806,
+              "indicator_code": "OUTCOME_6806",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of children attended the OPD per month",
+              "frequency": "MONTHLY",
+              "source": "OPD register",
+              "formula_id": 6496,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Inclusion: Children aged (0 to 10 Years)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6807,
+              "indicator_code": "OUTCOME_6807",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of new-born stabilized & referred for treatment to higher facility",
+              "frequency": "MONTHLY",
+              "source": "OPD register",
+              "formula_id": 6497,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of children stabilized and referred to higher centre\nInclusion: Children aged (0 to 10 Years)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of Children attended the OPD during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6808,
+              "indicator_code": "OUTCOME_6808",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of children with acute malnutrition referred to NRCs",
+              "frequency": "MONTHLY",
+              "source": "OPD register",
+              "formula_id": 6498,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of malnourished children referred to NRC",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of malnourished Children attended the OPD during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6809,
+              "indicator_code": "OUTCOME_6809",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of children treated with anaemia",
+              "frequency": "MONTHLY",
+              "source": "OPD register",
+              "formula_id": 6499,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of anaemic children treated successfully during the month\nInclusion: Children aged (0 to 10 Years) with Moderate and Severe(A haemoglobin level of less than 11 g/dl, a level of less than 7 g/dl is severe anaemia)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of anaemic children  attended the OPD during the month\nInclusion: Children aged (0 to 10 Years) with Moderate and Severe(A haemoglobin level of less than 11 g/dl, a level of less than 7 g/dl is severe anaemia)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6810,
+              "indicator_code": "OUTCOME_6810",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of New-born/children followed up after referral",
+              "frequency": "MONTHLY",
+              "source": "Referral Register",
+              "formula_id": 6500,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of children followed up after referral to higher facility",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of children referred from the facility",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6811,
+              "indicator_code": "OUTCOME_6811",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of Children with diarrhoea treated with ORS and Zn",
+              "frequency": "MONTHLY",
+              "source": "OPD register",
+              "formula_id": 6501,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of children treated with ORS and Zinc",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of children with Diarrhoea cases",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 46,
+          "department_name": "Pharmacy",
+          "indicator_count": 4,
+          "indicators": [
+            {
+              "indicator_id": 6813,
+              "indicator_code": "OUTCOME_6813",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of drugs available against EDL",
+              "frequency": "MONTHLY",
+              "source": "Stock Register",
+              "formula_id": 6503,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of essential drugs available",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of drugs in EDL",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6814,
+              "indicator_code": "OUTCOME_6814",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of Stock out drugs",
+              "frequency": "MONTHLY",
+              "source": "Stock Register",
+              "formula_id": 6504,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6815,
+              "indicator_code": "OUTCOME_6815",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of drugs expired during month",
+              "frequency": "MONTHLY",
+              "source": "Stock Register of expired medicine",
+              "formula_id": 6505,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of drugs expired  during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of drugs available in UPHC",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6816,
+              "indicator_code": "OUTCOME_6816",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Antibiotic Prescription rate",
+              "frequency": "MONTHLY",
+              "source": "Prescription audit",
+              "formula_id": 6506,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of prescription with antibiotics prescribed during prescription audit",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of prescriptions audited during the month(at least  5% of prescriptions but not less than 30)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 47,
+          "department_name": "G.Admin",
+          "indicator_count": 6,
+          "indicators": [
+            {
+              "indicator_id": 6818,
+              "indicator_code": "OUTCOME_6818",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "No. of follow up cases",
+              "frequency": "MONTHLY",
+              "source": "OPD Registration",
+              "formula_id": 6508,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6819,
+              "indicator_code": "OUTCOME_6819",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Proportion of Vulnerable patient attended",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6509,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of vulnerable patients attended OPD \nInclusion- Both OLD and new Vulnerable patients like Urban poor live in listed and unlisted slums, homeless, rag-pickers, street children, rickshaw pullers, construction and brick and lime kiln workers, sex workers and other temporary migrants.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of OPD patients (Both Old and New)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6820,
+              "indicator_code": "OUTCOME_6820",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "No. of Needle Stick Injury reported every month",
+              "frequency": "MONTHLY",
+              "source": "Needle-Stick Injury Register",
+              "formula_id": 6510,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "A needle stick injury is the penetration of the skin by a hypodermic needle or other sharp object, which has been in contact with blood, tissue or other body fluids before the exposure",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6821,
+              "indicator_code": "OUTCOME_6821",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Patient Satisfaction Score for OPD",
+              "frequency": "MONTHLY",
+              "source": "Record of Patient Satisfaction survey",
+              "formula_id": 6511,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Sum of average satisfaction score of each respondent\n(Average satisfaction score = sum total of scores of attributes/number of total attributes)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of respondents",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6822,
+              "indicator_code": "OUTCOME_6822",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Registration to drug time (Average)",
+              "frequency": "MONTHLY",
+              "source": "Time Motion Study",
+              "formula_id": 6512,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Time taken by a patient from entering in queue for OPD registration to finally getting drugs at drug dispensing counter",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6823,
+              "indicator_code": "OUTCOME_6823",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Follow-up rate",
+              "frequency": "MONTHLY",
+              "source": "OPD Registration",
+              "formula_id": 6513,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of follow up OPD visits",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total OPD attendance\nInclusion:- Old and New",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 48,
+          "department_name": "Immunization",
+          "indicator_count": 4,
+          "indicators": [
+            {
+              "indicator_id": 6824,
+              "indicator_code": "OUTCOME_6824",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of children immunized per month",
+              "frequency": "MONTHLY",
+              "source": "Immunization Register",
+              "formula_id": 6514,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6825,
+              "indicator_code": "OUTCOME_6825",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Drop out rate of DPT vaccination\nThis can be replaced with Drop out rate for Penta",
+              "frequency": "MONTHLY",
+              "source": "Immunization Register",
+              "formula_id": 6515,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of children missed Penta 3 dose after Penta1",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of children received Penta1",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6826,
+              "indicator_code": "OUTCOME_6826",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of AEFI cases reported",
+              "frequency": "MONTHLY",
+              "source": "AEFI records",
+              "formula_id": 6516,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of AEFI cases reported",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of AEFI cases",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6827,
+              "indicator_code": "OUTCOME_6827",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of Needle stick injuries reported",
+              "frequency": "MONTHLY",
+              "source": "Needle-Stick Injury Register",
+              "formula_id": 6517,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "A needle stick injury is the penetration of the skin by a hypodermic needle or other sharp object, which has been in contact with blood, tissue or other body fluids before the exposure",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 49,
+          "department_name": "Family Planning",
+          "indicator_count": 6,
+          "indicators": [
+            {
+              "indicator_id": 6829,
+              "indicator_code": "OUTCOME_6829",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "IUCD inserted per 1000 eligible couple",
+              "frequency": "MONTHLY",
+              "source": "IUCD Register\nEligible couple register",
+              "formula_id": 6519,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of IUCD inserted during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total eligible female\nInclusion:- Married women in the reproductive age (i.e. 15 -49 yr. of age)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6830,
+              "indicator_code": "OUTCOME_6830",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of abortion conducted per month",
+              "frequency": "MONTHLY",
+              "source": "MTP Register",
+              "formula_id": 6520,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6831,
+              "indicator_code": "OUTCOME_6831",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of clients provided Emergency Contraceptive Pills",
+              "frequency": "MONTHLY",
+              "source": "Family Planning Register",
+              "formula_id": 6521,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6832,
+              "indicator_code": "OUTCOME_6832",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of Client accepted limiting method out of total counselled",
+              "frequency": "MONTHLY",
+              "source": "Family Planning Register",
+              "formula_id": 6522,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of clients accepted limiting method of family planning\nInclusion:- Vasectomy (Conventional, NSV), Tubectomy (Laparoscopic, Minilap)",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of clients visited the facility and counselled for family planning",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6833,
+              "indicator_code": "OUTCOME_6833",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of Client returned for follow-up",
+              "frequency": "MONTHLY",
+              "source": "Family Planning Register",
+              "formula_id": 6523,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of old clients visited for family planning services",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of clients visited the facility and counselled for family planning\nInclusion:- Both Old and New",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6834,
+              "indicator_code": "OUTCOME_6834",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "IUCD Complication Rate",
+              "frequency": "MONTHLY",
+              "source": "IUCD register",
+              "formula_id": 6524,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of clients returns with complications during the months\nInclusions:- Changes in menstrual bleeding patterns, Cramping or pain, Infection, IUCD string problems (missing strings or possible IUCD expulsion),Partial or complete expulsion IUCD (confirmed)\nPregnancy with an IUCD in place\nUterine perforation",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of IUCD insertion during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 50,
+          "department_name": "Communicable Diseases",
+          "indicator_count": 7,
+          "indicators": [
+            {
+              "indicator_id": 6836,
+              "indicator_code": "OUTCOME_6836",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of new registered cases per 1000 population under RNTCP",
+              "frequency": "MONTHLY",
+              "source": "RNTCP Register",
+              "formula_id": 6526,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of new registered cases under RNTCP",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total catering population of the UPHC",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6837,
+              "indicator_code": "OUTCOME_6837",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of new registered cases per 1000 population under NVDCP",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6527,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of new registered cases under NVBDCP",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total catering population of the UPHC",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6838,
+              "indicator_code": "OUTCOME_6838",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of new registered cases per 1000 population under NLEP",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6528,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of new registered cases under NLEP",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total catering population of the UPHC",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6839,
+              "indicator_code": "OUTCOME_6839",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Failure rate including death and defaults under RNTCP",
+              "frequency": "YEARLY",
+              "source": "RNTCP Register",
+              "formula_id": 6529,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total Number of failure cases after initiating treatment under RNTCP\nInclusions:- Deaths and defaulters",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Number of cases started treatment during the year",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6840,
+              "indicator_code": "OUTCOME_6840",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of suspected TB cases are referred to HIV",
+              "frequency": "MONTHLY",
+              "source": "RNTCP Register",
+              "formula_id": 6530,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of suspected cases referred for HIV testing",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of suspected cases",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6841,
+              "indicator_code": "OUTCOME_6841",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Multi Drug Treatment Completion rate under NLEP",
+              "frequency": "YEARLY",
+              "source": "Treatment Registers (LF-02)",
+              "formula_id": 6531,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Number of cases who completed MDT within 9 months",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Number of cases who started MDT in the year",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6842,
+              "indicator_code": "OUTCOME_6842",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Proportion of TB patient on DOTs completing their treatment successfully",
+              "frequency": "SPECIFIED TIME PERIOD",
+              "source": "TB Register",
+              "formula_id": 6532,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Number of TB cases notified in a specified time period that were successfully treated by DOTS\nInclusion:- cured plus treatment completed",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Number of TB cases notified in the same time period",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 51,
+          "department_name": "NCD",
+          "indicator_count": 7,
+          "indicators": [
+            {
+              "indicator_id": 6844,
+              "indicator_code": "OUTCOME_6844",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of patient attended OPD for any NCD",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6534,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of patients attended OPD for common NCD\nInclusion:- The four NCDs - Cardiovascular Diseases, Cancers,\nDiabetes and Chronic Respiratory Diseases",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6845,
+              "indicator_code": "OUTCOME_6845",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Diabetic patient OPD per month",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6535,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6846,
+              "indicator_code": "OUTCOME_6846",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of elderly patient attended the OPD",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6536,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6847,
+              "indicator_code": "OUTCOME_6847",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of cases referred to higher facility for NCD",
+              "frequency": "YEARLY",
+              "source": "OPD Register",
+              "formula_id": 6537,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total Number of patients referred to higher centre for NCD related complication\nInclusions:- Cardiovascular Diseases, Cancers,\nDiabetes and Chronic Respiratory Diseases",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of NCD patients",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6848,
+              "indicator_code": "OUTCOME_6848",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of Diabetic cases identified",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6538,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6849,
+              "indicator_code": "OUTCOME_6849",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of Hypertensive cases identified",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6539,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6850,
+              "indicator_code": "OUTCOME_6850",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of cancer cases identified",
+              "frequency": "MONTHLY",
+              "source": "OPD Register",
+              "formula_id": 6540,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 52,
+          "department_name": "Dressing Room & Emergency",
+          "indicator_count": 6,
+          "indicators": [
+            {
+              "indicator_id": 6852,
+              "indicator_code": "OUTCOME_6852",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of emergency cases attended per month",
+              "frequency": "MONTHLY",
+              "source": "A&E  Register",
+              "formula_id": 6542,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6853,
+              "indicator_code": "OUTCOME_6853",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Minor Procedure conducted per month",
+              "frequency": "MONTHLY",
+              "source": "A&E  Register",
+              "formula_id": 6543,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Minor procedure like incision, drainage, stitching, dressing etc.,",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6854,
+              "indicator_code": "OUTCOME_6854",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of Anti Rabies Vaccine administered per month",
+              "frequency": "MONTHLY",
+              "source": "Pharmacy Register",
+              "formula_id": 6544,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6855,
+              "indicator_code": "OUTCOME_6855",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of injection abscess reported per month",
+              "frequency": "MONTHLY",
+              "source": "Pharmacy Register",
+              "formula_id": 6545,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of cases reported abscess at injection site",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of injection administered during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6856,
+              "indicator_code": "OUTCOME_6856",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of Emergency cases referred out",
+              "frequency": "MONTHLY",
+              "source": "Referral Register",
+              "formula_id": 6546,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of emergency cases referred out after initial stabilization",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of patients attended in emergency situations",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6857,
+              "indicator_code": "OUTCOME_6857",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Percentage of cases referred through free referral transport",
+              "frequency": "MONTHLY",
+              "source": "Referral Register",
+              "formula_id": 6547,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of emergency cases referred through free transport provided by UPHC",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of patients referred",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 53,
+          "department_name": "Lab",
+          "indicator_count": 10,
+          "indicators": [
+            {
+              "indicator_id": 6859,
+              "indicator_code": "OUTCOME_6859",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of test done per 1000 OPD",
+              "frequency": "MONTHLY",
+              "source": "Lab Register",
+              "formula_id": 6549,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of tests done in the laboratory",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of OPD patients",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6860,
+              "indicator_code": "OUTCOME_6860",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of HB test done per ANC",
+              "frequency": "MONTHLY",
+              "source": "Lab Register and ANC Register",
+              "formula_id": 6550,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of HB tests done in the laboratory for ANC cases",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total ANC Done",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6861,
+              "indicator_code": "OUTCOME_6861",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of AFB examined per month",
+              "frequency": "MONTHLY",
+              "source": "Lab Register",
+              "formula_id": 6551,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6862,
+              "indicator_code": "OUTCOME_6862",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of blood smear examined per 1000 population for Malaria",
+              "frequency": "MONTHLY",
+              "source": "Lab Register",
+              "formula_id": 6552,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of blood smear examined for Malaria cases",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of OPD patients",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6863,
+              "indicator_code": "OUTCOME_6863",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of HIV test done per 1000 OPD",
+              "frequency": "MONTHLY",
+              "source": "Lab Register",
+              "formula_id": 6553,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of HIV test done",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of OPD patients",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6864,
+              "indicator_code": "OUTCOME_6864",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of stock out incidences of Reagents and Kits",
+              "frequency": "MONTHLY",
+              "source": "Stock Register",
+              "formula_id": 6554,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6865,
+              "indicator_code": "OUTCOME_6865",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of Hb reported less than 7gm%",
+              "frequency": "MONTHLY",
+              "source": "Lab reporting register",
+              "formula_id": 6555,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6866,
+              "indicator_code": "OUTCOME_6866",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of rapid diagnostic kits discarded because of unsatisfactory results",
+              "frequency": "MONTHLY",
+              "source": "Lab Register",
+              "formula_id": 6556,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6867,
+              "indicator_code": "OUTCOME_6867",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Monthly blood examination rate",
+              "frequency": "MONTHLY",
+              "source": null,
+              "formula_id": 6557,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6868,
+              "indicator_code": "OUTCOME_6868",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Waiting time for sample collection",
+              "frequency": "MONTHLY",
+              "source": "Time Motion Study",
+              "formula_id": 6558,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Waiting time at sample collection will be the moment patient entered in Queue to finally being called for sample collection",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            }
+          ]
+        },
+        {
+          "department_id": 54,
+          "department_name": "Outreach",
+          "indicator_count": 5,
+          "indicators": [
+            {
+              "indicator_id": 6870,
+              "indicator_code": "OUTCOME_6870",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of Special out reach session conducted per month",
+              "frequency": "MONTHLY",
+              "source": "Out reach register",
+              "formula_id": 6560,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6871,
+              "indicator_code": "OUTCOME_6871",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of MAS meeting conducted per month",
+              "frequency": "MONTHLY",
+              "source": "MAS Register",
+              "formula_id": 6561,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6872,
+              "indicator_code": "OUTCOME_6872",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of Outreach session conducted per ANM",
+              "frequency": "MONTHLY",
+              "source": "Outreach Register",
+              "formula_id": 6562,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Total number of Outreach session conducted by all ANMs during the month",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "D",
+                  "field_name": "denominator",
+                  "label": "Total number of ANMs available in the UPHC \nInclusion:- All contractual, deputed and regular ANM",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0,
+                  "zero_allowed": false
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": true,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6873,
+              "indicator_code": "OUTCOME_6873",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of home visits conducted by ASHA",
+              "frequency": "MONTHLY",
+              "source": "Home Visit Register",
+              "formula_id": 6563,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
+                "denominator_zero_allowed": false,
+                "decimal_allowed": true
+              }
+            },
+            {
+              "indicator_id": 6874,
+              "indicator_code": "OUTCOME_6874",
+              "indicator_type": "OUTCOME",
+              "indicator_name": "Number of home visits conducted by ANMs",
+              "frequency": "MONTHLY",
+              "source": "Home Visit Register",
+              "formula_id": 6564,
+              "precision": 2,
+              "result_readonly": true,
+              "allow_decimal": true,
+              "is_active": true,
+              "fields": [
+                {
+                  "field_id": "N",
+                  "field_name": "numerator",
+                  "label": "Enter the measured value.",
+                  "type": "decimal",
+                  "required": true,
+                  "readonly": false,
+                  "min": 0
+                },
+                {
+                  "field_id": "R",
+                  "field_name": "result",
+                  "label": "Result",
+                  "type": "decimal",
+                  "required": false,
+                  "readonly": true,
+                  "calculated": true
+                }
+              ],
+              "validation": {
+                "numerator_required": true,
+                "denominator_required": false,
                 "denominator_zero_allowed": false,
                 "decimal_allowed": true
               }

@@ -148,25 +148,24 @@
         }
 
         target.innerHTML = `
-            <div>
-                <span>Assessment</span>
-                <strong>${escapeHtml(assessment.assessment_name || "-")}</strong>
-            </div>
-            <div>
-                <span>Framework</span>
-                <strong>${escapeHtml(assessment.framework_code || "-")}</strong>
-            </div>
-            <div>
+            <div class="sq-progress-context-status">
                 <span>Status</span>
                 <strong>${escapeHtml(statusLabel(assessment.status))}</strong>
             </div>
-            <div>
+            <div class="sq-progress-context-period">
                 <span>Period</span>
-                <strong>Start ${escapeHtml(assessment.start_date || "-")} | Planned end ${escapeHtml(assessment.end_date || "-")}</strong>
-                ${assessment.completed_on ? `<span class="sq-progress-subtext">Completed ${escapeHtml(assessment.completed_on)}</span>` : ""}
-                ${assessment.cancelled_on ? `<span class="sq-progress-subtext">Cancelled ${escapeHtml(assessment.cancelled_on)}</span>` : ""}
+                <strong>${escapeHtml(assessment.start_date || "-")} – ${escapeHtml(assessment.end_date || "-")}</strong>
             </div>
         `;
+    }
+
+    function mountHeaderTools() {
+        const tools = $("progressHeaderTools");
+        const actions = $("sq-page-actions");
+
+        if (tools && actions) {
+            actions.appendChild(tools);
+        }
     }
 
     function renderSummary() {
@@ -355,6 +354,7 @@
         }
 
         state.isLoading = true;
+        mountHeaderTools();
         bindEvents();
 
         try {

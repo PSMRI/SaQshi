@@ -238,12 +238,22 @@
         $("btnUseBrowserLocation")?.addEventListener("click", useBrowserLocation);
     }
 
+    function moveHeaderActions() {
+        const controls = $("facilityHeaderActions");
+        const pageActions = $("sq-page-actions");
+
+        if (controls && pageActions && !pageActions.contains(controls)) {
+            pageActions.appendChild(controls);
+        }
+    }
+
     async function init() {
         if (state.isLoading) {
             return;
         }
 
         state.isLoading = true;
+        moveHeaderActions();
         bindEvents();
         setEditing(false);
 

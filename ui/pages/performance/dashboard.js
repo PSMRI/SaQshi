@@ -57,21 +57,6 @@
         return `${names[month - 1] || parts[1]} ${String(parts[0]).slice(-2)}`;
     }
 
-    function renderMonthStatus(rows) {
-        const target = document.getElementById("perfMonthRows");
-        if (!target) return;
-
-        target.innerHTML = rows.length
-            ? rows.slice(-12).map(row => `
-                <div class="sq-performance-month-card">
-                    <strong>${esc(shortMonth(row.period))}</strong>
-                    <span>${esc(state.effectiveLabel || "Performance")} <b>${esc(row.total_entries || 0)}</b></span>
-                    <em>Total ${esc(row.total_entries || 0)}</em>
-                </div>
-            `).join("")
-            : `<div class="sq-performance-empty">No month wise performance entries available.</div>`;
-    }
-
     function chartSvg(points, style) {
         const width = 260;
         const height = 86;
@@ -207,7 +192,6 @@
             period: document.getElementById("perfPeriodFilter")?.value || currentPeriod()
         }, { loader: false, showError: false });
         const summary = response?.data?.summary || {};
-        const monthStatus = response?.data?.month_status || [];
         const trends = response?.data?.indicator_trends || {};
         const outcomeDepartmentStatus = response?.data?.outcome_department_status || {};
         state.trends = trends;
@@ -222,14 +206,20 @@
         setText("perfOutcomeIndicators", summary.outcome_indicators || 0);
         setText("perfKpiIndicatorLabel", state.effectiveLabel === "Outcome as KPI" ? "Outcome as KPI Indicators" : "KPI Indicators");
         setText("perfOutcomeIndicatorLabel", "Outcome Indicators");
-        setText("perfLatestPeriod", `Selected month: ${shortMonth(outcomeDepartmentStatus.period || currentPeriod())}`);
-
         renderDepartmentFilter();
-        renderMonthStatus(monthStatus);
         renderTrendSections();
     }
 
+    function moveToolbarIntoPageHeader() {
+        const toolbar = document.getElementById("performanceHeaderToolbar");
+        const actions = document.getElementById("sq-page-actions");
+        if (toolbar && actions && toolbar.parentElement !== actions) {
+            actions.appendChild(toolbar);
+        }
+    }
+
     function init() {
+        moveToolbarIntoPageHeader();
         const periodFilter = document.getElementById("perfPeriodFilter");
         if (periodFilter && !periodFilter.value) periodFilter.value = currentPeriod();
         document.getElementById("btnPerformanceRefresh")?.addEventListener("click", loadDashboard);

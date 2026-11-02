@@ -260,6 +260,24 @@
         }
     }
 
+    // Some pages place their contextual filters beside the title by moving
+    // their toolbar into the persistent page header.  The route content is
+    // replaced on navigation, but the header is not, so restore its baseline
+    // structure before rendering the next route.  Without this cleanup,
+    // controls from a previously opened page remain over the new page title.
+    function resetDynamicPageHeader() {
+        const pageHeader = document.getElementById("sq-page-header");
+        const title = document.querySelector(CONFIG.pageTitleSelector);
+        const subtitle = document.querySelector(CONFIG.pageSubtitleSelector);
+        const headerMeta = pageHeader?.firstElementChild;
+
+        if (!headerMeta || !title || !subtitle) {
+            return;
+        }
+
+        headerMeta.replaceChildren(title, subtitle);
+    }
+
     function renderActions(manifest) {
         const target = document.querySelector(CONFIG.pageActionsSelector);
 
@@ -369,6 +387,7 @@
                 );
             }
 
+            resetDynamicPageHeader();
             content.innerHTML = await fetchHtml(pageHtmlUrl(name));
 
             setPageMeta(manifest);

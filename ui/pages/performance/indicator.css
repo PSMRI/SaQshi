@@ -8,7 +8,9 @@
  */
 
 .sq-performance-page{display:flex;flex-direction:column;gap:.6rem}
+.sq-performance-page>.sq-card>.sq-card-header{padding:.45rem .65rem}.sq-performance-page>.sq-card>.sq-card-header h3{margin:0;font-size:.9rem;line-height:1.15}.sq-performance-page>.sq-card>.sq-card-header p{margin:.12rem 0 0;color:var(--sq-text-muted);font-size:.68rem;line-height:1.2}
 .sq-performance-tools{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.sq-layout-main>.sq-page-header:has(.sq-performance-indicator-header-toolbar){align-items:center}.sq-performance-indicator-header-toolbar{align-items:center;justify-content:flex-end;flex-wrap:nowrap;margin:0;padding:0}.sq-performance-indicator-header-toolbar .sq-form-control{width:200px;min-height:30px;height:30px;padding:4px 7px;font-size:11px}.sq-performance-indicator-header-toolbar #indicatorPeriodFilter{width:128px}.sq-performance-indicator-header-toolbar #btnIndicatorRefresh{display:grid;place-items:center;width:30px;min-width:30px;height:30px;padding:0;border-color:#2563eb;background:#2563eb;color:#fff}.sq-performance-indicator-header-toolbar #btnIndicatorRefresh:hover{border-color:#1d4ed8;background:#1d4ed8;color:#fff}@media(max-width:1000px){.sq-layout-main>.sq-page-header:has(.sq-performance-indicator-header-toolbar){align-items:flex-start}.sq-performance-indicator-header-toolbar{justify-content:flex-start;flex-wrap:wrap}}
 .sq-performance-tools .sq-form-control{width:200px;min-height:30px;padding:.3rem .45rem;font-size:.72rem}
 .sq-performance-context{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem;margin-bottom:.55rem}
 .sq-performance-context div{padding:.5rem .6rem;border:1px solid var(--sq-border);border-top:3px solid var(--sq-color-primary-500);border-radius:8px;background:var(--sq-color-primary-50);box-shadow:0 2px 7px rgba(15,23,42,.05)}
@@ -25,6 +27,7 @@
 .sq-performance-bar span{display:block;height:100%;width:0;background:var(--sq-color-primary);transition:width .2s ease}
 .sq-performance-form{padding:.65rem;border:1px solid var(--sq-border);border-top:3px solid var(--sq-color-primary-500);border-radius:8px;background:var(--sq-bg-surface);box-shadow:0 2px 7px rgba(15,23,42,.05)}
 .sq-performance-form h4{margin:0 0 .25rem;font-size:.9rem}
+.sq-indicator-title-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem}.sq-indicator-title-row h4{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sq-indicator-title-row strong{flex:none;color:#173b69;font-size:.82rem;white-space:nowrap}
 .sq-performance-muted{margin:.1rem 0 .55rem;color:var(--sq-text-muted);font-size:.68rem}
 .sq-indicator-detail-grid{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:.4rem;margin:.45rem 0 .5rem}
 .sq-indicator-detail-grid div{min-width:0;padding:.4rem .5rem;border:1px solid var(--sq-border);border-radius:7px;background:var(--sq-bg-muted)}

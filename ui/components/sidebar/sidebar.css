@@ -467,3 +467,17 @@ body.sq-sidebar-collapsed .sq-sidebar-link {
         width: 100% !important;
     }
 }
+
+/* Semantic navigation icon colours: each module is recognisable at a glance. */
+.sq-sidebar-link[data-sq-route="dashboard"] i { color: #2563eb; }
+.sq-sidebar-link[data-sq-route^="assessment/"] i { color: #4f46e5; }
+.sq-sidebar-link[data-sq-route^="cqi/"] i { color: #d97706; }
+.sq-sidebar-link[data-sq-route^="performance/"] i { color: #7c3aed; }
+.sq-sidebar-link[data-sq-route^="certification/"] i { color: #059669; }
+.sq-sidebar-link[data-sq-route^="reports/"] i { color: #0891b2; }
+.sq-sidebar-link[data-sq-route^="state/"] i { color: #0f766e; }
+.sq-sidebar-link[data-sq-route^="assessor/"] i { color: #9333ea; }
+.sq-sidebar-link[data-sq-route^="facilityusers/"] i { color: #475569; }
+.sq-sidebar-link[data-sq-route^="resources/"] i { color: #0284c7; }
+.sq-sidebar-link[href*="documentation"] i,
+.sq-sidebar-link[href*="about"] i { color: #0ea5e9; }

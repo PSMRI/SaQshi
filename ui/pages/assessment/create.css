@@ -63,6 +63,15 @@ body:has(.sq-assessment-create-page) .sq-sidebar-link i {
     min-width: 0;
 }
 
+/* Keep the whole create workflow visible without a long initial scroll. */
+.sq-assessment-create-page .sq-card-header {
+    padding: .4rem .6rem !important;
+}
+
+.sq-assessment-create-page .sq-card-body {
+    padding: .55rem .65rem !important;
+}
+
 /* ==========================================================
    Card
 ========================================================== */
@@ -110,6 +119,14 @@ body:has(.sq-assessment-create-page) .sq-sidebar-link i {
     margin-bottom: .65rem !important;
 }
 
+.sq-assessment-create-page #activeAssessmentStatus .sq-mt-3 {
+    margin-top: .45rem !important;
+}
+
+.sq-assessment-create-page #activeAssessmentStatus .sq-mt-4 {
+    margin-top: .65rem !important;
+}
+
 /* ==========================================================
    Form
 ========================================================== */
@@ -118,6 +135,11 @@ body:has(.sq-assessment-create-page) .sq-sidebar-link i {
     display: flex;
     flex-direction: column;
     gap: .55rem;
+}
+
+.sq-assessment-create-page #assessmentCreateForm .sq-form-group {
+    gap: .2rem;
+    margin-bottom: 0 !important;
 }
 
 .sq-form-group {
@@ -153,12 +175,14 @@ body:has(.sq-assessment-create-page) .sq-sidebar-link i {
 
 textarea.sq-form-control {
     resize: vertical;
-    min-height: 44px;
+    min-height: 58px !important;
+    height: 58px;
 }
 
 .sq-help-text {
     font-size: .68rem;
     color: var(--sq-text-muted);
+    line-height: 1.2;
 }
 
 /* ==========================================================
@@ -194,7 +218,7 @@ textarea.sq-form-control {
 }
 
 .sq-alert-content {
-    padding: .55rem .65rem;
+    padding: .45rem .55rem;
 }
 
 .sq-alert-title {
@@ -205,7 +229,7 @@ textarea.sq-form-control {
 .sq-alert-text {
     color: var(--sq-text-secondary);
     font-size: .75rem;
-    line-height: 1.35;
+    line-height: 1.25;
 }
 
 /* ==========================================================
@@ -215,7 +239,7 @@ textarea.sq-form-control {
 .sq-info-list {
     display: flex;
     flex-direction: column;
-    gap: .35rem;
+    gap: .25rem;
     min-width: 0;
 }
 
@@ -225,7 +249,7 @@ textarea.sq-form-control {
     justify-content: space-between;
     align-items: center;
     gap: .55rem;
-    padding-bottom: .32rem;
+    padding-bottom: .22rem;
     border-bottom: 1px dashed var(--sq-border);
     min-width: 0;
 }
@@ -284,7 +308,7 @@ textarea.sq-form-control {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: .55rem;
-    padding: .55rem;
+    padding: .45rem .5rem;
     border: 1px solid #fecaca;
     border-radius: var(--sq-radius-lg);
     background: #fef2f2;
@@ -313,7 +337,80 @@ textarea.sq-form-control {
 .sq-danger-text {
     color: var(--sq-text-secondary);
     font-size: .72rem;
-    line-height: 1.3;
+    line-height: 1.2;
+}
+
+/* Use the available desktop width so the entire workflow stays above the fold. */
+@media (min-width: 1200px) {
+    body:has(.sq-assessment-create-page) .sq-content,
+    body:has(.sq-assessment-create-page) .sq-page-content {
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .sq-assessment-create-page .sq-card-header {
+        padding: .3rem .55rem !important;
+    }
+
+    .sq-assessment-create-page .sq-card-header .sq-card-subtitle,
+    .sq-assessment-create-page .sq-help-text {
+        display: none;
+    }
+
+    .sq-assessment-create-page .sq-card-body {
+        padding: .45rem .55rem !important;
+    }
+
+    .sq-assessment-create-page #assessmentCreateForm {
+        gap: .4rem;
+        row-gap: .4rem;
+    }
+
+    .sq-assessment-create-page .sq-alert-text {
+        font-size: .7rem;
+    }
+
+    #assessmentCreateForm {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(190px, .65fr);
+        align-content: start;
+        column-gap: .55rem;
+        row-gap: .4rem;
+    }
+
+    #assessmentCreateForm > .sq-grid {
+        grid-column: 1 / 2;
+    }
+
+    #assessmentCreateForm > .sq-form-group:nth-of-type(4) {
+        grid-column: 2 / -1;
+    }
+
+    #assessmentCreateForm > .sq-alert,
+    #assessmentCreateForm > .sq-form-actions {
+        grid-column: 1 / -1;
+    }
+
+    #facilityInfoCard,
+    #activeAssessmentStatus > .sq-info-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: .7rem;
+        row-gap: .25rem;
+    }
+
+    #facilityInfoCard .sq-info-item,
+    #activeAssessmentStatus .sq-info-item {
+        grid-template-columns: minmax(52px, 38%) minmax(0, 1fr);
+    }
+
+    .sq-assessment-create-page #activeAssessmentStatus .sq-mt-3 {
+        margin-top: .3rem !important;
+    }
+
+    .sq-assessment-create-page #activeAssessmentStatus .sq-mt-4 {
+        margin-top: .45rem !important;
+    }
 }
 
 .sq-assessment-create-page .sq-alert {

@@ -269,13 +269,16 @@
             const current = data.current_month_status || {};
             const assessmentMonth = current.assessment || {};
             const assessmentSummary = data.assessment_summary || {};
+            const scoreBands = data.latest_completed_score_bands || {};
             const performanceMonth = current.performance || {};
+            const actionPlansMonth = current.action_plans || {};
 
             setText("stateTotalFacilities", data.facility_category?.total_facilities || 0);
             setText("stateMonthAssessmentStarted", assessmentSummary.total || 0);
             setText("stateMonthAssessmentProgress", assessmentSummary.active || 0);
             setText("stateMonthAssessmentCompleted", assessmentSummary.completed || 0);
             setText("stateMonthAssessmentCancelled", assessmentSummary.cancelled || 0);
+            setText("stateFacilitiesWithAssessment", assessmentSummary.facilities_with_assessment || 0);
             setText("stateFacilitiesWithoutAssessment", assessmentSummary.facilities_without_assessment || 0);
             if (isEducationProfile()) {
                 renderSchoolCategoryCards(data.school_category_summary || {});
@@ -283,6 +286,11 @@
 
             setHtml("stateFacilityTypes", list(data.facility_category?.facility_types || [], "facility_type", "count"));
             setHtml("stateCertification", list(data.certification_summary?.status || [], "status", "count"));
+            setHtml("stateLatestCompletedScoreBands", list([
+                { label: "Below 60%", count: scoreBands.below_60 || 0 },
+                { label: "60% to below 80%", count: scoreBands.from_60_to_below_80 || 0 },
+                { label: "80% and above", count: scoreBands.at_or_above_80 || 0 }
+            ], "label", "count"));
             setHtml("statePerformance", `<div class="sq-state-list">
                     <div class="sq-state-row">
                         <span>Assessment started</span>
@@ -296,15 +304,24 @@
                         <span>Assessment in progress</span>
                         <b>${esc(assessmentMonth.in_progress || 0)}</b>
                     </div>
+                    <div class="sq-state-row">
+                        <span>Facilities with completed action plan</span>
+                        <b>${esc(actionPlansMonth.facilities_completed || 0)}</b>
+                    </div>
                     ${moduleEnabled("performance") ? `<div class="sq-state-row">
-                        <span>Performance entries</span>
-                        <b>${esc((performanceMonth.kpi_filled || 0) + (performanceMonth.outcome_filled || 0))}</b>
+                        <span>Facilities with KPI entry</span>
+                        <b>${esc(performanceMonth.kpi_filled || 0)}</b>
+                    </div>
+                    <div class="sq-state-row">
+                        <span>Facilities with Outcome entry</span>
+                        <b>${esc(performanceMonth.outcome_filled || 0)}</b>
                     </div>` : ""}
                 </div>`);
         } catch (error) {
             console.error("[State Dashboard]", error);
             setHtml("stateFacilityTypes", empty(error.message || "State dashboard API failed."));
             setHtml("stateCertification", empty("Unable to load certification summary."));
+            setHtml("stateLatestCompletedScoreBands", empty("Unable to load latest assessment scores."));
             setHtml("statePerformance", empty("Unable to load performance summary."));
             if (isEducationProfile()) renderSchoolCategoryCards({});
             if (SQ.notification) SQ.notification.error(error.message || "Unable to load state dashboard.");

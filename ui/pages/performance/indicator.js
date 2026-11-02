@@ -171,19 +171,6 @@
         return item ? state.savedMap[savedKey(item.indicator_id)] || null : null;
     }
 
-    function renderFacility() {
-        const assessment = state.activeAssessment;
-        const assessmentText = assessment?.assessment_name
-            || (state.activeDepartmentIds?.length ? "Current assessment" : "No active assessment");
-
-        $("indicatorFacilityContext").innerHTML = `
-            <div><span>Facility</span><strong>${esc(state.facility?.fac_name || "-")}</strong></div>
-            <div><span>Facility Type</span><strong>${esc(state.facility?.facility_type || "-")}</strong></div>
-            <div><span>Assessment</span><strong>${esc(assessmentText)}</strong></div>
-            ${state.rule?.outcome_treated_as_kpi ? `<div><span>Rule</span><strong>Outcome as KPI</strong></div>` : ""}
-        `;
-    }
-
     function renderHistory() {
         const period = selectedPeriod();
         const deptId = departmentRequired() ? ($("indicatorDepartmentFilter")?.value || "") : "0";
@@ -235,10 +222,7 @@
     function renderProgress() {
         const status = completionState();
         const index = status.total ? state.selectedIndex + 1 : 0;
-        const percent = status.total ? Math.round((status.saved / status.total) * 100) : 0;
-        $("indicatorProgressText").textContent = `${status.saved} completed, ${Math.max(0, status.total - status.saved)} remaining`;
         $("indicatorCurrentCounter").textContent = `${index} / ${status.total}`;
-        $("indicatorProgressBar").style.width = `${Math.max(0, Math.min(percent, 100))}%`;
     }
 
     function renderCompletion() {
@@ -263,12 +247,9 @@
 
         if (!item) {
             $("indicatorSelectedTitle").textContent = "Select type, department and month";
-            $("indicatorSelectedMeta").textContent = !state.activeAssessment
-                ? "No active assessment found for this facility."
-                : "No activated department indicator available for the selected type.";
-            $("indicatorDetailName").textContent = "-";
             $("indicatorDetailNumerator").textContent = "-";
             $("indicatorDetailDenominator").textContent = "-";
+            $("indicatorDetailFormula").textContent = "-";
             $("indicatorDenominator").readOnly = false;
             $("indicatorDenominator").required = true;
             $("indicatorDenominator").classList.remove("is-readonly");
@@ -287,6 +268,7 @@
         const numeratorLabel = numeratorField.label || "Numerator";
         const denominatorLabel = denominatorField.label || "Denominator";
         const denominatorNA = isNotApplicable(denominatorLabel);
+        const formulaText = item.formula || item.formula_expression || (denominatorNA ? "Numerator" : "Numerator / Denominator");
 
         $("indicatorId").value = item.indicator_id;
         $("indicatorCode").value = item.indicator_code;
@@ -294,10 +276,9 @@
         $("indicatorDepartmentId").value = item.department_id || 0;
         $("indicatorFormulaId").value = item.formula_id || 0;
         $("indicatorSelectedTitle").textContent = item.indicator_name || "Indicator Entry";
-        $("indicatorSelectedMeta").textContent = `${item.indicator_code || "-"} | ${item.department_name || ("Department " + item.department_id)} | Formula ${item.formula_id || "-"}`;
-        $("indicatorDetailName").textContent = item.indicator_name || "-";
         $("indicatorDetailNumerator").textContent = numeratorLabel;
         $("indicatorDetailDenominator").textContent = denominatorLabel;
+        $("indicatorDetailFormula").textContent = formulaText;
         $("indicatorNumeratorLabel").textContent = "Numerator";
         $("indicatorDenominatorLabel").textContent = denominatorNA ? "Denominator (N/A)" : "Denominator";
         $("indicatorNumerator").value = saved?.numerator_value ?? "";
@@ -318,9 +299,6 @@
         renderProgress();
         renderCompletion();
 
-        if (status.complete && state.editMode) {
-            $("indicatorProgressText").textContent = "Edit mode: update saved values as required.";
-        }
     }
 
     async function loadHistory() {
@@ -374,7 +352,6 @@
 
         state.editMode = false;
 
-        renderFacility();
         await loadHistory();
         state.selectedIndex = firstPendingIndex(0);
         showItem();
@@ -451,7 +428,16 @@
         $("btnIndicatorEditCompleted")?.addEventListener("click", startEditMode);
     }
 
+    function moveToolbarIntoPageHeader() {
+        const toolbar = $("indicatorHeaderToolbar");
+        const actions = $("sq-page-actions");
+        if (toolbar && actions && toolbar.parentElement !== actions) {
+            actions.appendChild(toolbar);
+        }
+    }
+
     function init() {
+        moveToolbarIntoPageHeader();
         fillPeriods();
         applyInitialQuery();
         bind();

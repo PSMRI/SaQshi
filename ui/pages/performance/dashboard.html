@@ -10,8 +10,7 @@
 <section class="sq-performance-page">
     <div class="sq-performance-grid">
         <div class="sq-card">
-            <div class="sq-card-header">
-                <div class="sq-performance-toolbar">
+                <div id="performanceHeaderToolbar" class="sq-performance-toolbar sq-performance-header-toolbar">
                     <label class="sq-performance-department-filter">
                         <span>Department</span>
                         <select id="perfDepartmentFilter" class="sq-form-control" aria-label="Performance Department Filter">
@@ -31,9 +30,8 @@
                         <input type="checkbox" id="perfAllIndicators" aria-label="Perf All Indicators">
                         <span>All indicators</span>
                     </label>
-                    <button type="button" class="sq-btn sq-btn-light" id="btnPerformanceRefresh">Refresh</button>
+                    <button type="button" class="sq-btn sq-btn-light" id="btnPerformanceRefresh" title="Refresh dashboard" aria-label="Refresh dashboard"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
                 </div>
-            </div>
             <div class="sq-card-body">
                 <div class="sq-performance-kpis">
                     <div><span>Outcome Departments</span><strong id="perfTotalOutcomeDepartments">0</strong></div>
@@ -41,12 +39,6 @@
                     <div><span id="perfKpiIndicatorLabel">KPI Indicators</span><strong id="perfKpiIndicators">0</strong></div>
                     <div><span>Total Months</span><strong id="perfTotalMonths">0</strong></div>
                 </div>
-                <div class="sq-performance-section-title">
-                    <h4>Month Wise Entry Status</h4>
-                    <span id="perfLatestPeriod">Latest period: -</span>
-                </div>
-                <div id="perfMonthRows" class="sq-performance-months"></div>
-
                 <div class="sq-performance-chart-grid">
                     <div>
                         <div class="sq-performance-section-title">

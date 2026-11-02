@@ -122,7 +122,8 @@ class StateDashboardService
             'filters' => self::normalizeFilters($filters),
             'facility_category' => self::safeSection('facility_category', fn() => self::facilityCategory($con, $filters), ['total_facilities' => 0, 'facility_types' => [], 'districts' => []]),
             'certification_summary' => self::safeSection('certification_summary', fn() => self::certificationSummary($con, $filters), ['total' => 0, 'status' => [], 'map_points' => []]),
-            'assessment_summary' => self::safeSection('assessment_summary', fn() => self::assessmentProgress($con, $filters, true), ['total' => 0, 'active' => 0, 'completed' => 0, 'cancelled' => 0]),
+            'assessment_summary' => self::safeSection('assessment_summary', fn() => self::assessmentProgress($con, $filters, true), ['total' => 0, 'active' => 0, 'completed' => 0, 'cancelled' => 0, 'facilities_with_assessment' => 0, 'facilities_without_assessment' => 0]),
+            'latest_completed_score_bands' => self::safeSection('latest_completed_score_bands', fn() => self::latestCompletedScoreBands($con, $filters), ['scored_facilities' => 0, 'below_60' => 0, 'from_60_to_below_80' => 0, 'at_or_above_80' => 0]),
             'cqi_summary' => self::safeSection('cqi_summary', fn() => self::cqiSummary($con, $filters), ['total_action_plans' => 0, 'completed' => 0, 'pending' => 0, 'overdue' => 0, 'rows' => []]),
             'performance_summary' => self::safeSection('performance_summary', fn() => self::performanceSummary($con, $filters), ['months' => [], 'kpi_submitted' => 0, 'outcome_submitted' => 0]),
             'current_month_status' => self::safeSection('current_month_status', fn() => self::currentMonthStatus($con, $filters), ['month' => (int)date('n'), 'year' => (int)date('Y'), 'assessment' => [], 'performance' => []]),
@@ -327,8 +328,12 @@ class StateDashboardService
             }
         }
 
+        // cert_details owns the current certification. History only proves the
+        // progression/renewal timeline and must never override current data.
         $latestByKey = [];
-        $upgradedFromStateByKey = [];
+        $historyLatestByKey = [];
+        $stateHistoryByKey = [];
+        $renewedByTypeByKey = [];
         $historyWarning = null;
 
         try {
@@ -359,22 +364,34 @@ class StateDashboardService
                 $historyByKey = [];
                 foreach ($historyRows as $row) {
                     $nin = self::normalizeNin($row['fac_nin'] ?? '');
-                    $key = $nin !== '' ? 'NIN:' . $nin : 'FAC:' . (int)($row['fac_id_fk'] ?? 0);
-                    if ($key !== 'FAC:0' && !isset($latestByKey[$key])) {
-                        $latestByKey[$key] = $row;
+                    $facId = (int)($row['fac_id_fk'] ?? 0);
+                    $keys = [];
+                    if ($nin !== '') $keys[] = 'NIN:' . $nin;
+                    if ($facId > 0) $keys[] = 'FAC:' . $facId;
+                    foreach ($keys as $key) {
+                        if (!isset($historyLatestByKey[$key])) {
+                            $historyLatestByKey[$key] = $row;
+                        }
+                        $historyByKey[$key][] = $row;
                     }
-                    if ($key !== 'FAC:0') $historyByKey[$key][] = $row;
                 }
                 foreach ($historyByKey as $key => $historyItems) {
-                    $sawState = false;
+                    $seenCertificationTypes = [];
                     foreach (array_reverse($historyItems) as $historyItem) {
                         $historyPayload = self::decodeJsonObject($historyItem['new_data_json'] ?? '');
                         $historyRaw = isset($historyPayload['raw']) && is_array($historyPayload['raw']) ? $historyPayload['raw'] : [];
                         $historyType = self::normalizeCertificationType((string)($historyPayload['certification_type'] ?? $historyPayload['cert_type'] ?? $historyRaw['cert_type'] ?? ''));
-                        if ($historyType === 'STATE') $sawState = true;
-                        if ($sawState && $historyType === 'NATIONAL') {
-                            $upgradedFromStateByKey[$key] = true;
-                            break;
+                        $historyStatus = self::certStatusFromPayload($historyPayload);
+                        if ($historyType === 'STATE') {
+                            $stateHistoryByKey[$key] = true;
+                        }
+                        if (in_array($historyType, ['NATIONAL', 'NATIONAL_CONDITIONALITY', 'STATE'], true)
+                            && in_array($historyStatus, ['CERTIFIED', 'CONDITIONAL', 'EXPIRED', 'EXPIRING SOON'], true)) {
+                            if (!empty($seenCertificationTypes[$historyType])
+                                && in_array($historyStatus, ['CERTIFIED', 'CONDITIONAL'], true)) {
+                                $renewedByTypeByKey[$key][$historyType] = true;
+                            }
+                            $seenCertificationTypes[$historyType] = true;
                         }
                     }
                 }
@@ -403,11 +420,21 @@ class StateDashboardService
                 foreach ($importedRows as $imported) {
                     $nin = self::normalizeNin($imported['fac_nin'] ?? '');
                     $facId = (int)($imported['fac_id'] ?? 0);
-                    $key = $nin !== '' ? 'NIN:' . $nin : 'FAC:' . $facId;
-                    if ($key === 'FAC:0' || isset($latestByKey[$key])) {
+                    $keys = [];
+                    if ($nin !== '') $keys[] = 'NIN:' . $nin;
+                    if ($facId > 0) $keys[] = 'FAC:' . $facId;
+                    if (!$keys) {
                         continue;
                     }
-                    $latestByKey[$key] = [
+                    $alreadyMapped = false;
+                    foreach ($keys as $key) {
+                        if (isset($latestByKey[$key])) {
+                            $alreadyMapped = true;
+                            break;
+                        }
+                    }
+                    if ($alreadyMapped) continue;
+                    $record = [
                         'certification_id' => (int)($imported['id'] ?? 0),
                         'fac_id_fk' => $facId,
                         'fac_nin' => $nin,
@@ -428,28 +455,48 @@ class StateDashboardService
                         'action_type' => 'CERTIFICATION_IMPORT',
                         'action_on' => null
                     ];
+                    foreach ($keys as $key) $latestByKey[$key] = $record;
                 }
             } catch (Throwable $e) {
                 $historyWarning = $historyWarning ?: $e->getMessage();
             }
         }
 
+        // History remains a fallback only for legacy facilities without a
+        // cert_details row. It cannot replace a current State/National record.
+        foreach ($historyLatestByKey as $key => $historyRow) {
+            if (!isset($latestByKey[$key])) {
+                $latestByKey[$key] = $historyRow;
+            }
+        }
+
         $statusCounts = [];
         $typeCounts = [];
         $facilityTypeCounts = [];
+        $renewedByType = [
+            'national' => 0,
+            'state' => 0
+        ];
         $viewBy = strtoupper(trim((string)($filters['view_by'] ?? 'DIVISION')));
         if (!in_array($viewBy, ['DIVISION', 'DISTRICT', 'BLOCK', 'FACILITY_TYPE'], true)) $viewBy = 'DIVISION';
         $breakdown = [];
         $allFacilities = self::facilitiesFromJson();
+        $selectedDivision = trim((string)($filters['division'] ?? ''));
         $selectedDistrict = trim((string)($filters['district'] ?? ''));
+        $divisionOptions = [];
         $districtOptions = [];
         $blockOptions = [];
         foreach ($allFacilities as $filterFacility) {
+            $divisionName = trim((string)($filterFacility['division'] ?? ''));
             $districtName = trim((string)($filterFacility['Dist_Name'] ?? $filterFacility['district'] ?? ''));
             $blockName = trim((string)($filterFacility['Block_Name'] ?? $filterFacility['block'] ?? ''));
-            if ($districtName !== '') $districtOptions[$districtName] = $districtName;
-            if ($blockName !== '' && ($selectedDistrict === '' || strcasecmp($districtName, $selectedDistrict) === 0)) $blockOptions[$blockName] = $blockName;
+            if ($divisionName !== '') $divisionOptions[$divisionName] = $divisionName;
+            if ($districtName !== '' && ($selectedDivision === '' || strcasecmp($divisionName, $selectedDivision) === 0)) $districtOptions[$districtName] = $districtName;
+            if ($blockName !== ''
+                && ($selectedDivision === '' || strcasecmp($divisionName, $selectedDivision) === 0)
+                && ($selectedDistrict === '' || strcasecmp($districtName, $selectedDistrict) === 0)) $blockOptions[$blockName] = $blockName;
         }
+        natcasesort($divisionOptions);
         natcasesort($districtOptions);
         natcasesort($blockOptions);
         $points = [];
@@ -488,6 +535,13 @@ class StateDashboardService
                 'last_action' => $history['action_type'] ?? null,
                 'last_updated_on' => $history['action_on'] ?? null
             ];
+            if (!empty($row['valid_to'])) {
+                try {
+                    $row['renewal_status'] = CertificationExpiryService::renewalStatus((string)$row['valid_to']);
+                } catch (Throwable $e) {
+                    // Keep the stored value when an imported expiry date cannot be parsed.
+                }
+            }
             $matchesSummary = self::certificationRowMatches($row, '', $statusFilter, $typeFilter);
             if (!$matchesSummary) {
                 $points[] = $row;
@@ -498,17 +552,46 @@ class StateDashboardService
             $type = $row['certification_type'] !== '' ? $row['certification_type'] : 'UNSPECIFIED';
             $hasCertification = in_array($row['status'], ['CERTIFIED', 'CONDITIONAL'], true);
             $facilityType = $row['facility_type'] !== '' ? $row['facility_type'] : 'Unspecified facility type';
-            if (!isset($facilityTypeCounts[$facilityType])) $facilityTypeCounts[$facilityType] = ['total' => 0, 'national' => 0, 'conditionality' => 0, 'state' => 0];
+            if (!isset($facilityTypeCounts[$facilityType])) $facilityTypeCounts[$facilityType] = ['total' => 0, 'national' => 0, 'conditionality' => 0, 'state' => 0, 'state_conditionality' => 0];
             $facilityTypeCounts[$facilityType]['total']++;
             if ($hasCertification && $row['status'] === 'CONDITIONAL') {
-                $facilityTypeCounts[$facilityType]['conditionality']++;
+                if (in_array($type, ['NATIONAL', 'NATIONAL_CONDITIONALITY'], true)) {
+                    $facilityTypeCounts[$facilityType]['conditionality']++;
+                } else {
+                    $facilityTypeCounts[$facilityType]['state_conditionality']++;
+                }
             } elseif ($hasCertification && $type === 'NATIONAL') {
                 $facilityTypeCounts[$facilityType]['national']++;
             } elseif ($hasCertification && $type === 'STATE') {
                 $facilityTypeCounts[$facilityType]['state']++;
             }
-            $historyKey = $nin !== '' ? 'NIN:' . $nin : 'FAC:' . $facId;
-            if (!empty($upgradedFromStateByKey[$historyKey])) $upgradedFromStateCount++;
+            // Prefer NIN, but retain fac_id as a fallback. Some migrated rows
+            // have a differently formatted/missing NIN while sharing fac_id.
+            $historyKeys = [];
+            if ($nin !== '') $historyKeys[] = 'NIN:' . $nin;
+            if ($facId > 0) $historyKeys[] = 'FAC:' . $facId;
+            $hasStateHistory = false;
+            foreach ($historyKeys as $historyKey) {
+                if (!empty($stateHistoryByKey[$historyKey])) {
+                    $hasStateHistory = true;
+                    break;
+                }
+            }
+            if (in_array($type, ['NATIONAL', 'NATIONAL_CONDITIONALITY'], true)
+                && $hasStateHistory) {
+                $upgradedFromStateCount++;
+            }
+            $renewedGroup = in_array($type, ['NATIONAL', 'NATIONAL_CONDITIONALITY'], true) ? 'national' : ($type === 'STATE' ? 'state' : null);
+            $hasRenewalHistory = false;
+            foreach ($historyKeys as $historyKey) {
+                if (!empty($renewedByTypeByKey[$historyKey][$type])) {
+                    $hasRenewalHistory = true;
+                    break;
+                }
+            }
+            if ($hasCertification && $renewedGroup !== null && $hasRenewalHistory) {
+                $renewedByType[$renewedGroup]++;
+            }
             $typeCounts[$type] = ($typeCounts[$type] ?? 0) + 1;
 
             $group = match ($viewBy) {
@@ -517,12 +600,16 @@ class StateDashboardService
                 'FACILITY_TYPE' => $row['facility_type'] ?: 'Unspecified facility type',
                 default => $row['division'] ?: 'Unassigned division'
             };
-            if (!isset($breakdown[$group])) $breakdown[$group] = ['label' => $group, 'total' => 0, 'certified' => 0, 'national' => 0, 'conditionality' => 0, 'state' => 0];
+            if (!isset($breakdown[$group])) $breakdown[$group] = ['label' => $group, 'total' => 0, 'certified' => 0, 'national' => 0, 'conditionality' => 0, 'state' => 0, 'state_conditionality' => 0];
             $breakdown[$group]['total']++;
             if ($hasCertification) {
                 $breakdown[$group]['certified']++;
                 if ($row['status'] === 'CONDITIONAL') {
-                    $breakdown[$group]['conditionality']++;
+                    if (in_array($type, ['NATIONAL', 'NATIONAL_CONDITIONALITY'], true)) {
+                        $breakdown[$group]['conditionality']++;
+                    } else {
+                        $breakdown[$group]['state_conditionality']++;
+                    }
                 } elseif ($type === 'NATIONAL') {
                     $breakdown[$group]['national']++;
                 } elseif ($type === 'STATE') {
@@ -559,19 +646,21 @@ class StateDashboardService
                 'national' => $counts['national'],
                 'conditionality' => $counts['conditionality'],
                 'state' => $counts['state'],
-                'certified' => $counts['national'] + $counts['conditionality'] + $counts['state'],
-                'completion_percentage' => self::percent((float)($counts['national'] + $counts['conditionality'] + $counts['state']), (float)$counts['total'])
+                'state_conditionality' => $counts['state_conditionality'],
+                'certified' => $counts['national'] + $counts['conditionality'] + $counts['state'] + $counts['state_conditionality'],
+                'completion_percentage' => self::percent((float)($counts['national'] + $counts['conditionality'] + $counts['state'] + $counts['state_conditionality']), (float)$counts['total'])
             ];
         }
         $breakdownRows = array_values($breakdown);
         foreach ($breakdownRows as &$breakdownRow) $breakdownRow['completion_percentage'] = self::percent((float)$breakdownRow['certified'], (float)$breakdownRow['total']);
         unset($breakdownRow);
         usort($breakdownRows, static fn(array $a, array $b): int => $b['certified'] <=> $a['certified']);
-        $mix = ['national' => 0, 'conditionality' => 0, 'state' => 0];
+        $mix = ['national' => 0, 'conditionality' => 0, 'state' => 0, 'state_conditionality' => 0];
         foreach ($breakdownRows as $breakdownRow) {
             $mix['national'] += (int)$breakdownRow['national'];
             $mix['conditionality'] += (int)$breakdownRow['conditionality'];
             $mix['state'] += (int)$breakdownRow['state'];
+            $mix['state_conditionality'] += (int)$breakdownRow['state_conditionality'];
         }
 
         $response = [
@@ -580,10 +669,12 @@ class StateDashboardService
             'types' => $types,
             'facility_types' => $facilityTypes,
             'mix' => $mix,
+            'renewed_by_type' => $renewedByType,
             'upgraded_from_state_to_national' => $upgradedFromStateCount,
             'breakdown' => $breakdownRows,
             'view_by' => $viewBy,
             'filter_options' => [
+                'divisions' => array_values($divisionOptions),
                 'districts' => array_values($districtOptions),
                 'blocks' => array_values($blockOptions)
             ],
@@ -995,7 +1086,7 @@ class StateDashboardService
     public static function assessmentProgress(mysqli $con, array $filters = [], bool $summaryOnly = false): array
     {
         if (!self::tableExists($con, 'assessment_master')) {
-            return $summaryOnly ? ['total' => 0, 'active' => 0, 'completed' => 0, 'cancelled' => 0, 'facilities_without_assessment' => 0] : ['rows' => []];
+            return $summaryOnly ? ['total' => 0, 'active' => 0, 'completed' => 0, 'cancelled' => 0, 'facilities_with_assessment' => 0, 'active_facilities' => 0, 'completed_facilities' => 0, 'cancelled_facilities' => 0, 'facilities_without_assessment' => 0] : ['rows' => []];
         }
 
         $where = self::assessmentWhere($con, $filters);
@@ -1037,7 +1128,35 @@ class StateDashboardService
                 $summary['other'] += $count;
             }
         }
+        $facilityStatus = $useFacilityCache
+            ? self::one($con, "
+                SELECT
+                    COUNT(DISTINCT c.fac_id) AS facilities_with_assessment,
+                    COALESCE(SUM(CASE WHEN c.assessment_active > 0 THEN 1 ELSE 0 END), 0) AS active_facilities,
+                    COALESCE(SUM(CASE WHEN c.assessment_completed > 0 THEN 1 ELSE 0 END), 0) AS completed_facilities,
+                    COALESCE(SUM(CASE WHEN c.assessment_cancelled > 0 THEN 1 ELSE 0 END), 0) AS cancelled_facilities
+                FROM dashboard_facility_assessment_cache c
+                {$cacheWhere['sql']}
+            ", $cacheWhere['types'], $cacheWhere['params'])
+            : self::one($con, "
+                SELECT
+                    COUNT(DISTINCT a.fac_id_fk) AS facilities_with_assessment,
+                    COUNT(DISTINCT CASE WHEN UPPER(COALESCE(a.status, '')) = 'ACTIVE' THEN a.fac_id_fk END) AS active_facilities,
+                    COUNT(DISTINCT CASE WHEN UPPER(COALESCE(a.status, '')) = 'COMPLETED' THEN a.fac_id_fk END) AS completed_facilities,
+                    COUNT(DISTINCT CASE WHEN UPPER(COALESCE(a.status, '')) = 'CANCELLED' THEN a.fac_id_fk END) AS cancelled_facilities
+                FROM assessment_master a
+                {$where['sql']}
+            ", $where['types'], $where['params']);
+        $summary['facilities_with_assessment'] = (int)($facilityStatus['facilities_with_assessment'] ?? 0);
+        $summary['active_facilities'] = (int)($facilityStatus['active_facilities'] ?? 0);
+        $summary['completed_facilities'] = (int)($facilityStatus['completed_facilities'] ?? 0);
+        $summary['cancelled_facilities'] = (int)($facilityStatus['cancelled_facilities'] ?? 0);
         $summary['facilities_without_assessment'] = self::facilitiesWithoutAssessment($con, $filters, $useFacilityCache);
+        // The registered total must come from the facility master. Assessment
+        // history can contain orphaned/migrated facility IDs and must not
+        // inflate the denominator shown to users.
+        $summary['registered_facilities'] = (int)(self::facilityCategory($con, $filters)['total_facilities'] ?? 0);
+        $summary['facilities_with_assessment'] = max(0, $summary['registered_facilities'] - $summary['facilities_without_assessment']);
 
         if ($summaryOnly) {
             return $summary;
@@ -1338,6 +1457,64 @@ class StateDashboardService
             ],
             'pagination' => self::paginationMeta($pagination, (int)($detailTotal['row_count'] ?? 0)),
             'rows' => $rows
+        ];
+    }
+
+    /** Counts each facility once using its newest completed assessment score. */
+    public static function latestCompletedScoreBands(mysqli $con, array $filters = []): array
+    {
+        $empty = ['scored_facilities' => 0, 'below_60' => 0, 'from_60_to_below_80' => 0, 'at_or_above_80' => 0];
+        if (!self::tableExists($con, 'assessment_master') || !self::tableExists($con, 'facilities')) return $empty;
+
+        $responseTable = self::tableExists($con, 'assessment_response')
+            ? 'assessment_response'
+            : (self::tableExists($con, 'assessment_cycle_response') ? 'assessment_cycle_response' : '');
+        if ($responseTable === '') return $empty;
+
+        $assessmentColumn = self::columnExists($con, $responseTable, 'assessment_id') ? 'assessment_id' : 'cycle_id';
+        $actionJoin = '';
+        $scoreExpression = 'r.score';
+        if (self::tableExists($con, 'assessment_action_plan')) {
+            $actionJoin = "
+                LEFT JOIN assessment_action_plan ap
+                  ON ap.assessment_id = r.{$assessmentColumn}
+                 AND ap.dept_id = r.dept_id
+                 AND ap.checkpoint_id = r.checkpoint_id
+            ";
+            $scoreExpression = 'COALESCE(ap.revised_score, r.score)';
+        }
+
+        $where = self::facilityWhere($con, $filters);
+        $row = self::one($con, "
+            SELECT
+                COUNT(*) AS scored_facilities,
+                SUM(CASE WHEN scores.score_percent < 60 THEN 1 ELSE 0 END) AS below_60,
+                SUM(CASE WHEN scores.score_percent >= 60 AND scores.score_percent < 80 THEN 1 ELSE 0 END) AS from_60_to_below_80,
+                SUM(CASE WHEN scores.score_percent >= 80 THEN 1 ELSE 0 END) AS at_or_above_80
+            FROM (
+                SELECT a.fac_id_fk,
+                       ROUND(COALESCE(SUM({$scoreExpression}), 0) * 100 / (COUNT(DISTINCT r.checkpoint_id) * 2), 2) AS score_percent
+                FROM assessment_master a
+                INNER JOIN (
+                    SELECT fac_id_fk, MAX(assessment_id) AS assessment_id
+                    FROM assessment_master
+                    WHERE UPPER(COALESCE(status, '')) = 'COMPLETED'
+                    GROUP BY fac_id_fk
+                ) latest ON latest.assessment_id = a.assessment_id
+                INNER JOIN {$responseTable} r ON r.{$assessmentColumn} = a.assessment_id
+                {$actionJoin}
+                LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+                {$where['sql']} AND UPPER(COALESCE(a.status, '')) = 'COMPLETED'
+                GROUP BY a.fac_id_fk
+                HAVING COUNT(DISTINCT r.checkpoint_id) > 0
+            ) scores
+        ", $where['types'], $where['params']);
+
+        return [
+            'scored_facilities' => (int)($row['scored_facilities'] ?? 0),
+            'below_60' => (int)($row['below_60'] ?? 0),
+            'from_60_to_below_80' => (int)($row['from_60_to_below_80'] ?? 0),
+            'at_or_above_80' => (int)($row['at_or_above_80'] ?? 0)
         ];
     }
 
@@ -1837,8 +2014,9 @@ class StateDashboardService
     }
 
     /**
-     * Returns CQI for the latest active or completed assessment only. Older
-     * action plans remain historical and never change the current CQI result.
+     * Returns CQI for the latest completed assessment only. An action plan is
+     * expected only after the facility has completed its checklist; older plans
+     * remain historical and never change the current CQI result.
      */
     public static function cqiSummary(mysqli $con, array $filters = []): array
     {
@@ -1858,7 +2036,7 @@ class StateDashboardService
             INNER JOIN (
                 SELECT fac_id_fk, MAX(assessment_id) AS latest_assessment_id
                 FROM assessment_master
-                WHERE UPPER(COALESCE(status, '')) IN ('ACTIVE', 'COMPLETED')
+                WHERE UPPER(COALESCE(status, '')) = 'COMPLETED'
                 GROUP BY fac_id_fk
             ) latest ON latest.fac_id_fk = a.fac_id_fk AND latest.latest_assessment_id = a.assessment_id
             -- CQI is facility-based. Exclude migrated assessment records whose
@@ -1866,7 +2044,7 @@ class StateDashboardService
             INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
             LEFT JOIN facilities_type ft ON ft.fac_type_id = f.Health_facilty_type
             {$where['sql']}
-              AND UPPER(COALESCE(a.status, '')) IN ('ACTIVE', 'COMPLETED')
+              AND UPPER(COALESCE(a.status, '')) = 'COMPLETED'
             ORDER BY f.Dist_Name, f.Block_Name, f.fac_name, a.assessment_id DESC
         ", $where['types'], $where['params']);
 
@@ -1904,7 +2082,7 @@ class StateDashboardService
                 SELECT ap.assessment_id,
                     COUNT(*) AS total_action_plans,
                     SUM(CASE WHEN UPPER(COALESCE(ap.status, '')) IN ('COMPLETED','CLOSED') THEN 1 ELSE 0 END) AS completed,
-                    SUM(CASE WHEN UPPER(COALESCE(ap.status, '')) IN ('COMPLETED','CLOSED') THEN 1 ELSE 0 END) AS closed_action_plans,
+                    SUM(CASE WHEN UPPER(COALESCE(ap.status, '')) = 'CLOSED' THEN 1 ELSE 0 END) AS closed_action_plans,
                     SUM(CASE WHEN UPPER(TRIM(COALESCE(ap.achievability, ''))) = 'ACHIEVABLE' THEN 1 ELSE 0 END) AS achievable_action_plans,
                     SUM(CASE WHEN REPLACE(UPPER(TRIM(COALESCE(ap.achievability, ''))), ' ', '_') IN ('NON_ACHIEVABLE','NOT_ACHIEVABLE') THEN 1 ELSE 0 END) AS non_achievable_action_plans,
                     SUM(CASE WHEN UPPER(COALESCE(ap.status, '')) NOT IN ('COMPLETED','CLOSED') THEN 1 ELSE 0 END) AS pending,
@@ -1955,7 +2133,30 @@ class StateDashboardService
             foreach ($responseRows as $responseRow) $responsesByAssessment[(int)$responseRow['assessment_id']] = $responseRow;
         }
 
-        $summary = ['facilities_submitted' => count($latestAssessments), 'action_plans_created' => 0, 'action_plan_not_created' => 0, 'facilities_completed' => 0, 'closed_action_plans' => 0, 'achievable_action_plans' => 0, 'non_achievable_action_plans' => 0, 'pending' => 0, 'overdue' => 0, 'high_priority_pending' => 0, 'unassigned_pending' => 0];
+        $summary = [
+            // Keep facilities_submitted as a compatibility alias. The UI uses
+            // the explicit completed-checklist name below.
+            'facilities_submitted' => count($latestAssessments),
+            'facilities_completed_checklist' => count($latestAssessments),
+            'facilities_submitted_for_action_plan' => 0,
+            'facilities_with_submitted_action_plan' => 0,
+            'facilities_with_action_plan_created_not_closed' => 0,
+            'facilities_with_closed_action_plan' => 0,
+            'facilities_action_plan_not_started' => 0,
+            'facilities_action_plan_not_required' => 0,
+            'facilities_action_plan_completed' => 0,
+            'facilities_action_plan_closed' => 0,
+            'action_plans_created' => 0,
+            'action_plan_not_created' => 0,
+            'facilities_completed' => 0,
+            'closed_action_plans' => 0,
+            'achievable_action_plans' => 0,
+            'non_achievable_action_plans' => 0,
+            'pending' => 0,
+            'overdue' => 0,
+            'high_priority_pending' => 0,
+            'unassigned_pending' => 0
+        ];
         $facilityTypes = [];
         $facilityTypeMap = self::facilityTypeMap();
         foreach ($latestAssessments as &$assessment) {
@@ -1971,6 +2172,29 @@ class StateDashboardService
             $assessment['pending_action_plan_creation'] = max(0, $assessment['action_plans_required'] - $totalPlans);
             $summary['action_plans_created'] += $totalPlans;
             if ($totalPlans === 0) $summary['action_plan_not_created']++;
+            // Workflow counts: the facility has submitted an action plan as
+            // soon as it has created at least one plan. A checklist with a
+            // 0/1 response needs an action plan; if none exists, it is not
+            // started. A facility is closed only when every created plan is
+            // explicitly CLOSED.
+            $assessment['action_plan_submitted'] = $totalPlans > 0;
+            $assessment['submitted_for_action_plan'] = $assessment['action_plans_required'] > 0;
+            $assessment['action_plan_not_started'] = $assessment['action_plans_required'] > 0 && $totalPlans === 0;
+            $assessment['action_plan_not_required'] = $assessment['action_plans_required'] === 0 && $totalPlans === 0;
+            $assessment['action_plan_closed'] = $totalPlans > 0 && (int)$assessment['closed_action_plans'] === $totalPlans;
+            $assessment['action_plan_created_not_closed'] = $totalPlans > 0 && !$assessment['action_plan_closed'];
+            if ($assessment['action_plan_submitted']) $summary['facilities_with_submitted_action_plan']++;
+            if ($assessment['submitted_for_action_plan']) $summary['facilities_submitted_for_action_plan']++;
+            if ($assessment['action_plan_not_started']) $summary['facilities_action_plan_not_started']++;
+            if ($assessment['action_plan_not_required']) $summary['facilities_action_plan_not_required']++;
+            if ($assessment['action_plan_created_not_closed']) $summary['facilities_with_action_plan_created_not_closed']++;
+            if ($assessment['action_plan_closed']) $summary['facilities_with_closed_action_plan']++;
+            // Facility-level action-plan outcomes for the latest assessment.
+            // Completed includes plans in COMPLETED or CLOSED status; closed is
+            // stricter and requires every plan to be explicitly CLOSED.
+            $assessment['action_plan_completed'] = $totalPlans > 0 && (int)$assessment['pending'] === 0;
+            if ($assessment['action_plan_completed']) $summary['facilities_action_plan_completed']++;
+            if ($assessment['action_plan_closed']) $summary['facilities_action_plan_closed']++;
             // CQI is complete only after every action plan for the facility's
             // latest completed assessment is closed, classified as achievable
             // or non-achievable, and has a revised score recorded.
@@ -1998,15 +2222,55 @@ class StateDashboardService
             // export, rather than retaining labels such as "Facility type 8".
             $assessment['facility_type'] = $facilityType;
             if (!isset($facilityTypes[$facilityType])) {
-                $facilityTypes[$facilityType] = ['facility_type' => $facilityType, 'facilities_submitted' => 0, 'action_plans_created' => 0, 'action_plan_not_created' => 0, 'facilities_completed' => 0];
+                $facilityTypes[$facilityType] = [
+                    'facility_type' => $facilityType,
+                    'facilities_submitted' => 0,
+                    'facilities_completed_checklist' => 0,
+                    'facilities_submitted_for_action_plan' => 0,
+                    'facilities_with_submitted_action_plan' => 0,
+                    'facilities_with_action_plan_created_not_closed' => 0,
+                    'facilities_with_closed_action_plan' => 0,
+                    'facilities_action_plan_not_started' => 0,
+                    'facilities_action_plan_not_required' => 0,
+                    'facilities_action_plan_completed' => 0,
+                    'facilities_action_plan_closed' => 0,
+                    'action_plans_created' => 0,
+                    'action_plan_not_created' => 0,
+                    'facilities_completed' => 0
+                ];
             }
             $facilityTypes[$facilityType]['facilities_submitted']++;
+            $facilityTypes[$facilityType]['facilities_completed_checklist']++;
+            if ($assessment['submitted_for_action_plan']) $facilityTypes[$facilityType]['facilities_submitted_for_action_plan']++;
+            if ($assessment['action_plan_submitted']) $facilityTypes[$facilityType]['facilities_with_submitted_action_plan']++;
+            if ($assessment['action_plan_created_not_closed']) $facilityTypes[$facilityType]['facilities_with_action_plan_created_not_closed']++;
+            if ($assessment['action_plan_closed']) $facilityTypes[$facilityType]['facilities_with_closed_action_plan']++;
+            if ($assessment['action_plan_not_started']) $facilityTypes[$facilityType]['facilities_action_plan_not_started']++;
+            if ($assessment['action_plan_not_required']) $facilityTypes[$facilityType]['facilities_action_plan_not_required']++;
+            if ($assessment['action_plan_completed']) $facilityTypes[$facilityType]['facilities_action_plan_completed']++;
+            if ($assessment['action_plan_closed']) $facilityTypes[$facilityType]['facilities_action_plan_closed']++;
             $facilityTypes[$facilityType]['action_plans_created'] += $totalPlans;
             if ($totalPlans === 0) $facilityTypes[$facilityType]['action_plan_not_created']++;
             if ($assessment['cqi_completed']) $facilityTypes[$facilityType]['facilities_completed']++;
             foreach (['closed_action_plans', 'achievable_action_plans', 'non_achievable_action_plans', 'pending', 'overdue', 'high_priority_pending', 'unassigned_pending'] as $key) $summary[$key] += (int)$assessment[$key];
         }
         unset($assessment);
+
+        // Created-but-not-closed is the remaining part of the action-plan
+        // workflow after fully closed facilities are removed. Calculate from
+        // the two displayed counts to keep every KPI and type split reconciled.
+        $summary['facilities_with_action_plan_created_not_closed'] = max(
+            0,
+            $summary['facilities_with_submitted_action_plan'] - $summary['facilities_with_closed_action_plan']
+        );
+        foreach ($facilityTypes as &$facilityTypeSummary) {
+            $facilityTypeSummary['facilities_with_action_plan_created_not_closed'] = max(
+                0,
+                (int)$facilityTypeSummary['facilities_with_submitted_action_plan']
+                    - (int)$facilityTypeSummary['facilities_with_closed_action_plan']
+            );
+        }
+        unset($facilityTypeSummary);
 
         $facilityTypeBreakdown = array_values($facilityTypes);
         usort($facilityTypeBreakdown, static fn(array $a, array $b): int => $b['facilities_submitted'] <=> $a['facilities_submitted']);
@@ -3096,15 +3360,28 @@ class StateDashboardService
             array_push($params, $like, $like, $like, $like, $like, $like);
         }
 
+        // Overview cards intentionally remain stable while the directory tabs
+        // filter its rows, so an administrator always sees the full access picture.
+        $summaryWhere = 'WHERE ' . implode(' AND ', $where);
+        $status = strtolower(trim((string)($filters['status'] ?? '')));
+        if ($status === 'active') {
+            $where[] = 'u.is_active = 1';
+        } elseif ($status === 'inactive') {
+            $where[] = 'u.is_active <> 1';
+        }
+
         $sqlWhere = 'WHERE ' . implode(' AND ', $where);
         $summary = self::one($con, "
             SELECT
+                COUNT(*) AS total,
                 SUM(CASE WHEN u.is_active = 1 THEN 1 ELSE 0 END) AS active,
-                SUM(CASE WHEN u.is_active <> 1 THEN 1 ELSE 0 END) AS inactive
+                SUM(CASE WHEN u.is_active <> 1 THEN 1 ELSE 0 END) AS inactive,
+                SUM(CASE WHEN u.fac_id_fk IS NOT NULL AND u.fac_id_fk > 0 THEN 1 ELSE 0 END) AS facility_linked,
+                SUM(CASE WHEN u.fac_id_fk IS NULL OR u.fac_id_fk = 0 THEN 1 ELSE 0 END) AS unassigned
             FROM s_user u
             LEFT JOIN u_role r ON r.role_id = u.role_id_fk
             LEFT JOIN facilities f ON f.fac_id = u.fac_id_fk
-            {$sqlWhere}
+            {$summaryWhere}
         ", $types, $params);
         $total = self::one($con, "
             SELECT COUNT(*) AS row_count
@@ -3310,6 +3587,7 @@ class StateDashboardService
             'updated' => 0,
             'completed' => 0,
             'facilities' => 0,
+            'facilities_completed' => 0,
             'period' => sprintf('%04d-%02d', $year, $month)
         ];
 
@@ -3344,21 +3622,31 @@ class StateDashboardService
             && $facilityMasterTable !== ''
             && self::columnExists($con, 'assessment_action_plan', 'updated_on')) {
             $where = self::facilityWhere($con, $filters);
+            $completedDateExpression = self::columnExists($con, 'assessment_action_plan', 'closed_on')
+                ? 'COALESCE(ap.closed_on, ap.updated_on)'
+                : 'ap.updated_on';
             $row = self::one($con, "
                 SELECT
                     COUNT(*) AS updated,
                     SUM(CASE WHEN UPPER(COALESCE(ap.status, '')) IN ('COMPLETED', 'CLOSED') THEN 1 ELSE 0 END) AS completed,
-                    COUNT(DISTINCT a.fac_id_fk) AS facilities
+                    COUNT(DISTINCT a.fac_id_fk) AS facilities,
+                    COUNT(DISTINCT CASE
+                        WHEN UPPER(COALESCE(ap.status, '')) IN ('COMPLETED', 'CLOSED')
+                         AND MONTH({$completedDateExpression}) = ?
+                         AND YEAR({$completedDateExpression}) = ?
+                        THEN a.fac_id_fk
+                    END) AS facilities_completed
                 FROM assessment_action_plan ap
                 INNER JOIN assessment_master a ON a.assessment_id = ap.assessment_id
                 INNER JOIN {$facilityMasterTable} f ON f.fac_id = a.fac_id_fk
                 {$where['sql']}
                   AND MONTH(ap.updated_on) = ?
                   AND YEAR(ap.updated_on) = ?
-            ", $where['types'] . 'ii', array_merge($where['params'], [$month, $year]));
+            ", 'ii' . $where['types'] . 'ii', array_merge([$month, $year], $where['params'], [$month, $year]));
             $actionPlans['updated'] = (int)($row['updated'] ?? 0);
             $actionPlans['completed'] = (int)($row['completed'] ?? 0);
             $actionPlans['facilities'] = (int)($row['facilities'] ?? 0);
+            $actionPlans['facilities_completed'] = (int)($row['facilities_completed'] ?? 0);
         }
 
         return [
@@ -4026,6 +4314,8 @@ class StateDashboardService
         $map = [
             'CERTIFIED' => 'CERTIFIED',
             'CONDITIONAL' => 'CONDITIONAL',
+            'CONDITIONAL CERTIFIED' => 'CONDITIONAL',
+            'CONDITIONAL_CERTIFIED' => 'CONDITIONAL',
             'CONDITIONALLY CERTIFIED' => 'CONDITIONAL',
             'EXPIRED' => 'EXPIRED',
             'EXPIRING SOON' => 'EXPIRING SOON',
