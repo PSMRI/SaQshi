@@ -323,6 +323,38 @@
         return value === ALL_DISTRICTS_VALUE ? "" : value;
     }
 
+    // Older cached application bundles may not include the shared pagination
+    // helper yet. Keep this page usable while those clients refresh.
+    function createPager() {
+        if (SQ.pagination && typeof SQ.pagination.create === "function") {
+            return SQ.pagination.create({ page: 1, perPage: 5, onChange: load });
+        }
+
+        const pagerState = { page: 1, perPage: 5, totalRows: 0, totalPages: 1 };
+        return {
+            params(extra) {
+                return Object.assign({ page: pagerState.page, per_page: pagerState.perPage }, extra || {});
+            },
+            set(pagination) {
+                pagerState.page = Number(pagination?.page) || 1;
+                pagerState.perPage = Number(pagination?.per_page ?? pagination?.perPage) || 5;
+                pagerState.totalRows = Number(pagination?.total_rows ?? pagination?.totalRows) || 0;
+                pagerState.totalPages = Number(pagination?.total_pages ?? pagination?.totalPages) || 1;
+                return this;
+            },
+            state() {
+                return Object.assign({}, pagerState);
+            },
+            render() {
+                return this;
+            },
+            reset() {
+                pagerState.page = 1;
+                return this;
+            }
+        };
+    }
+
     async function load() {
         try {
             const selectedDivision = document.getElementById("stateCertDivision")?.value || "";
@@ -640,11 +672,7 @@
             globalEventsBound = true;
         }
 
-        state.pager = SQ.pagination.create({
-            page: 1,
-            perPage: 5,
-            onChange: load
-        });
+        state.pager = createPager();
         await load();
     }
 

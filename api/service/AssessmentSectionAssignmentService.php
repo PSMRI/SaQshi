@@ -159,11 +159,39 @@ final class AssessmentSectionAssignmentService
 
     public static function complete(mysqli $con, int $assessmentId, int $deptId): void
     {
-        self::ensureSchema($con);
         $stmt = $con->prepare("UPDATE assessment_section_assignee SET status = 'COMPLETED', completed_on = CURRENT_TIMESTAMP WHERE assessment_id = ? AND dept_id = ?");
+        if (!$stmt) {
+            throw new RuntimeException('Unable to prepare section completion: ' . $con->error);
+        }
         $stmt->bind_param('ii', $assessmentId, $deptId);
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            throw new RuntimeException('Unable to complete section assignment: ' . $stmt->error);
+        }
 
+        self::reconcileAssessmentCompletion($con, $assessmentId);
+
+        $round = $con->prepare("SELECT round_id, fac_id_fk, framework_code FROM assessment_master WHERE assessment_id = ? LIMIT 1");
+        $round->bind_param('i', $assessmentId); $round->execute();
+        $assessment = $round->get_result()->fetch_assoc() ?: [];
+        $roundId = (int)($assessment['round_id'] ?? 0);
+        if ($roundId > 0) {
+            $facility = $con->prepare("SELECT Health_facilty_type FROM facilities WHERE fac_id = ? LIMIT 1");
+            $facility->bind_param('i', $assessment['fac_id_fk']); $facility->execute();
+            $typeId = (int)(($facility->get_result()->fetch_assoc() ?: [])['Health_facilty_type'] ?? 0);
+            $expected = 0;
+            try { $expected = count(FrameworkEngine::load((string)$assessment['framework_code'])->getDepartments($typeId)); } catch (Throwable $e) { }
+            $completed = $con->prepare("SELECT COUNT(DISTINCT asa.dept_id) total FROM assessment_section_assignee asa JOIN assessment_master am ON am.assessment_id = asa.assessment_id WHERE am.round_id = ? AND asa.status = 'COMPLETED'");
+            $completed->bind_param('i', $roundId); $completed->execute();
+            if ($expected > 0 && (int)(($completed->get_result()->fetch_assoc() ?: [])['total'] ?? 0) >= $expected) {
+                $close = $con->prepare("UPDATE facility_assessment_round SET status = 'COMPLETED', completed_on = CURRENT_TIMESTAMP WHERE round_id = ?");
+                $close->bind_param('i', $roundId); $close->execute();
+            }
+        }
+    }
+
+    /** Closes an ACTIVE parent only when all of its activated units are complete. */
+    public static function reconcileAssessmentCompletion(mysqli $con, int $assessmentId): bool
+    {
         // A parent assessment may have more than one active class. Close it
         // only after every active class is completed; this prevents a single
         // completed class from producing a misleading 38/76 COMPLETED row.
@@ -184,25 +212,13 @@ final class AssessmentSectionAssignmentService
                     AND ad.is_active = 1
                     AND UPPER(COALESCE(ad.status, '')) <> 'COMPLETED'
               )");
-        $closeAssessment->bind_param('i', $assessmentId);
-        $closeAssessment->execute();
-
-        $round = $con->prepare("SELECT round_id, fac_id_fk, framework_code FROM assessment_master WHERE assessment_id = ? LIMIT 1");
-        $round->bind_param('i', $assessmentId); $round->execute();
-        $assessment = $round->get_result()->fetch_assoc() ?: [];
-        $roundId = (int)($assessment['round_id'] ?? 0);
-        if ($roundId > 0) {
-            $facility = $con->prepare("SELECT Health_facilty_type FROM facilities WHERE fac_id = ? LIMIT 1");
-            $facility->bind_param('i', $assessment['fac_id_fk']); $facility->execute();
-            $typeId = (int)(($facility->get_result()->fetch_assoc() ?: [])['Health_facilty_type'] ?? 0);
-            $expected = 0;
-            try { $expected = count(FrameworkEngine::load((string)$assessment['framework_code'])->getDepartments($typeId)); } catch (Throwable $e) { }
-            $completed = $con->prepare("SELECT COUNT(DISTINCT asa.dept_id) total FROM assessment_section_assignee asa JOIN assessment_master am ON am.assessment_id = asa.assessment_id WHERE am.round_id = ? AND asa.status = 'COMPLETED'");
-            $completed->bind_param('i', $roundId); $completed->execute();
-            if ($expected > 0 && (int)(($completed->get_result()->fetch_assoc() ?: [])['total'] ?? 0) >= $expected) {
-                $close = $con->prepare("UPDATE facility_assessment_round SET status = 'COMPLETED', completed_on = CURRENT_TIMESTAMP WHERE round_id = ?");
-                $close->bind_param('i', $roundId); $close->execute();
-            }
+        if (!$closeAssessment) {
+            throw new RuntimeException('Unable to prepare assessment completion reconciliation: ' . $con->error);
         }
+        $closeAssessment->bind_param('i', $assessmentId);
+        if (!$closeAssessment->execute()) {
+            throw new RuntimeException('Unable to reconcile assessment completion: ' . $closeAssessment->error);
+        }
+        return $closeAssessment->affected_rows > 0;
     }
 }

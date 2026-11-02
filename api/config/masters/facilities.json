@@ -1552,13 +1552,7 @@
                     "fac_name": "Durgakund",
                     "fac_type_id": 1,
                     "facilities_type": "CHC"
-                  }
-                ]
-              },
-              {
-                "block_id": 1114,
-                "block_name": "Urban",
-                "facilities": [
+                  },
                   {
                     "nin_no": 1113723355,
                     "fac_id": 220,
