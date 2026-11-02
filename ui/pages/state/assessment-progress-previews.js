@@ -64,7 +64,7 @@
 
     function districtKey(value) {
         const key = String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]+/g, "_");
-        return ({ PASHCHIM_CHAMPARAN: "WEST_CHAMPARAN", PURBA_CHAMPARAN: "EAST_CHAMPARAN", KODARMA: "KODERMA" })[key] || key;
+        return ({ PASHCHIM_CHAMPARAN: "WEST_CHAMPARAN", PURBA_CHAMPARAN: "EAST_CHAMPARAN", KODARMA: "KODERMA", HAZARIBAG: "HAZARIBAGH", PASHCHIMI_SINGHBHUM: "WEST_SINGHBHUM", PURBA_SINGHBHUM: "EAST_SINGHBUM", SAHIBGANJ: "SAHEBGANJ" })[key] || key;
     }
 
     function mapColor(value) {
