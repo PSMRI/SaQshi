@@ -4509,13 +4509,13 @@ class StateDashboardService
         return ['sql' => 'WHERE ' . implode(' AND ', $where), 'types' => $types, 'params' => $params];
     }
 
-    /** Counts facilities with no completed checkpoint in any assessment in the current scope. */
+    /** Counts facilities with no assessment record in the current scope. */
     private static function facilitiesWithoutAssessment(mysqli $con, array $filters, bool $useFacilityCache): int
     {
         $facilityWhere = self::facilityWhere($con, $filters);
         $assessmentSource = $useFacilityCache
-            ? 'dashboard_facility_assessment_cache c WHERE c.fac_id = f.fac_id AND c.checkpoint_completion_percent > 0'
-            : "assessment_master c INNER JOIN assessment_response r ON r.assessment_id = c.assessment_id WHERE c.fac_id_fk = f.fac_id AND UPPER(COALESCE(c.status, '')) <> 'PENDING'";
+            ? 'dashboard_facility_assessment_cache c WHERE c.fac_id = f.fac_id AND c.assessment_total > 0'
+            : "assessment_master c WHERE c.fac_id_fk = f.fac_id AND UPPER(COALESCE(c.status, '')) <> 'PENDING'";
         $row = self::one($con, "
             SELECT COUNT(*) AS facility_count
             FROM facilities f
