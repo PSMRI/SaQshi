@@ -14,6 +14,12 @@ try {
     }
 
     $mode = strtolower(trim((string)($_GET['map_mode'] ?? 'presence')));
+    if ($mode === 'boundary_config') {
+        Response::success('Map configuration loaded', [
+            'map_config' => StateDashboardService::mapConfiguration($_GET),
+            'map_mode' => $mode
+        ]);
+    }
     if ($mode === 'area_of_concern') {
         // This view aggregates the latest assessment responses across the state.
         // It can legitimately exceed the standard web request execution limit.

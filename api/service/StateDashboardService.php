@@ -4039,8 +4039,15 @@ class StateDashboardService
     }
 
     /**
-     * Handles map config processing for this API workflow.
+     * Returns only the selected map's rendering configuration.  This keeps
+     * boundary-based dashboards independent from the comparatively expensive
+     * facility/certification aggregation used by the full map endpoint.
      */
+    public static function mapConfiguration(array $filters = []): array
+    {
+        return self::mapConfig($filters);
+    }
+
     private static function mapConfig(array $filters = []): array
     {
         $config = self::mapMasterConfig();

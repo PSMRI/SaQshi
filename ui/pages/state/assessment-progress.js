@@ -276,7 +276,7 @@
         try {
             const filters = queryParams();
             const [mapResponse, districtResponse] = await Promise.all([
-                SQ.api.get("/state/v1/map.php", { map_mode: "presence" }, { loader: false, showError: false }),
+                SQ.api.get("/state/v1/map.php", { map_mode: "boundary_config" }, { loader: false, showError: false }),
                 SQ.api.get("/state/v1/assessment_progress.php", Object.assign({}, filters, { view_by: "DISTRICT", page: 1, per_page: 1 }), { loader: false, showError: false })
             ]);
             const config = mapResponse.data?.map_config || {};
