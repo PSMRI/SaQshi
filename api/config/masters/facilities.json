@@ -9397,7 +9397,7 @@
           },
           {
             "dist_id": 332,
-            "dist_name": "Hazaribagh",
+            "dist_name": "Hazaribag",
             "blocks": [
               {
                 "block_id": 2605,
@@ -10828,7 +10828,7 @@
           },
           {
             "dist_id": 334,
-            "dist_name": "Koderma",
+            "dist_name": "Kodarma",
             "blocks": [
               {
                 "block_id": 2623,
@@ -19459,7 +19459,7 @@
           },
           {
             "dist_id": 340,
-            "dist_name": "Sahebganj",
+            "dist_name": "Sahibganj",
             "blocks": [
               {
                 "block_id": 2690,
@@ -28492,7 +28492,7 @@
         "districts": [
           {
             "dist_id": 327,
-            "dist_name": "East Singhbum",
+            "dist_name": "Purba Singhbhum",
             "blocks": [
               {
                 "block_id": 2541,
@@ -32358,7 +32358,7 @@
           },
           {
             "dist_id": 343,
-            "dist_name": "West Singhbhum",
+            "dist_name": "Pashchimi Singhbhum",
             "blocks": [
               {
                 "block_id": 2720,
