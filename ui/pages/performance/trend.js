@@ -56,6 +56,19 @@
         return Number.isInteger(parsed) ? String(parsed) : parsed.toFixed(2);
     }
 
+    function pointValue(point, field = "result") {
+        const components = point?.components;
+        if (!components) return fmt(point?.[field]);
+
+        const labels = {
+            blood_pressure: "BP",
+            blood_sugar: "Blood sugar"
+        };
+        return Object.entries(components)
+            .map(([key, value]) => `${labels[key] || key}: ${fmt(value?.[field])}`)
+            .join(" | ");
+    }
+
     function shortMonth(period) {
         const parts = String(period || "").split("-");
         if (parts.length !== 2) return period || "-";
@@ -135,13 +148,13 @@
             const barHeight = Math.max(2, height - padY - y);
             return `
                 <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${barHeight.toFixed(1)}" rx="3">
-                    <title>${esc(shortMonth(coords[index].point.period))}: ${esc(fmt(coords[index].point.result))}</title>
+                    <title>${esc(shortMonth(coords[index].point.period))}: ${esc(pointValue(coords[index].point))}</title>
                 </rect>
             `;
         }).join("");
         const circles = coords.map(coord => `
             <circle cx="${coord.x.toFixed(1)}" cy="${coord.y.toFixed(1)}" r="3">
-                <title>${esc(shortMonth(coord.point.period))}: ${esc(fmt(coord.point.result))}</title>
+                <title>${esc(shortMonth(coord.point.period))}: ${esc(pointValue(coord.point))}</title>
             </circle>
         `).join("");
 
@@ -174,6 +187,7 @@
                 const latest = points[points.length - 1] || {};
                 const editUrl = indicatorEntryUrl(item.indicator_type, item.department_id, latest.period);
                 const readonly = isReadonly();
+                const canEdit = !readonly && !item.composite;
                 return `
                     <div class="sq-trend-chart-card">
                         <div class="sq-trend-chart-head">
@@ -183,14 +197,14 @@
                         ${chartSvg(points, style)}
                         <div class="sq-trend-points">
                             ${points.map(point => `
-                                ${readonly ? `<span>${esc(shortMonth(point.period))}: ${esc(fmt(point.result))}</span>` : `<a href="${esc(indicatorEntryUrl(item.indicator_type, item.department_id, point.period))}">
-                                    ${esc(shortMonth(point.period))}: ${esc(fmt(point.result))}
+                                ${!canEdit ? `<span>${esc(shortMonth(point.period))}: ${esc(pointValue(point))}</span>` : `<a href="${esc(indicatorEntryUrl(item.indicator_type, item.department_id, point.period))}">
+                                    ${esc(shortMonth(point.period))}: ${esc(pointValue(point))}
                                 </a>`}
                             `).join("")}
                         </div>
                         <div class="sq-trend-chart-foot">
                             <span>${esc(points.length)} month${points.length === 1 ? "" : "s"}</span>
-                            ${readonly ? `<span>View only</span>` : `<a href="${esc(editUrl)}">Edit latest</a>`}
+                            ${!canEdit ? `<span>${readonly ? "View only" : "Edit in Outcome indicators"}</span>` : `<a href="${esc(editUrl)}">Edit latest</a>`}
                         </div>
                     </div>
                 `;
@@ -201,7 +215,7 @@
             ? series.map(item => {
                 const points = item.points || [];
                 const latest = points[points.length - 1] || {};
-                return `${item.indicator_name || "Indicator"} has ${points.length} month${points.length === 1 ? "" : "s"} of data. Latest ${shortMonth(latest.period)} result is ${fmt(latest.result)}.`;
+                return `${item.indicator_name || "Indicator"} has ${points.length} month${points.length === 1 ? "" : "s"} of data. Latest ${shortMonth(latest.period)} result is ${pointValue(latest)}.`;
             }).join(" ")
             : "No trend data available.";
 
@@ -368,7 +382,7 @@
                     <td>${excelText(item.denominator_label || "")}</td>
                     ${periods.map(period => {
                         const point = byPeriod.get(period);
-                        return ["numerator", "denominator", "result"].map(field => `<td class="num">${point && point[field] != null ? excelText(fmt(point[field])) : ""}</td>`).join("");
+                        return ["numerator", "denominator", "result"].map(field => `<td class="num">${point ? excelText(pointValue(point, field)) : ""}</td>`).join("");
                     }).join("")}
                 </tr>
             `;

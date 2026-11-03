@@ -40,6 +40,8 @@ class PerformanceService
         556 => 'Client Satisfaction Score (Patients)', 528 => 'Client Satisfaction Score (Patients)', 5642 => 'Client Satisfaction Score (Patients)', 6335 => 'Client Satisfaction Score (Patients)',
         558 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 530 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 5644 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 6337 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months'
     ];
+    private const HWC_BLOOD_PRESSURE_INDICATOR_IDS = [552, 524, 5638, 6331];
+    private const HWC_BLOOD_SUGAR_INDICATOR_IDS = [553, 525, 5639, 6332];
     private static ?array $departmentNameCache = null;
     private static ?string $departmentStatusAssessmentColumn = null;
 
@@ -200,14 +202,50 @@ class PerformanceService
     private static function hwcKpiOutcomeSeries(array $series): array
     {
         $result = [];
+        $bloodControl = null;
+        $bloodControlPoints = [];
         foreach ($series as $item) {
             $indicatorId = (int)($item['indicator_id'] ?? 0);
             $displayName = self::HWC_KPI_OUTCOME_NAMES[$indicatorId] ?? null;
             if ($displayName === null) continue;
+
+            $bloodMetric = in_array($indicatorId, self::HWC_BLOOD_PRESSURE_INDICATOR_IDS, true)
+                ? 'blood_pressure'
+                : (in_array($indicatorId, self::HWC_BLOOD_SUGAR_INDICATOR_IDS, true) ? 'blood_sugar' : '');
+
+            if ($bloodMetric !== '') {
+                if ($bloodControl === null) {
+                    $bloodControl = $item;
+                    $bloodControl['indicator_type'] = 'KPI';
+                    $bloodControl['indicator_code'] = 'KPI_BLOOD_PRESSURE_AND_SUGAR_CONTROL';
+                    $bloodControl['indicator_name'] = 'Percentage of cases on treatment achieved blood pressure & blood sugar control';
+                    $bloodControl['composite'] = true;
+                    $bloodControl['points'] = [];
+                }
+                foreach (($item['points'] ?? []) as $point) {
+                    $period = (string)($point['period'] ?? '');
+                    if ($period !== '') {
+                        $bloodControlPoints[$period][$bloodMetric] = $point;
+                    }
+                }
+                continue;
+            }
+
             $item['indicator_type'] = 'KPI';
             $item['indicator_code'] = 'KPI_' . $indicatorId;
             $item['indicator_name'] = $displayName;
             $result[] = $item;
+        }
+
+        if ($bloodControl !== null) {
+            ksort($bloodControlPoints);
+            foreach ($bloodControlPoints as $period => $components) {
+                $primary = $components['blood_pressure'] ?? $components['blood_sugar'] ?? [];
+                $primary['period'] = $period;
+                $primary['components'] = $components;
+                $bloodControl['points'][] = $primary;
+            }
+            $result[] = $bloodControl;
         }
         return $result;
     }
