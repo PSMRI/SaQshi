@@ -92,7 +92,10 @@
             view_by: document.getElementById("stateAssessViewBy")?.value === "AUTO" ? "DISTRICT" : (document.getElementById("stateAssessViewBy")?.value || "DISTRICT"),
             search: document.getElementById("stateAssessSearch")?.value || "",
             district: document.getElementById("stateAssessDistrict")?.value || "",
-            block: document.getElementById("stateAssessBlock")?.value || ""
+            block: document.getElementById("stateAssessBlock")?.value || "",
+            // Each filter change must reach the API. This prevents an
+            // intermediary cache from returning the previous district result.
+            _: Date.now()
         });
     }
 

@@ -237,6 +237,7 @@
     async function doFetch(method, endpoint, data, options, retrying = false) {
         const controller = new AbortController();
         const timeout = options.timeout || API.timeout;
+        const isGetRequest = String(method).toUpperCase() === "GET";
 
         const timer = setTimeout(function () {
             controller.abort();
@@ -252,7 +253,16 @@
             const fetchOptions = {
                 method: method,
                 credentials: "include",
-                headers: requestHeaders(options.headers || {}, isFormData),
+                // Filter-driven dashboards must never receive a previous
+                // district/block response from a browser or proxy cache.
+                cache: isGetRequest ? "no-store" : "default",
+                headers: Object.assign(
+                    isGetRequest ? {
+                        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                        "Pragma": "no-cache"
+                    } : {},
+                    requestHeaders(options.headers || {}, isFormData)
+                ),
                 signal: controller.signal
             };
 
@@ -260,8 +270,8 @@
                 fetchOptions.body = isFormData ? data : JSON.stringify(data);
             }
 
-            const url = method === "GET"
-                ? buildUrl(endpoint, data || {})
+            const url = isGetRequest
+                ? buildUrl(endpoint, Object.assign({}, data || {}, { _sq_request: Date.now() }))
                 : buildUrl(endpoint, options.params || {});
 
             if (API.debug) {
