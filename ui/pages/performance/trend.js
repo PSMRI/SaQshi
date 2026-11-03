@@ -24,6 +24,28 @@
         departments: []
     };
 
+    // These are the AAM-SC/HWC Outcome indicators that are reported as KPI
+    // values. They remain Outcome-only for entry; this list controls KPI
+    // trend display and the KPI Excel export.
+    const HWC_OUTCOME_AS_KPI_IDS = new Set([
+        532, 533, 538, 540, 542, 545, 546, 548, 550, 552, 553, 556, 558,
+        5618, 5619, 5624, 5626, 5628, 5631, 5632, 5634, 5636, 5638, 5639, 5642, 5644
+    ]);
+
+    function isHwcOutcomeAsKpi() {
+        const facilityTypeId = Number(
+            state.facility?.fac_type_id ??
+            state.facility?.facility_type_id ??
+            state.facility?.Health_facilty_type ??
+            0
+        );
+        return facilityTypeId === 8 && state.effectiveType === "OUTCOME";
+    }
+
+    function hwcKpiOutcomeSeries(series) {
+        return (series || []).filter(item => HWC_OUTCOME_AS_KPI_IDS.has(Number(item.indicator_id || 0)));
+    }
+
     function currentPeriod() {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -239,18 +261,25 @@
     function renderAll() {
         const readonly = isReadonly();
         const outcomeIsEffective = state.effectiveType === "OUTCOME";
+        const kpiUsesOutcomeValues = isHwcOutcomeAsKpi();
         const outcomeSeries = outcomeIsEffective
             ? (state.trends.EFFECTIVE || state.trends.OUTCOME || [])
             : (state.trends.OUTCOME || []);
+        const kpiSeries = kpiUsesOutcomeValues && !(state.trends.KPI || []).length
+            ? hwcKpiOutcomeSeries(state.trends.EFFECTIVE || state.trends.OUTCOME || [])
+            : (state.trends.KPI || []);
         if ($("trendDepartmentContainer")) $("trendDepartmentContainer").hidden = state.selectedType !== "OUTCOME";
         if ($("trendOutcomeSection")) $("trendOutcomeSection").hidden = state.selectedType !== "OUTCOME";
         if ($("trendKpiSection")) $("trendKpiSection").hidden = state.selectedType !== "KPI";
         if ($("btnDownloadOutcomeTrend")) $("btnDownloadOutcomeTrend").hidden = readonly || state.selectedType !== "OUTCOME";
         if ($("btnDownloadKpiTrend")) $("btnDownloadKpiTrend").hidden = readonly || state.selectedType !== "KPI";
         const departmentName = state.departmentId ? $("trendDepartmentFilter")?.selectedOptions[0]?.textContent : "";
-        setText("trendEffectiveTitle", `${outcomeIsEffective ? (state.effectiveLabel || "Outcome as KPI") : "Outcome"} Trends${departmentName ? ` — ${departmentName}` : ""}`);
+        // Outcome remains the normal Outcome view. Only the KPI view is
+        // relabelled when an HWC's Outcome values act as its KPI values.
+        setText("trendEffectiveTitle", `Outcome Trends${departmentName ? ` — ${departmentName}` : ""}`);
+        setText("trendKpiTitle", kpiUsesOutcomeValues ? "KPI Trends (Outcome values)" : "KPI Trends");
         renderCharts("trendOutcomeCharts", filterByDepartment(outcomeSeries));
-        renderCharts("trendKpiCharts", state.trends.KPI || []);
+        renderCharts("trendKpiCharts", kpiSeries);
     }
 
     function excelText(value) {
@@ -345,9 +374,12 @@
             await SQ.api.download("/performance/v1/trend_excel.php", {}, "outcome_trends_by_department.xlsx");
             return;
         }
+        const kpiUsesOutcomeValues = type === "KPI" && isHwcOutcomeAsKpi();
         const requestedType = type === "EFFECTIVE" ? (state.effectiveType || "OUTCOME") : type;
-        const rawSeries = type === "EFFECTIVE" ? (state.trends.EFFECTIVE || []) : (state.trends[type] || []);
-        const series = requestedType === "OUTCOME" ? filterByDepartment(rawSeries) : rawSeries;
+        const rawSeries = kpiUsesOutcomeValues
+            ? ((state.trends.KPI || []).length ? state.trends.KPI : hwcKpiOutcomeSeries(state.trends.EFFECTIVE || state.trends.OUTCOME || []))
+            : (type === "EFFECTIVE" ? (state.trends.EFFECTIVE || []) : (state.trends[type] || []));
+        const series = requestedType === "OUTCOME" && !kpiUsesOutcomeValues ? filterByDepartment(rawSeries) : rawSeries;
         if (!series.length) {
             if (SQ.toast) SQ.toast(`No ${type} trend data to download.`, "warning");
             return;
@@ -356,8 +388,11 @@
         const periods = [...new Set(series.flatMap(item => (item.points || []).map(point => point.period)))].sort();
         const colCount = 4 + Math.max(1, periods.length) * 3;
         const reportTime = new Date().toLocaleString();
-        const title = `${type === "EFFECTIVE" ? state.effectiveLabel : requestedType} Performance Trend`;
-        const department = requestedType === "OUTCOME" ? (state.departmentId ? $("trendDepartmentFilter")?.selectedOptions[0]?.textContent : "All departments") : "Facility-wide";
+        const displayType = kpiUsesOutcomeValues
+            ? "KPI (Outcome values)"
+            : (type === "EFFECTIVE" ? state.effectiveLabel : requestedType);
+        const title = `${displayType} Performance Trend`;
+        const department = requestedType === "OUTCOME" && !kpiUsesOutcomeValues ? (state.departmentId ? $("trendDepartmentFilter")?.selectedOptions[0]?.textContent : "All departments") : "All departments";
         const dataRows = series.map(item => {
             const byPeriod = new Map((item.points || []).map(point => [point.period, point]));
             return `
@@ -428,7 +463,7 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `${String(type === "EFFECTIVE" ? state.effectiveLabel : requestedType).toLowerCase().replace(/[^a-z0-9]+/g, "_")}_performance_trend_${new Date().toISOString().slice(0, 10)}.xls`;
+        link.download = `${String(displayType).toLowerCase().replace(/[^a-z0-9]+/g, "_")}_performance_trend_${new Date().toISOString().slice(0, 10)}.xls`;
         document.body.appendChild(link);
         link.click();
         link.remove();
