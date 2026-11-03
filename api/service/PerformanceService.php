@@ -256,6 +256,31 @@ class PerformanceService
     }
 
     /**
+     * The facilities database is authoritative for the signed-in facility's
+     * type.  The JSON master is useful for names and offline configuration,
+     * but can lag behind a facility-type update and must not determine which
+     * performance data is shown.
+     */
+    private static function databaseFacilityTypeId(mysqli $con, int $facId): int
+    {
+        if ($facId <= 0) {
+            return 0;
+        }
+
+        $stmt = $con->prepare('SELECT Health_facilty_type FROM facilities WHERE fac_id = ? LIMIT 1');
+        if (!$stmt) {
+            return 0;
+        }
+
+        $stmt->bind_param('i', $facId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc() ?: [];
+        $stmt->close();
+
+        return (int)($row['Health_facilty_type'] ?? 0);
+    }
+
+    /**
      * Handles department names processing for this API workflow.
      */
     public static function departmentNames(): array
@@ -656,6 +681,11 @@ class PerformanceService
         self::ensureTable($con);
         $facility = self::facilityMeta($facId);
         $facilityTypeId = (int)($facility['fac_type_id'] ?? 0);
+        $databaseFacilityTypeId = self::databaseFacilityTypeId($con, $facId);
+        if ($databaseFacilityTypeId > 0) {
+            $facilityTypeId = $databaseFacilityTypeId;
+            $facility['fac_type_id'] = $databaseFacilityTypeId;
+        }
         $rule = self::facilityTypeRule($facilityTypeId);
         $effectiveType = self::effectivePerformanceType($facilityTypeId);
         $summary = self::summary($con, $facId);
