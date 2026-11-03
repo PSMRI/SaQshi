@@ -275,11 +275,14 @@
             .replace(/"/g, "&quot;");
     }
 
-    async function downloadOutcomePdf() {
-        const button = $("btnOutcomePdf");
-        const series = filterByDepartment(state.effectiveType === "OUTCOME" ? (state.trends.EFFECTIVE || state.trends.OUTCOME || []) : (state.trends.OUTCOME || []));
+    async function downloadTrendPdf(type) {
+        const isKpi = type === "KPI";
+        const button = $(isKpi ? "btnKpiPdf" : "btnOutcomePdf");
+        const series = isKpi
+            ? (state.trends.KPI || [])
+            : filterByDepartment(state.effectiveType === "OUTCOME" ? (state.trends.EFFECTIVE || state.trends.OUTCOME || []) : (state.trends.OUTCOME || []));
         if (!series.length) {
-            if (SQ.toast) SQ.toast("No outcome trend data to download.", "warning");
+            if (SQ.toast) SQ.toast(`No ${isKpi ? "KPI" : "outcome"} trend data to download.`, "warning");
             return;
         }
         button.disabled = true;
@@ -287,7 +290,7 @@
         try {
             await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
             const pages = [];
-            const title = $("trendEffectiveTitle")?.textContent || "Outcome Trends";
+            const title = isKpi ? "KPI Trends" : ($("trendEffectiveTitle")?.textContent || "Outcome Trends");
             const style = $("trendChartStyle")?.value || "line";
             for (let start = 0; start < series.length; start += 4) {
                 const canvas = document.createElement("canvas");
@@ -323,7 +326,7 @@
                         coords.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill(); });
                     }
                     ctx.fillStyle = "#475569"; ctx.font = "18px Arial"; ctx.textAlign = "center";
-                    coords.forEach(p => { ctx.fillText(shortMonth(p.point.period), p.x, bottom + 25); ctx.fillText(fmt(p.point.result), p.x, Math.max(top + 95, p.y - 10)); });
+                    coords.forEach(p => { ctx.fillText(shortMonth(p.point.period), p.x, bottom + 25); ctx.fillText(pointValue(p.point), p.x, Math.max(top + 95, p.y - 10)); });
                     ctx.textAlign = "left"; ctx.lineWidth = 1;
                 });
                 const data = canvas.toDataURL("image/jpeg", .9).split(",")[1];
@@ -348,9 +351,9 @@
             for (let i = 1; i < offsets.length; i++) add(`${String(offsets[i]).padStart(10, "0")} 00000 n \n`);
             add(`trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
             const url = URL.createObjectURL(new Blob(chunks, { type: "application/pdf" }));
-            const link = document.createElement("a"); link.href = url; link.download = "outcome_trends.pdf"; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+            const link = document.createElement("a"); link.href = url; link.download = `${isKpi ? "kpi" : "outcome"}_trends.pdf`; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
         } catch (error) {
-            console.error(error); if (SQ.toast) SQ.toast("Unable to download outcome trends PDF.", "error");
+            console.error(error); if (SQ.toast) SQ.toast(`Unable to download ${isKpi ? "KPI" : "outcome"} trends PDF.`, "error");
         } finally { button.disabled = false; button.removeAttribute("aria-busy"); }
     }
 
@@ -513,7 +516,8 @@
             loadTrend().catch(console.error);
         });
         $("trendChartStyle")?.addEventListener("change", renderAll);
-        $("btnOutcomePdf")?.addEventListener("click", downloadOutcomePdf);
+        $("btnOutcomePdf")?.addEventListener("click", () => downloadTrendPdf("OUTCOME"));
+        $("btnKpiPdf")?.addEventListener("click", () => downloadTrendPdf("KPI"));
         $("btnDownloadOutcomeTrend")?.addEventListener("click", event => downloadWithProgress("OUTCOME", event.currentTarget));
         $("btnDownloadKpiTrend")?.addEventListener("click", event => downloadWithProgress("KPI", event.currentTarget));
         loadTrend().catch(console.error);
