@@ -74,11 +74,11 @@
     }
 
     function componentCssUrl(name) {
-        return `${CONFIG.basePath}/${name}/${name}.css`;
+        return `${CONFIG.basePath}/${name}/${name}.css?v=${encodeURIComponent(window.SQ_ASSET_VERSION || "20261103-asset-refresh-1")}`;
     }
 
     function componentJsUrl(name) {
-        return `${CONFIG.basePath}/${name}/${name}.js`;
+        return `${CONFIG.basePath}/${name}/${name}.js?v=${encodeURIComponent(window.SQ_ASSET_VERSION || "20261103-asset-refresh-1")}`;
     }
 
     async function loadCss(name) {

@@ -138,6 +138,18 @@ a.sq-btn:not(.sq-btn-xs):not(.sq-compact-control) {
     min-width: 36px !important;
 }
 
+/* Icon-only actions retain an accessible name through aria-label/title. */
+.sq-btn.sq-btn-icon-only {
+    display: inline-grid !important;
+    place-items: center;
+    width: 36px;
+    min-width: 36px !important;
+    height: 36px;
+    padding: 0 !important;
+}
+
+.sq-btn.sq-btn-icon-only i { margin: 0 !important; }
+
 .sq-form-group {
     gap: .3rem !important;
     margin-bottom: .6rem !important;

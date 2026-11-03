@@ -14,6 +14,7 @@ require_once __DIR__ . '/../../auth_api.php';
 require_once __DIR__ . '/../../core/FrameworkEngine.php';
 require_once __DIR__ . '/../../core/Crypto.php';
 require_once __DIR__ . '/../../assets/conn/db.php';
+require_once __DIR__ . '/../../service/StateDashboardService.php';
 
 Security::requireMethod('GET');
 
@@ -423,8 +424,9 @@ function scorecardRemoveColumnsAfter(DOMXPath $xpath, DOMElement $sheetData, int
 try {
     $facId = SessionManager::facilityId();
     $userId = SessionManager::userId();
+    $isStateMonitor = in_array((int)SessionManager::roleId(), [4, 5, 8, 9], true);
 
-    if ($facId <= 0) {
+    if ($facId <= 0 && !$isStateMonitor) {
         Response::error('Facility not assigned to logged-in user');
     }
 
@@ -440,6 +442,15 @@ try {
         Response::validation([
             'assessment_id' => 'assessment_id is required'
         ]);
+    }
+
+    // State, district and block monitors may download the same formatted
+    // checklist report for an assessment inside their assigned scope.
+    if ($isStateMonitor) {
+        $scope = StateDashboardService::applyMonitoringScope([]);
+        $matches = StateDashboardService::assessmentResponseDetails($con, array_merge($scope, ['assessment_id' => $assessmentId]));
+        if (!$matches) Response::error('Assessment not found in your monitoring scope');
+        $facId = (int)($matches[0]['fac_id_fk'] ?? 0);
     }
 
     $sqlAssessment = "
@@ -465,6 +476,13 @@ try {
     }
 
     $facility = scorecardFacility($facId);
+    $facilityIdentity = ['NIN_no' => '', 'fac_name' => ''];
+    $facilityStmt = $con->prepare('SELECT NIN_no, fac_name FROM facilities WHERE fac_id = ? LIMIT 1');
+    if ($facilityStmt) {
+        $facilityStmt->bind_param('i', $facId);
+        $facilityStmt->execute();
+        $facilityIdentity = $facilityStmt->get_result()->fetch_assoc() ?: $facilityIdentity;
+    }
     $frameworkCode = $assessment['framework_code'] ?: 'saqshi-nqas';
     $engine = FrameworkEngine::load($frameworkCode);
 
@@ -1208,7 +1226,14 @@ try {
         $zip->close();
     }
 
-    $filename = 'checkpoint_progress_assessment_' . $assessmentId . '.xlsx';
+    $filenamePart = static function (string $value): string {
+        $value = trim((string)preg_replace('/[\\\\\\/:*?"<>|]+/u', ' ', $value));
+        $value = (string)preg_replace('/\s+/u', '_', $value);
+        return trim($value, '._') ?: 'Assessment';
+    };
+    $filename = $filenamePart((string)($facilityIdentity['NIN_no'] ?? '')) . '_'
+        . $filenamePart((string)($facilityIdentity['fac_name'] ?? $facility['fac_name'] ?? 'Facility')) . '_'
+        . $filenamePart((string)($assessment['assessment_name'] ?? ('Assessment_' . $assessmentId))) . '.xlsx';
 
     if (!headers_sent()) {
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

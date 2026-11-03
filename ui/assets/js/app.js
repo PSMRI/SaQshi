@@ -55,7 +55,7 @@
         }
 
         window.addEventListener('load', function () {
-            navigator.serviceWorker.register('/ui/sw.js?v=20260825-network-first-1').catch(function (error) {
+            navigator.serviceWorker.register('/ui/sw.js?v=' + (window.SQ_ASSET_VERSION || '20261103-asset-refresh-1')).catch(function (error) {
                 console.warn('SaQshi offline shell could not be registered.', error);
             });
         });

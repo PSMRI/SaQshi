@@ -1,10 +1,10 @@
 /* SaQshi UI shell cache. Assessment and authentication API responses are never cached here. */
-const CACHE_NAME = "saqshi-ui-shell-20260924-bundled-assets-1";
+const CACHE_NAME = "saqshi-ui-shell-20261103-asset-refresh-1";
 const APP_SHELL = [
     "/ui/dashboard.html",
     "/ui/login.html",
-    "/ui/assets/css/sq-ui.css",
-    "/ui/assets/dist/saqshi-app.min.js",
+    "/ui/assets/css/sq-ui.css?v=20261103-asset-refresh-1",
+    "/ui/assets/dist/saqshi-app.min.js?v=20261103-asset-refresh-1",
     "/ui/assets/images/logo.png"
 ];
 
@@ -34,7 +34,7 @@ self.addEventListener("fetch", event => {
 
     // Online users must receive the latest UI. The cache is only an offline fallback.
     event.respondWith(
-        fetch(request).then(response => {
+        fetch(request, { cache: "no-store" }).then(response => {
             if (response.ok && url.pathname.startsWith("/ui/")) {
                 const copy = response.clone();
                 caches.open(CACHE_NAME).then(cache => cache.put(request, copy));

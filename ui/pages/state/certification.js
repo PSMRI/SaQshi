@@ -26,7 +26,7 @@
         breakdown: [],
         breakdownPage: 1,
         breakdownPerPage: 5,
-        breakdownView: "DIVISION",
+        breakdownView: "DISTRICT",
         viewBy: "DISTRICT",
         filterOptions: { districts: [], blocks: [] },
         warning: "",
@@ -67,14 +67,8 @@
     }
 
     function populateLocationFilters() {
-        const division = document.getElementById("stateCertDivision");
         const district = document.getElementById("stateCertDistrict");
         const block = document.getElementById("stateCertBlock");
-        if (division) {
-            const selected = division.value;
-            division.innerHTML = `<option value="">All divisions</option>${(state.filterOptions.divisions || []).map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
-            division.value = (state.filterOptions.divisions || []).includes(selected) ? selected : "";
-        }
         if (district) {
             const selected = district.value;
             district.innerHTML = `<option value="${ALL_DISTRICTS_VALUE}">All districts</option>${state.filterOptions.districts.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
@@ -198,13 +192,13 @@
         const start = (state.breakdownPage - 1) * state.breakdownPerPage;
         const pageRows = rows.slice(start, start + state.breakdownPerPage);
         text("stateCertBreakdownTitle", `Certification Comparison — ${viewBy.replace("_", " ").replace(/\b\w/g, char => char.toUpperCase())}`);
-        html("stateCertComparisonSwitch", ["DIVISION", "DISTRICT", "FACILITY_TYPE"].map(level =>
+        html("stateCertComparisonSwitch", ["DISTRICT", "FACILITY_TYPE"].map(level =>
             `<button class="sq-cert-comparison-option ${level === viewBy ? "is-active" : ""}" type="button" data-cert-comparison-view="${level}">${level === "FACILITY_TYPE" ? "Facility type" : level[0] + level.slice(1).toLowerCase()}</button>`
         ).join(""));
 
         html("stateCertChart", rows.length
             ? `<div class="sq-cert-bar-legend"><span><i class="is-national"></i>Certified — National</span><span><i class="is-conditionality"></i>National conditionality</span><span><i class="is-state"></i>Certified — State</span><span><i class="is-state-conditional"></i>State conditionality</span></div><div class="sq-state-chart-bars">${pageRows.map(row => `
-                <button class="sq-state-chart-row" type="button" ${viewBy === "DIVISION" ? `data-cert-breakdown-division="${esc(row.label ?? "")}" title="Show districts for ${esc(row.label ?? "this division")}"` : (viewBy === "DISTRICT" ? `data-cert-breakdown-district="${esc(row.label ?? "")}" title="Show blocks for ${esc(row.label ?? "this district")}"` : "")}>
+                <button class="sq-state-chart-row" type="button" ${viewBy === "DISTRICT" ? `data-cert-breakdown-district="${esc(row.label ?? "")}" title="Show blocks for ${esc(row.label ?? "this district")}"` : ""}>
                     <span>${esc(row.label ?? row.status)}</span>
                     <div class="sq-cert-stacked"><i class="is-national" style="width:${(row.national || 0) * 100 / max}%"></i><i class="is-conditionality" style="width:${(row.conditionality || 0) * 100 / max}%"></i><i class="is-state" style="width:${(row.state || 0) * 100 / max}%"></i><i class="is-state-conditional" style="width:${(row.state_conditionality || 0) * 100 / max}%"></i></div>
                     <b>${esc((row.certified ?? row.count) || 0)}/${esc((row.total ?? row.count) || 0)} (${esc(row.completion_percentage ?? row.percentage ?? 0)}%)<small title="N = National; NC = National conditionality; S = State; SC = State conditionality">N ${esc(row.national || 0)} · NC ${esc(row.conditionality || 0)} · S ${esc(row.state || 0)} · SC ${esc(row.state_conditionality || 0)}</small></b>
@@ -216,7 +210,7 @@
             : "");
         html("stateCertBreakdownBack", viewBy === "BLOCK"
             ? `<button class="sq-btn sq-btn-light sq-btn-sm" type="button" data-cert-show-districts><i class="bi bi-arrow-left"></i> District-wise</button>`
-            : (viewBy === "DISTRICT" ? `<button class="sq-btn sq-btn-light sq-btn-sm" type="button" data-cert-show-divisions><i class="bi bi-arrow-left"></i> Division-wise</button>` : ""));
+            : "");
     }
 
     function renderTable() {
@@ -289,11 +283,11 @@
     function renderVisualChart() {
         const rows = state.breakdown.length ? state.breakdown : [];
         const max = Math.max(...rows.map(row => Number(row.total ?? row.count) || 0), 1);
-        const viewBy = state.viewBy || "DIVISION";
-        const labels = { DIVISION: "Division", DISTRICT: "District", BLOCK: "Block", FACILITY_TYPE: "Facility type" };
+        const viewBy = state.viewBy || "DISTRICT";
+        const labels = { DISTRICT: "District", BLOCK: "Block", FACILITY_TYPE: "Facility type" };
         const hasDistrict = Boolean(selectedDistrictFilter());
         text("stateCertVisualTitle", `Certification Visual Comparison — ${labels[viewBy] || viewBy}`);
-        html("stateCertVisualSwitch", ["DIVISION", "DISTRICT", "BLOCK", "FACILITY_TYPE"].map(function (level) {
+        html("stateCertVisualSwitch", ["DISTRICT", "BLOCK", "FACILITY_TYPE"].map(function (level) {
             const disabled = level === "BLOCK" && !hasDistrict;
             return `<button class="sq-cert-comparison-option ${level === viewBy ? "is-active" : ""}" type="button" data-cert-comparison-view="${level}" ${disabled ? "disabled title=\"Select a district to compare blocks\"" : ""}>${labels[level]}</button>`;
         }).join(""));
@@ -357,13 +351,11 @@
 
     async function load() {
         try {
-            const selectedDivision = document.getElementById("stateCertDivision")?.value || "";
             const selectedDistrict = selectedDistrictFilter();
             const response = await SQ.api.get("/state/v1/certification_summary.php", state.pager.params({
                 search: document.getElementById("stateCertSearch")?.value || "",
                 status: document.getElementById("stateCertFilter")?.value || "",
                 certification_type: document.getElementById("stateCertTypeFilter")?.value || "",
-                division: selectedDivision,
                 district: selectedDistrict,
                 block: document.getElementById("stateCertBlock")?.value || "",
                 view_by: state.breakdownView === "FACILITY_TYPE" ? "FACILITY_TYPE" : (selectedDistrict ? "BLOCK" : state.breakdownView),
@@ -382,7 +374,7 @@
             state.upgradedFromStateToNational = Number(response.data?.upgraded_from_state_to_national) || 0;
             state.breakdown = response.data?.breakdown || [];
             state.viewBy = response.data?.view_by || "DISTRICT";
-            state.filterOptions = response.data?.filter_options || { divisions: [], districts: [], blocks: [] };
+            state.filterOptions = response.data?.filter_options || { districts: [], blocks: [] };
             state.warning = response.data?._warning || "";
             state.pager.set(response.data?.pagination || {
                 page: 1,
@@ -476,7 +468,6 @@
             const response = await SQ.api.get("/state/v1/certification_summary.php", {
                 _all_facilities: 1,
                 search: document.getElementById("stateCertSearch")?.value || "",
-                division: document.getElementById("stateCertDivision")?.value || "",
                 district: selectedDistrictFilter(),
                 block: document.getElementById("stateCertBlock")?.value || "",
                 _: Date.now()
@@ -556,15 +547,6 @@
             state.pager.reset();
             load();
         });
-        document.getElementById("stateCertDivision")?.addEventListener("change", function () {
-            const district = document.getElementById("stateCertDistrict");
-            const block = document.getElementById("stateCertBlock");
-            if (district) district.value = ALL_DISTRICTS_VALUE;
-            if (block) block.value = "";
-            state.breakdownView = this.value ? "DISTRICT" : "DIVISION";
-            state.pager.reset();
-            load();
-        });
         document.getElementById("stateCertDistrict")?.addEventListener("change", function () {
             const block = document.getElementById("stateCertBlock");
             if (block) block.value = "";
@@ -602,8 +584,7 @@
                 }
                 const comparisonButton = event.target.closest("[data-cert-comparison-view]");
                 if (comparisonButton) {
-                    const level = comparisonButton.getAttribute("data-cert-comparison-view") || "DIVISION";
-                    const divisionSelect = document.getElementById("stateCertDivision");
+                    const level = comparisonButton.getAttribute("data-cert-comparison-view") || "DISTRICT";
                     const districtSelect = document.getElementById("stateCertDistrict");
                     const blockSelect = document.getElementById("stateCertBlock");
                     if (level === "BLOCK" && !selectedDistrictFilter()) {
@@ -611,11 +592,7 @@
                         return;
                     }
                     state.breakdownView = level;
-                    if (level === "DIVISION") {
-                        if (divisionSelect) divisionSelect.value = "";
-                        if (districtSelect) districtSelect.value = ALL_DISTRICTS_VALUE;
-                        if (blockSelect) blockSelect.value = "";
-                    } else if (level === "DISTRICT") {
+                    if (level === "DISTRICT") {
                         if (districtSelect) districtSelect.value = ALL_DISTRICTS_VALUE;
                         if (blockSelect) blockSelect.value = "";
                     }
@@ -633,17 +610,6 @@
                     state.pager.reset();
                     load();
                 }
-                const divisionButton = event.target.closest("[data-cert-breakdown-division]");
-                if (divisionButton) {
-                    const division = divisionButton.getAttribute("data-cert-breakdown-division") || "";
-                    const divisionSelect = document.getElementById("stateCertDivision");
-                    if (!division || !divisionSelect) return;
-                    divisionSelect.value = division;
-                    state.breakdownView = "DISTRICT";
-                    state.breakdownPage = 1;
-                    state.pager.reset();
-                    load();
-                }
                 const showDistrictsButton = event.target.closest("[data-cert-show-districts]");
                 if (showDistrictsButton) {
                     const districtSelect = document.getElementById("stateCertDistrict");
@@ -651,19 +617,6 @@
                     if (districtSelect) districtSelect.value = ALL_DISTRICTS_VALUE;
                     if (blockSelect) blockSelect.value = "";
                     state.breakdownView = "DISTRICT";
-                    state.breakdownPage = 1;
-                    state.pager.reset();
-                    load();
-                }
-                const showDivisionsButton = event.target.closest("[data-cert-show-divisions]");
-                if (showDivisionsButton) {
-                    const divisionSelect = document.getElementById("stateCertDivision");
-                    const districtSelect = document.getElementById("stateCertDistrict");
-                    const blockSelect = document.getElementById("stateCertBlock");
-                    if (divisionSelect) divisionSelect.value = "";
-                    if (districtSelect) districtSelect.value = ALL_DISTRICTS_VALUE;
-                    if (blockSelect) blockSelect.value = "";
-                    state.breakdownView = "DIVISION";
                     state.breakdownPage = 1;
                     state.pager.reset();
                     load();
