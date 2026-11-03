@@ -179,6 +179,8 @@
     }
 
     function renderHistory() {
+        const target = $("indicatorHistoryRows");
+        if (!target) return;
         const period = selectedPeriod();
         const deptId = departmentRequired() ? ($("indicatorDepartmentFilter")?.value || "") : "0";
         const rows = state.history.filter(row =>
@@ -188,7 +190,7 @@
             && String(row.indicator_type || "").toUpperCase() === effectiveIndicatorType()
         );
 
-        $("indicatorHistoryRows").innerHTML = rows.length
+        target.innerHTML = rows.length
             ? rows.map(row => `
                 <div class="sq-performance-row">
                     <strong>${esc(row.indicator_name)}</strong>
