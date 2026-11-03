@@ -343,7 +343,7 @@
         const count = Array.isArray(months) ? months.length : 0;
         $("indicatorAllMonthsCount").textContent = `${count} saved month${count === 1 ? "" : "s"}`;
         target.innerHTML = count
-            ? months.map(month => `<div class="sq-indicator-month-row"><strong>${esc(shortMonth(month.period))}</strong><span>${esc(month.count)} entries</span><button type="button" class="sq-btn sq-btn-light" data-indicator-month="${esc(month.period)}">Edit</button></div>`).join("")
+            ? months.map(month => `<div class="sq-indicator-month-row"><strong>${esc(shortMonth(month.period))}</strong><button type="button" class="sq-btn sq-btn-light" data-indicator-month="${esc(month.period)}">Edit</button></div>`).join("")
             : "No saved months found for this selection.";
     }
 
