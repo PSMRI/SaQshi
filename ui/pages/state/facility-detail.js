@@ -241,7 +241,6 @@
             ? `<div class="sq-state-list">
                 <div class="sq-state-row"><span>Name</span><b>${esc(facility.fac_name)}</b></div>
                 <div class="sq-state-row"><span>State</span><b>${esc(facility.state_name)}</b></div>
-                <div class="sq-state-row"><span>Division</span><b>${esc(facility.division)}</b></div>
                 <div class="sq-state-row"><span>District</span><b>${esc(facility.Dist_Name)}</b></div>
                 <div class="sq-state-row"><span>Block</span><b>${esc(facility.Block_Name)}</b></div>
                 <div class="sq-state-row"><span>${esc(domainLabel("facility_code", "NIN"))}</span><b>${esc(facility.NIN_no)}</b></div>
@@ -263,6 +262,13 @@
             <div><span>Open Gaps</span><strong>${esc(cqi.open_gaps || 0)}</strong></div>
             <div><span>CQI Overdue</span><strong>${esc(cqi.overdue || 0)}</strong></div>
         `);
+    }
+
+    function setFacilitySelectionState(hasSelection) {
+        const emptyState = document.getElementById("stateFacilityEmpty");
+        const reportContent = document.getElementById("stateFacilityReportContent");
+        if (emptyState) emptyState.hidden = hasSelection;
+        if (reportContent) reportContent.hidden = !hasSelection;
     }
 
     function renderAssessments(assessments, performance) {
@@ -311,6 +317,7 @@
         const data = response.data || {};
         const facility = data.facility || {};
 
+        setFacilitySelectionState(true);
         text("stateFacilitySelected", facility.fac_name || "Selected facility");
         renderFacilityInfo(facility);
         renderSummary(data.summary || {});
@@ -391,11 +398,12 @@
                 loadHierarchy();
             }
         });
-        html("stateFacilityInfo", empty(`Select a ${domainLabel("facility", "facility").toLowerCase()} from the hierarchy.`));
+        setFacilitySelectionState(false);
+        html("stateFacilityInfo", "");
         html("stateFacilitySummary", "");
         html("stateFacilityAssessments", "");
-        html("stateFacilityAreas", empty(`Select a ${domainLabel("facility", "facility").toLowerCase()} to view its Area of Concern report.`));
-        html("stateFacilityStandards", empty(`Select a ${domainLabel("facility", "facility").toLowerCase()} to view its Standard-wise report.`));
+        html("stateFacilityAreas", "");
+        html("stateFacilityStandards", "");
         await loadHierarchy();
         const selectedFacilityId = Number(new URLSearchParams(window.location.search).get("fac_id") || 0);
         if (selectedFacilityId > 0) await loadFacility(selectedFacilityId);
