@@ -33,12 +33,11 @@
                     <button type="button" class="sq-btn sq-btn-light" id="btnPerformanceRefresh" title="Refresh dashboard" aria-label="Refresh dashboard"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
                 </div>
             <div class="sq-card-body">
-                <div class="sq-performance-kpis">
-                    <div><span>Outcome Departments</span><strong id="perfTotalOutcomeDepartments">0</strong></div>
-                    <div><span>Outcome Departments Completed</span><strong id="perfCompletedOutcomeDepartments">0</strong></div>
-                    <div><span id="perfKpiIndicatorLabel">KPI Indicators</span><strong id="perfKpiIndicators">0</strong></div>
-                    <div><span>Total Months</span><strong id="perfTotalMonths">0</strong></div>
+                <div class="sq-performance-section-title sq-performance-months-title">
+                    <h4>Month-wise entries</h4>
+                    <span id="perfMonthCount">0 months</span>
                 </div>
+                <div id="perfMonthRows" class="sq-performance-months"></div>
                 <div class="sq-performance-chart-grid">
                     <div>
                         <div class="sq-performance-section-title">

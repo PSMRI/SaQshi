@@ -57,6 +57,33 @@
         return `${names[month - 1] || parts[1]} ${String(parts[0]).slice(-2)}`;
     }
 
+    function monthEntryUrl(period) {
+        const params = new URLSearchParams({
+            route: "performance/indicator",
+            indicator_type: state.effectiveType || "KPI",
+            period: period || ""
+        });
+        if (state.departmentId) params.set("department_id", state.departmentId);
+        return `/ui/dashboard.html?${params.toString()}`;
+    }
+
+    function renderMonthStatus(rows) {
+        const target = document.getElementById("perfMonthRows");
+        const count = Array.isArray(rows) ? rows.length : 0;
+        setText("perfMonthCount", `${count} month${count === 1 ? "" : "s"}`);
+        if (!target) return;
+
+        target.innerHTML = count
+            ? rows.slice(-12).reverse().map(row => `
+                <div class="sq-performance-month-card">
+                    <strong>${esc(shortMonth(row.period))}</strong>
+                    <span><b>${esc(row.total_entries || 0)}</b> entries</span>
+                    <a class="sq-btn sq-btn-light" href="${esc(monthEntryUrl(row.period))}">Edit</a>
+                </div>
+            `).join("")
+            : `<div class="sq-performance-empty">No month-wise performance entries available.</div>`;
+    }
+
     function chartSvg(points, style) {
         const width = 260;
         const height = 86;
@@ -191,22 +218,15 @@
             department_id: state.departmentId,
             period: document.getElementById("perfPeriodFilter")?.value || currentPeriod()
         }, { loader: false, showError: false });
-        const summary = response?.data?.summary || {};
+        const monthStatus = response?.data?.month_status || [];
         const trends = response?.data?.indicator_trends || {};
-        const outcomeDepartmentStatus = response?.data?.outcome_department_status || {};
         state.trends = trends;
         state.departments = response?.data?.trend_departments || [];
         state.effectiveType = response?.data?.effective_indicator_type || "KPI";
         state.effectiveLabel = response?.data?.effective_indicator_label || response?.data?.effective_indicator_type || "Performance";
 
-        setText("perfTotalMonths", summary.total_months || 0);
-        setText("perfTotalOutcomeDepartments", outcomeDepartmentStatus.total_departments || 0);
-        setText("perfCompletedOutcomeDepartments", outcomeDepartmentStatus.completed_departments || 0);
-        setText("perfKpiIndicators", state.effectiveType === "OUTCOME" ? (summary.outcome_indicators || 0) : (summary.kpi_indicators || 0));
-        setText("perfOutcomeIndicators", summary.outcome_indicators || 0);
-        setText("perfKpiIndicatorLabel", state.effectiveLabel === "Outcome as KPI" ? "Outcome as KPI Indicators" : "KPI Indicators");
-        setText("perfOutcomeIndicatorLabel", "Outcome Indicators");
         renderDepartmentFilter();
+        renderMonthStatus(monthStatus);
         renderTrendSections();
     }
 
