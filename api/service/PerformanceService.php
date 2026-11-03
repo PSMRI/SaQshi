@@ -26,19 +26,19 @@ class PerformanceService
 {
     /** Type-8 Outcome indicators reported as KPI values, with KPI display names. */
     private const HWC_KPI_OUTCOME_NAMES = [
-        532 => 'No. of OPD Cases per month', 5618 => 'No. of OPD Cases per month',
-        533 => 'No. of follow up cases (repeat visit) per month', 5619 => 'No. of follow up cases (repeat visit) per month',
-        538 => 'No. of drop out cases following start of the treatment', 5624 => 'No. of drop out cases following start of the treatment',
-        540 => 'Drop out rate for NCDs', 5626 => 'Drop out rate for NCDs',
-        542 => 'No. of stock out days of essential medicines (as per service package)', 5628 => 'No. of stock out days of essential medicines (as per service package)',
-        545 => 'No of VHNDs conducted (for vulnerable population)', 5631 => 'No of VHNDs conducted (for vulnerable population)',
-        546 => 'No. of high risk pregnancy identified during ANC', 5632 => 'No. of high risk pregnancy identified during ANC',
-        548 => 'No. of Children with diarrhoea treated with ORS & Zn', 5634 => 'No. of Children with diarrhoea treated with ORS & Zn',
-        550 => 'No. of Anaemia cases treated successfully', 5636 => 'No. of Anaemia cases treated successfully',
-        552 => 'Percentage of cases on treatment achieved blood pressure control', 5638 => 'Percentage of cases on treatment achieved blood pressure control',
-        553 => 'Percentage of cases on treatment achieved blood sugar control', 5639 => 'Percentage of cases on treatment achieved blood sugar control',
-        556 => 'Client Satisfaction Score (Patients)', 5642 => 'Client Satisfaction Score (Patients)',
-        558 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 5644 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months'
+        532 => 'No. of OPD Cases per month', 504 => 'No. of OPD Cases per month', 5618 => 'No. of OPD Cases per month', 6311 => 'No. of OPD Cases per month',
+        533 => 'No. of follow up cases (repeat visit) per month', 505 => 'No. of follow up cases (repeat visit) per month', 5619 => 'No. of follow up cases (repeat visit) per month', 6312 => 'No. of follow up cases (repeat visit) per month',
+        538 => 'No. of drop out cases following start of the treatment', 510 => 'No. of drop out cases following start of the treatment', 5624 => 'No. of drop out cases following start of the treatment', 6317 => 'No. of drop out cases following start of the treatment',
+        540 => 'Drop out rate for NCDs', 512 => 'Drop out rate for NCDs', 5626 => 'Drop out rate for NCDs', 6319 => 'Drop out rate for NCDs',
+        542 => 'No. of stock out days of essential medicines (as per service package)', 514 => 'No. of stock out days of essential medicines (as per service package)', 5628 => 'No. of stock out days of essential medicines (as per service package)', 6321 => 'No. of stock out days of essential medicines (as per service package)',
+        545 => 'No of VHNDs conducted (for vulnerable population)', 517 => 'No of VHNDs conducted (for vulnerable population)', 5631 => 'No of VHNDs conducted (for vulnerable population)', 6324 => 'No of VHNDs conducted (for vulnerable population)',
+        546 => 'No. of high risk pregnancy identified during ANC', 518 => 'No. of high risk pregnancy identified during ANC', 5632 => 'No. of high risk pregnancy identified during ANC', 6325 => 'No. of high risk pregnancy identified during ANC',
+        548 => 'No. of Children with diarrhoea treated with ORS & Zn', 520 => 'No. of Children with diarrhoea treated with ORS & Zn', 5634 => 'No. of Children with diarrhoea treated with ORS & Zn', 6327 => 'No. of Children with diarrhoea treated with ORS & Zn',
+        550 => 'No. of Anaemia cases treated successfully', 522 => 'No. of Anaemia cases treated successfully', 5636 => 'No. of Anaemia cases treated successfully', 6329 => 'No. of Anaemia cases treated successfully',
+        552 => 'Percentage of cases on treatment achieved blood pressure control', 524 => 'Percentage of cases on treatment achieved blood pressure control', 5638 => 'Percentage of cases on treatment achieved blood pressure control', 6331 => 'Percentage of cases on treatment achieved blood pressure control',
+        553 => 'Percentage of cases on treatment achieved blood sugar control', 525 => 'Percentage of cases on treatment achieved blood sugar control', 5639 => 'Percentage of cases on treatment achieved blood sugar control', 6332 => 'Percentage of cases on treatment achieved blood sugar control',
+        556 => 'Client Satisfaction Score (Patients)', 528 => 'Client Satisfaction Score (Patients)', 5642 => 'Client Satisfaction Score (Patients)', 6335 => 'Client Satisfaction Score (Patients)',
+        558 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 530 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 5644 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 6337 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months'
     ];
     private static ?array $departmentNameCache = null;
     private static ?string $departmentStatusAssessmentColumn = null;
