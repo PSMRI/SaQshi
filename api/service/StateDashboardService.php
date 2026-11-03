@@ -1195,9 +1195,11 @@ class StateDashboardService
         natcasesort($blockOptions);
         natcasesort($facilityTypeOptions);
 
-        $viewBy = $selectedDistrict !== '' ? 'BLOCK' : ($selectedDivision !== '' ? 'DISTRICT' : 'DIVISION');
+        // Jharkhand is organised directly by district and block; never fall
+        // back to a Division-level assessment view when no filter is chosen.
+        $viewBy = $selectedDistrict !== '' ? 'BLOCK' : 'DISTRICT';
         $requestedView = strtoupper(trim((string)($filters['view_by'] ?? '')));
-        if (in_array($requestedView, ['DIVISION', 'DISTRICT', 'BLOCK'], true)) $viewBy = $requestedView;
+        if (in_array($requestedView, ['DISTRICT', 'BLOCK'], true)) $viewBy = $requestedView;
         $assessmentLocations = $useFacilityCache
             ? self::rows($con, "
                 SELECT c.fac_id AS fac_id_fk, UPPER(COALESCE(c.assessment_status, 'UNKNOWN')) AS status,
@@ -4425,6 +4427,59 @@ class StateDashboardService
     private static function certWhere(mysqli $con, array $filters): array
     {
         return self::facilityWhere($con, $filters);
+    }
+
+    /**
+     * Returns one downloadable row for every saved assessment checkpoint response.
+     */
+    public static function assessmentResponseDetails(mysqli $con, array $filters = []): array
+    {
+        if (!self::tableExists($con, 'assessment_master')) return [];
+        $responseTable = self::tableExists($con, 'assessment_response') ? 'assessment_response' : (self::tableExists($con, 'assessment_cycle_response') ? 'assessment_cycle_response' : '');
+        if ($responseTable === '') return [];
+
+        $assessmentColumn = self::columnExists($con, $responseTable, 'assessment_id') ? 'assessment_id' : 'cycle_id';
+        $where = self::assessmentWhere($con, $filters);
+        $assessmentId = (int)($filters['assessment_id'] ?? 0);
+        if ($assessmentId > 0) {
+            $where['sql'] .= ' AND a.assessment_id = ?';
+            $where['types'] .= 'i';
+            $where['params'][] = $assessmentId;
+        }
+        $responseValue = self::columnExists($con, $responseTable, 'response_value') ? 'r.response_value' : "''";
+        $remarks = self::columnExists($con, $responseTable, 'remarks') ? 'r.remarks' : "''";
+
+        $rows = self::rows($con, "
+            SELECT a.assessment_id, a.fac_id_fk, a.assessment_name, a.framework_code, a.status, a.start_date, a.end_date, a.completed_on,
+                   f.NIN_no, f.fac_name, f.state_name, f.Dist_Name AS district, f.Block_Name AS block, f.Health_facilty_type AS fac_type_id,
+                   r.dept_id, r.checkpoint_id, {$responseValue} AS response_value,
+                   COALESCE(r.score, 0) AS score, COALESCE(r.max_score, 0) AS max_score, {$remarks} AS remarks
+            FROM assessment_master a
+            INNER JOIN {$responseTable} r ON r.{$assessmentColumn} = a.assessment_id
+            LEFT JOIN facilities f ON f.fac_id = a.fac_id_fk
+            {$where['sql']}
+            ORDER BY f.Dist_Name, f.Block_Name, f.fac_name, a.assessment_id DESC, r.dept_id, r.checkpoint_id
+        ", $where['types'], $where['params']);
+
+        $checkpointLabels = [];
+        foreach ($rows as &$row) {
+            $frameworkCode = (string)($row['framework_code'] ?: 'saqshi-nqas');
+            $cacheKey = $frameworkCode . ':' . (int)$row['fac_type_id'] . ':' . (int)$row['dept_id'];
+            if (!isset($checkpointLabels[$cacheKey])) {
+                $checkpointLabels[$cacheKey] = [];
+                try {
+                    foreach (FrameworkEngine::load($frameworkCode)->getCheckpoints((int)$row['fac_type_id'], (int)$row['dept_id']) as $checkpoint) {
+                        $checkpointLabels[$cacheKey][(string)($checkpoint['checkpoint_id'] ?? '')] = (string)($checkpoint['Checkpoint'] ?? $checkpoint['Measurable_Element'] ?? '');
+                    }
+                } catch (Throwable $e) {
+                    // Retain the checkpoint ID in the export if its framework is unavailable.
+                }
+            }
+            $row['checkpoint_label'] = $checkpointLabels[$cacheKey][(string)$row['checkpoint_id']] ?? '';
+            unset($row['framework_code'], $row['fac_type_id']);
+        }
+        unset($row);
+        return $rows;
     }
 
     /**

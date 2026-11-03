@@ -12,7 +12,7 @@
 
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
-    const state = { pager: null, rows: [], distribution: [], viewBy: "DIVISION", recordSearch: "", filterOptions: { divisions: [], districts: [], blocks: [] } };
+    const state = { pager: null, rows: [], distribution: [], viewBy: "DISTRICT", recordSearch: "", filterOptions: { districts: [], blocks: [] } };
     let assessmentHeatMap = null, assessmentHeatLayer = null, assessmentHeatMask = null;
     const biharDistrictDivision = {
         "ARWAL": "MAGADH", "AURANGABAD": "MAGADH", "GAYA": "MAGADH", "JEHANABAD": "MAGADH", "NAWADA": "MAGADH",
@@ -89,23 +89,16 @@
     function queryParams() {
         return state.pager.params({
             group_by_facility: 1,
-            view_by: document.getElementById("stateAssessViewBy")?.value === "AUTO" ? "" : (document.getElementById("stateAssessViewBy")?.value || ""),
+            view_by: document.getElementById("stateAssessViewBy")?.value === "AUTO" ? "DISTRICT" : (document.getElementById("stateAssessViewBy")?.value || "DISTRICT"),
             search: document.getElementById("stateAssessSearch")?.value || "",
-            division: document.getElementById("stateAssessDivision")?.value || "",
             district: document.getElementById("stateAssessDistrict")?.value || "",
             block: document.getElementById("stateAssessBlock")?.value || ""
         });
     }
 
     function populateLocationFilters() {
-        const division = document.getElementById("stateAssessDivision");
         const district = document.getElementById("stateAssessDistrict");
         const block = document.getElementById("stateAssessBlock");
-        if (division) {
-            const selected = division.value;
-            division.innerHTML = `<option value="">All divisions</option>${state.filterOptions.divisions.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
-            division.value = state.filterOptions.divisions.includes(selected) ? selected : "";
-        }
         if (district) {
             const selected = district.value;
             district.innerHTML = `<option value="">All districts</option>${state.filterOptions.districts.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join("")}`;
@@ -218,7 +211,7 @@
     }
 
     function renderDistribution() {
-        const viewBy = state.viewBy || "DIVISION";
+        const viewBy = state.viewBy || "DISTRICT";
         document.getElementById("stateAssessDistributionTitle").textContent = `${viewBy.charAt(0) + viewBy.slice(1).toLowerCase()}-wise assessment completion`;
         const rows = (state.distribution || []).slice().sort(function (a, b) { return number(b.completion_percentage) - number(a.completion_percentage); });
         const target = document.getElementById("stateAssessDistribution");
@@ -333,22 +326,22 @@
     function renderRows(rows) {
         const needle = state.recordSearch.trim().toLowerCase();
         const visibleRows = needle ? rows.filter(function (row) {
-            return [row.NIN_no, row.fac_name, row.division, row.district, row.block, row.assessment_name, row.assessment_id]
+            return [row.NIN_no, row.fac_name, row.district, row.block, row.assessment_name, row.assessment_id]
                 .some(value => String(value ?? "").toLowerCase().includes(needle));
         }) : rows;
         const schools = Object.values(visibleRows.reduce(function (map, row) {
             const key = String(row.fac_id_fk || row.NIN_no || row.fac_name || "unknown");
-            if (!map[key]) map[key] = { key, id: row.fac_id_fk, name: row.fac_name, code: row.NIN_no, state: row.state_name, division: row.division, district: row.district, block: row.block, rounds: {} };
+            if (!map[key]) map[key] = { key, id: row.fac_id_fk, name: row.fac_name, code: row.NIN_no, state: row.state_name, district: row.district, block: row.block, rounds: {} };
             const round = String(row.round_no || row.round_id || "Unassigned");
             if (!map[key].rounds[round]) map[key].rounds[round] = [];
             map[key].rounds[round].push(row);
             return map;
         }, {}));
         document.getElementById("stateAssessRows").innerHTML = schools.length
-            ? `<table class="sq-state-table sq-assessment-facility-table"><thead><tr><th>Division</th><th>District</th><th>Block</th><th>NIN</th><th>Facility name</th><th>Assessments</th></tr></thead><tbody>${schools.map(function (school) {
+            ? `<table class="sq-state-table sq-assessment-facility-table"><thead><tr><th>District</th><th>Block</th><th>NIN</th><th>Facility name</th><th>Assessments</th></tr></thead><tbody>${schools.map(function (school) {
                 const assessmentCount = Object.values(school.rounds).reduce((total, entries) => total + entries.length, 0);
                 const detailId = String(school.key || school.id || school.code || school.name || assessmentCount);
-                return `<tr><td><button type="button" class="sq-state-inline-expand" data-assess-expand="${esc(detailId)}" aria-expanded="false" aria-label="Show ${esc(assessmentCount)} assessments">+</button>${esc(school.division || "-")}</td><td>${esc(school.district || "-")}</td><td>${esc(school.block || "-")}</td><td>${esc(school.code || "-")}</td><td><strong>${esc(school.name || "School / Facility")}</strong><small>Facility ID: ${esc(school.id || "-")}</small></td><td>${esc(assessmentCount)}</td></tr><tr class="sq-state-facility-detail-row" data-assess-detail="${esc(detailId)}" hidden><td colspan="6"><div class="sq-state-school-drill">${Object.keys(school.rounds).map(function (round) {
+                return `<tr><td><button type="button" class="sq-state-inline-expand" data-assess-expand="${esc(detailId)}" aria-expanded="false" aria-label="Show ${esc(assessmentCount)} assessments">+</button>${esc(school.district || "-")}</td><td>${esc(school.block || "-")}</td><td>${esc(school.code || "-")}</td><td><strong>${esc(school.name || "School / Facility")}</strong><small>Facility ID: ${esc(school.id || "-")}</small></td><td>${esc(assessmentCount)}</td></tr><tr class="sq-state-facility-detail-row" data-assess-detail="${esc(detailId)}" hidden><td colspan="5"><div class="sq-state-school-drill">${Object.keys(school.rounds).map(function (round) {
                     const entries = school.rounds[round];
                     const completed = entries.filter(function (row) { return String(row.status || "").toUpperCase() === "COMPLETED"; });
                     const roundScore = completed[0]?.round_score;
@@ -358,7 +351,7 @@
                     const roundProgress = `${esc(entries.length)} assessment record${entries.length === 1 ? "" : "s"}`;
                     const roundButton = isEducationProfile() ? `View Assessment Round ${esc(round)} Domains` : `View Assessment Round ${esc(round)} ${esc(label)} Scores`;
                     const itemButton = isEducationProfile() ? "View class domains" : `View ${esc(label)} scores`;
-                    return `<details class="sq-state-round-drill"><summary>${roundTitle} · ${roundProgress} ${roundScore ? categoryBadge(roundScore.category) : ""}</summary><div class="sq-assessment-detail-wrap">${completed.length && hasRound && roundScore?.models?.length ? `<button type="button" class="sq-btn sq-btn-light" data-round-domain-dialog="${esc(completed[0].assessment_id)}">${roundButton}</button>` : ""}<table class="sq-assessment-detail-table"><thead><tr><th>Assessment</th><th>Status</th><th>Departments</th><th>Responses<br>0 / 1 / 2</th><th>Checkpoint completion</th><th>Score</th><th>Start / planned end</th><th>Completed / cancelled</th></tr></thead><tbody>${entries.map(function (row) {
+                    return `<details class="sq-state-round-drill"><summary>${roundTitle} · ${roundProgress} ${roundScore ? categoryBadge(roundScore.category) : ""}</summary><div class="sq-assessment-detail-wrap">${completed.length && hasRound && roundScore?.models?.length ? `<button type="button" class="sq-btn sq-btn-light" data-round-domain-dialog="${esc(completed[0].assessment_id)}">${roundButton}</button>` : ""}<table class="sq-assessment-detail-table"><thead><tr><th>Assessment</th><th>Status</th><th>Departments</th><th>Responses<br>0 / 1 / 2</th><th>Checkpoint completion</th><th>Score</th><th>Start / planned end</th><th>Completed / cancelled</th><th>Indicator responses</th></tr></thead><tbody>${entries.map(function (row) {
                         const done = String(row.status || "").toUpperCase() === "COMPLETED";
                         const departmentTotal = number(row.total_departments);
                         const departmentCompleted = number(row.completed_departments);
@@ -369,7 +362,7 @@
                         const completedCount = number(row.checkpoint_done);
                         const completion = total > 0 ? `${esc((completedCount * 100 / total).toFixed(2))}%<small>${esc(completedCount)} / ${esc(total)} checkpoints</small>` : `<span>Unknown</span><small>${esc(completedCount)} answered · checklist total unavailable</small>`;
                         const score = number(row.total_score) > 0 ? `${esc(number(row.score_percent).toFixed(2))}%<small>${esc(number(row.obtained_score))} / ${esc(number(row.total_score))} total possible</small>` : "-";
-                        return `<tr><td><strong>${esc(row.assessment_name || "Assessment")}</strong><small>ID ${esc(row.assessment_id)}</small>${done && row.model_score?.models?.length ? `<button type="button" class="sq-btn sq-btn-light sq-state-domain-button" data-model-dialog="${esc(row.assessment_id)}">${itemButton}</button>` : ""}</td><td>${esc(row.status || "-")}</td><td>${departments}</td><td>${esc(number(row.response_zero))} / ${esc(number(row.response_one))} / ${esc(number(row.response_two))}</td><td>${completion}</td><td>${score}</td><td><small>Start: ${esc(row.start_date || "-")}</small><small>End: ${esc(row.end_date || "-")}</small></td><td><small>Completed: ${esc(row.completed_on || "-")}</small><small>Cancelled: ${esc(row.cancelled_on || "-")}</small></td></tr>`;
+                        return `<tr><td><strong>${esc(row.assessment_name || "Assessment")}</strong><small>ID ${esc(row.assessment_id)}</small>${done && row.model_score?.models?.length ? `<button type="button" class="sq-btn sq-btn-light sq-state-domain-button" data-model-dialog="${esc(row.assessment_id)}">${itemButton}</button>` : ""}</td><td>${esc(row.status || "-")}</td><td>${departments}</td><td>${esc(number(row.response_zero))} / ${esc(number(row.response_one))} / ${esc(number(row.response_two))}</td><td>${completion}</td><td>${score}</td><td><small>Start: ${esc(row.start_date || "-")}</small><small>End: ${esc(row.end_date || "-")}</small></td><td><small>Completed: ${esc(row.completed_on || "-")}</small><small>Cancelled: ${esc(row.cancelled_on || "-")}</small></td><td>${done ? `<a class="sq-btn sq-btn-primary sq-btn-sm" href="/api/reports/v1/checkpoint_progress_report.php?assessment_id=${encodeURIComponent(row.assessment_id)}" title="Download this assessment's formatted checklist report" aria-label="Download assessment report"><i class="bi bi-download"></i></a>` : "-"}</td></tr>`;
                     }).join("")}</tbody></table></div></details>`;
                 }).join("")}</div></td></tr>`;
             }).join("")}</tbody></table>`
@@ -456,12 +449,12 @@
 
             state.rows = data.rows || [];
             state.distribution = data.distribution || [];
-            state.viewBy = data.view_by || "DIVISION";
+            state.viewBy = data.view_by === "DIVISION" ? "DISTRICT" : (data.view_by || "DISTRICT");
             const viewSelect = document.getElementById("stateAssessViewBy");
             if (viewSelect?.value === "AUTO") {
                 viewSelect.options[0].text = `Automatic (${state.viewBy.charAt(0) + state.viewBy.slice(1).toLowerCase()})`;
             }
-            state.filterOptions = data.filter_options || { divisions: [], districts: [], blocks: [] };
+            state.filterOptions = data.filter_options || { districts: [], blocks: [] };
             populateLocationFilters();
             // Older PHP workers can briefly serve a cached assessment summary
             // without registered_facilities. Read the lightweight facility
@@ -469,7 +462,6 @@
             if (!number(data.summary?.registered_facilities)) {
                 try {
                     const facilityResponse = await SQ.api.get("/state/v1/facility_category.php", {
-                        division: document.getElementById("stateAssessDivision")?.value || "",
                         district: document.getElementById("stateAssessDistrict")?.value || "",
                         block: document.getElementById("stateAssessBlock")?.value || "",
                         search: document.getElementById("stateAssessSearch")?.value || ""
@@ -497,7 +489,7 @@
         const button = document.getElementById("stateAssessExport");
         // Export assessment rows, not the grouped facility rows used by the screen.
         const filters = Object.assign({}, queryParams(), { group_by_facility: 0, page: 1, per_page: 100 });
-        const header = ["Facility ID", "Facility name", "NIN", "State", "Division", "District", "Block", "Assessment ID", "Assessment name", "Round", "Status", "Score 0", "Score 1", "Score 2", "Answered checkpoints", "Total checkpoints", "Checkpoint completion %", "Obtained score", "Total possible score", "Score %", "Start date", "Planned end date", "Completed on", "Cancelled on"];
+        const header = ["Facility ID", "Facility name", "NIN", "State", "District", "Block", "Assessment ID", "Assessment name", "Round", "Status", "Score 0", "Score 1", "Score 2", "Answered checkpoints", "Total checkpoints", "Checkpoint completion %", "Obtained score", "Total possible score", "Score %", "Start date", "Planned end date", "Completed on", "Cancelled on"];
         const output = [header];
         const csvValue = value => {
             let text = String(value ?? "");
@@ -514,7 +506,7 @@
                 totalPages = number(data.pagination?.total_pages) || 1;
                 for (const row of data.rows || []) {
                     const total = number(row.total_checkpoints), scoreTotal = number(row.total_score);
-                    output.push([row.fac_id_fk, row.fac_name, row.NIN_no, row.state_name, row.division, row.district, row.block, row.assessment_id, row.assessment_name, row.round_no || row.round_id || "", row.status, row.response_zero, row.response_one, row.response_two, row.checkpoint_done, total || "", total ? (number(row.checkpoint_done) * 100 / total).toFixed(2) : "", row.obtained_score, scoreTotal || "", scoreTotal ? number(row.score_percent).toFixed(2) : "", row.start_date, row.end_date, row.completed_on, row.cancelled_on]);
+                    output.push([row.fac_id_fk, row.fac_name, row.NIN_no, row.state_name, row.district, row.block, row.assessment_id, row.assessment_name, row.round_no || row.round_id || "", row.status, row.response_zero, row.response_one, row.response_two, row.checkpoint_done, total || "", total ? (number(row.checkpoint_done) * 100 / total).toFixed(2) : "", row.obtained_score, scoreTotal || "", scoreTotal ? number(row.score_percent).toFixed(2) : "", row.start_date, row.end_date, row.completed_on, row.cancelled_on]);
                 }
                 page++;
             } while (page <= totalPages);
@@ -555,21 +547,11 @@
                 load();
             });
             bindSearch("stateAssessSearch");
-            document.getElementById("stateAssessDivision")?.addEventListener("change", function () {
-                const district = document.getElementById("stateAssessDistrict");
-                const block = document.getElementById("stateAssessBlock");
-                if (district) district.value = "";
-                if (block) block.value = "";
-                const viewSelect = document.getElementById("stateAssessViewBy");
-                if (viewSelect?.value === "AUTO") viewSelect.options[0].text = "Automatic (District)";
-                state.pager.reset();
-                load();
-            });
             document.getElementById("stateAssessDistrict")?.addEventListener("change", function () {
                 const block = document.getElementById("stateAssessBlock");
                 if (block) block.value = "";
                 const viewSelect = document.getElementById("stateAssessViewBy");
-                if (viewSelect?.value === "AUTO") viewSelect.options[0].text = this.value ? "Automatic (Block)" : (document.getElementById("stateAssessDivision")?.value ? "Automatic (District)" : "Automatic (Division)");
+                if (viewSelect?.value === "AUTO") viewSelect.options[0].text = this.value ? "Automatic (Block)" : "Automatic (District)";
                 state.pager.reset();
                 load();
             });

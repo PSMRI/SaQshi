@@ -12,7 +12,7 @@
 
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
-    const state = { pager: null, filterOptions: { divisions: [], districts: [], blocks: [] } };
+    const state = { pager: null, filterOptions: { districts: [], blocks: [] } };
 
     function esc(value) {
         return String(value ?? "")
@@ -92,7 +92,6 @@
     function queryParams() {
         return state.pager.params({
             search: document.getElementById("stateCqiSearch")?.value || "",
-            division: document.getElementById("stateCqiDivision")?.value || "",
             district: document.getElementById("stateCqiDistrict")?.value || "",
             block: document.getElementById("stateCqiBlock")?.value || ""
         });
@@ -100,29 +99,22 @@
 
     function optionRows(select, rows, labelKey, valueKey, selected) {
         if (!select) return;
-        select.innerHTML = `<option value="">All ${select.id === "stateCqiDivision" ? "divisions" : select.id === "stateCqiDistrict" ? "districts" : "blocks"}</option>${rows.map(row => `<option value="${esc(row[valueKey] || "")}">${esc(row[labelKey] || "")}</option>`).join("")}`;
+        select.innerHTML = `<option value="">All ${select.id === "stateCqiDistrict" ? "districts" : "blocks"}</option>${rows.map(row => `<option value="${esc(row[valueKey] || "")}">${esc(row[labelKey] || "")}</option>`).join("")}`;
         select.value = rows.some(row => String(row[valueKey] || "") === String(selected || "")) ? selected : "";
     }
 
     function populateLocationFilters(resetChildren) {
-        const division = document.getElementById("stateCqiDivision");
         const district = document.getElementById("stateCqiDistrict");
         const block = document.getElementById("stateCqiBlock");
-        if (!division || !district || !block) return;
+        if (!district || !block) return;
 
-        const selectedDivision = division.value;
         const selectedDistrict = resetChildren ? "" : district.value;
         const selectedBlock = resetChildren ? "" : block.value;
-        optionRows(division, state.filterOptions.divisions, "division_name", "division_name", selectedDivision);
-        const divisionRow = state.filterOptions.divisions.find(row => String(row.division_name) === String(division.value));
-        const districts = divisionRow
-            ? state.filterOptions.districts.filter(row => String(row.division_id) === String(divisionRow.division_id))
-            : state.filterOptions.districts;
-        optionRows(district, districts, "district_name", "district_name", selectedDistrict);
-        const districtRow = districts.find(row => String(row.district_name) === String(district.value));
+        optionRows(district, state.filterOptions.districts, "district_name", "district_name", selectedDistrict);
+        const districtRow = state.filterOptions.districts.find(row => String(row.district_name) === String(district.value));
         const blocks = districtRow
             ? state.filterOptions.blocks.filter(row => String(row.dist_id) === String(districtRow.dist_id))
-            : (divisionRow ? state.filterOptions.blocks.filter(row => String(row.division_id) === String(divisionRow.division_id)) : state.filterOptions.blocks);
+            : state.filterOptions.blocks;
         optionRows(block, blocks, "block_name", "block_name", selectedBlock);
         district.disabled = false;
         block.disabled = !district.value;
@@ -133,7 +125,6 @@
             const response = await SQ.api.get("/state/v1/user_scope_options.php", {}, { loader: false, showError: false });
             const data = response.data || {};
             state.filterOptions = {
-                divisions: Array.isArray(data.divisions) ? data.divisions : [],
                 districts: Array.isArray(data.districts) ? data.districts : [],
                 blocks: Array.isArray(data.blocks) ? data.blocks : []
             };
@@ -373,11 +364,6 @@
         });
         document.getElementById("stateCqiDownload")?.addEventListener("click", downloadAllStatuses);
         bindSearch("stateCqiSearch");
-        document.getElementById("stateCqiDivision")?.addEventListener("change", function () {
-            populateLocationFilters(true);
-            state.pager.reset();
-            load();
-        });
         document.getElementById("stateCqiDistrict")?.addEventListener("change", function () {
             const block = document.getElementById("stateCqiBlock");
             if (block) block.value = "";

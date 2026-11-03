@@ -150,13 +150,28 @@
         markerLayer = typeof L.markerClusterGroup === "function"
             ? L.markerClusterGroup({
                 maxClusterRadius: 48,
-                disableClusteringAtZoom: 13,
+                // Keeping nearby facilities clustered at close zoom avoids
+                // creating thousands of DOM markers in one zoom animation.
+                // A click on a final cluster still opens/spiderfies its
+                // individual facilities through the standard Leaflet action.
+                disableClusteringAtZoom: null,
                 showCoverageOnHover: false,
                 spiderfyOnMaxZoom: true,
                 removeOutsideVisibleBounds: true,
                 chunkedLoading: true,
                 chunkInterval: 80,
-                chunkDelay: 16
+                chunkDelay: 16,
+                // A cluster can contain several facility types, so colour must
+                // not imply a facility status or category. Its number alone is
+                // the count of facilities grouped at the current zoom level.
+                iconCreateFunction: function (cluster) {
+                    const count = cluster.getChildCount();
+                    return L.divIcon({
+                        html: `<div><span>${count}</span></div>`,
+                        className: "sq-state-map-cluster",
+                        iconSize: L.point(40, 40)
+                    });
+                }
             }).addTo(map)
             : L.layerGroup().addTo(map);
 

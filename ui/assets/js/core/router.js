@@ -26,6 +26,9 @@
         pageTitleSelector: "#sq-page-title",
         pageSubtitleSelector: "#sq-page-subtitle",
         pageActionsSelector: "#sq-page-actions",
+        // Bump this deployment identifier once per release.  It is applied to
+        // every route CSS/JS file, so browsers cannot reuse a prior release.
+        assetVersion: window.SQ_ASSET_VERSION || "20261103-asset-refresh-1",
         debug: true
     };
 
@@ -147,7 +150,19 @@
         return res.text();
     }
 
+    function freshAssetUrl(url) {
+        const assetUrl = new URL(url, window.location.origin);
+
+        // Replace (rather than append) an individual page's older version
+        // marker. This makes one release identifier authoritative everywhere.
+        assetUrl.searchParams.set("v", CONFIG.assetVersion);
+
+        return assetUrl.pathname + assetUrl.search + assetUrl.hash;
+    }
+
     async function loadCss(url) {
+        url = freshAssetUrl(url);
+
         if (!url || state.loadedCss[url]) {
             return;
         }
@@ -177,6 +192,8 @@
     }
 
     async function loadJs(url) {
+        url = freshAssetUrl(url);
+
         if (!url || state.loadedJs[url]) {
             return;
         }

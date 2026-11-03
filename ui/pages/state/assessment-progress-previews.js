@@ -2,29 +2,30 @@
     "use strict";
     window.SQ = window.SQ || {};
     const SQ = window.SQ;
-    const state = { data: {}, filters: { divisions: [], districts: [] } };
+    const state = { data: {}, filters: { districts: [], blocks: [] } };
     let previewMap = null, previewMapLayer = null, previewMapMask = null;
     const n = value => Number.isFinite(Number(value)) ? Number(value) : 0;
     const esc = value => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
     const pct = (part, whole) => whole > 0 ? Math.round((n(part) / n(whole)) * 100) : 0;
 
     function parameters() {
-        return { group_by_facility: 0, per_page: 100, page: 1, view_by: "DISTRICT", division: document.getElementById("assessmentPreviewDivision")?.value || "", district: document.getElementById("assessmentPreviewDistrict")?.value || "" };
+        return { group_by_facility: 0, per_page: 100, page: 1, view_by: "DISTRICT", district: document.getElementById("assessmentPreviewDistrict")?.value || "", block: document.getElementById("assessmentPreviewBlock")?.value || "" };
     }
 
     function populateFilters() {
-        const division = document.getElementById("assessmentPreviewDivision");
         const district = document.getElementById("assessmentPreviewDistrict");
-        const selectedDivision = division?.value || "";
+        const block = document.getElementById("assessmentPreviewBlock");
         const selectedDistrict = district?.value || "";
-        if (division) {
-            division.innerHTML = `<option value="">All divisions</option>${(state.filters.divisions || []).map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("")}`;
-            division.value = (state.filters.divisions || []).includes(selectedDivision) ? selectedDivision : "";
-        }
         if (district) {
             district.disabled = false;
             district.innerHTML = `<option value="">All districts</option>${(state.filters.districts || []).map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("")}`;
             district.value = (state.filters.districts || []).includes(selectedDistrict) ? selectedDistrict : "";
+        }
+        if (block) {
+            const selectedBlock = block.value;
+            block.innerHTML = `<option value="">All blocks</option>${(state.filters.blocks || []).map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("")}`;
+            block.disabled = !district?.value;
+            block.value = (state.filters.blocks || []).includes(selectedBlock) ? selectedBlock : "";
         }
     }
 
@@ -150,8 +151,12 @@
 
     async function init() {
         document.getElementById("assessmentPreviewRefresh")?.addEventListener("click", load);
-        document.getElementById("assessmentPreviewDivision")?.addEventListener("change", load);
-        document.getElementById("assessmentPreviewDistrict")?.addEventListener("change", load);
+        document.getElementById("assessmentPreviewDistrict")?.addEventListener("change", function () {
+            const block = document.getElementById("assessmentPreviewBlock");
+            if (block) block.value = "";
+            load();
+        });
+        document.getElementById("assessmentPreviewBlock")?.addEventListener("change", load);
         await load();
     }
     SQ.stateAssessmentProgressOperations = { init };
