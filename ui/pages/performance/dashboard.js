@@ -57,31 +57,9 @@
         return `${names[month - 1] || parts[1]} ${String(parts[0]).slice(-2)}`;
     }
 
-    function monthEntryUrl(period) {
-        const params = new URLSearchParams({
-            route: "performance/indicator",
-            indicator_type: state.effectiveType || "KPI",
-            period: period || ""
-        });
-        if (state.departmentId) params.set("department_id", state.departmentId);
-        return `/ui/dashboard.html?${params.toString()}`;
-    }
-
-    function renderMonthStatus(rows) {
-        const target = document.getElementById("perfMonthRows");
+    function renderMonthCount(rows) {
         const count = Array.isArray(rows) ? rows.length : 0;
-        setText("perfMonthCount", `${count} month${count === 1 ? "" : "s"}`);
-        if (!target) return;
-
-        target.innerHTML = count
-            ? rows.slice(-12).reverse().map(row => `
-                <div class="sq-performance-month-card">
-                    <strong>${esc(shortMonth(row.period))}</strong>
-                    <span><b>${esc(row.total_entries || 0)}</b> entries</span>
-                    <a class="sq-btn sq-btn-light" href="${esc(monthEntryUrl(row.period))}">Edit</a>
-                </div>
-            `).join("")
-            : `<div class="sq-performance-empty">No month-wise performance entries available.</div>`;
+        setText("perfMonthCount", count);
     }
 
     function chartSvg(points, style) {
@@ -226,7 +204,7 @@
         state.effectiveLabel = response?.data?.effective_indicator_label || response?.data?.effective_indicator_type || "Performance";
 
         renderDepartmentFilter();
-        renderMonthStatus(monthStatus);
+        renderMonthCount(monthStatus);
         renderTrendSections();
     }
 
