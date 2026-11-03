@@ -72,3 +72,6 @@
 .sq-trend-empty{padding:.6rem;border:1px dashed var(--sq-border);border-radius:8px;color:var(--sq-text-muted);font-size:.72rem;background:var(--sq-bg-muted)}
 @media (max-width:1200px){.sq-trend-chart-grid,.sq-trend-charts{grid-template-columns:1fr}.sq-trend-months{grid-template-columns:repeat(3,minmax(112px,1fr))}.sq-trend-toolbar{flex-wrap:wrap}}
 @media (max-width:760px){.sq-trend-summary,.sq-trend-months{grid-template-columns:1fr}.sq-trend-section-title{align-items:flex-start;flex-direction:column}.sq-performance-page>.sq-card:first-child>.sq-card-header{align-items:flex-start;flex-direction:column}.sq-performance-page>.sq-card:first-child>.sq-card-header>div:first-child{flex-basis:auto}.sq-trend-toolbar{width:100%;justify-content:flex-start}.sq-trend-toolbar .sq-form-control{width:100%}.sq-trend-department-filter{width:100%}.sq-trend-department-filter .sq-form-control{width:100%}}
+
+/* The page body may be narrower than the viewport beside the navigation rail. */
+.sq-performance-trend-header-toolbar,.sq-trend-toolbar{flex-wrap:wrap}

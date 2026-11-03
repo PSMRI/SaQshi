@@ -37,6 +37,8 @@
     display:flex;
     align-items:center;
     gap:.45rem;
+    flex-wrap:wrap;
+    min-width:0;
 }
 
 .sq-admin-facility #facilityHeaderActions{display:none}
@@ -132,6 +134,7 @@
     align-items:flex-start;
     justify-content:space-between;
     gap:.5rem;
+    flex-wrap:wrap;
     margin-bottom:.4rem;
 }
 

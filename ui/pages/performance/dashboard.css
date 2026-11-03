@@ -59,3 +59,6 @@
 .sq-performance-empty{padding:.6rem;border:1px dashed var(--sq-border);border-radius:8px;color:var(--sq-text-muted);font-size:.72rem;background:var(--sq-bg-muted)}
 @media (max-width:1200px){.sq-performance-chart-grid,.sq-performance-charts{grid-template-columns:1fr}.sq-performance-months{grid-template-columns:repeat(3,minmax(110px,1fr))}}
 @media (max-width:760px){.sq-performance-kpis,.sq-performance-months{grid-template-columns:1fr}.sq-performance-section-title{align-items:flex-start;flex-direction:column}.sq-performance-toolbar{width:100%}.sq-performance-toolbar .sq-form-control{width:100%}}
+
+/* The header shares a row with the title and must follow its available width. */
+.sq-performance-header-toolbar{flex-wrap:wrap}
