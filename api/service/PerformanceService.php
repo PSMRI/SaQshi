@@ -24,6 +24,11 @@ require_once __DIR__ . '/../core/FrameworkEngine.php';
  */
 class PerformanceService
 {
+    /** Type-8 Outcome indicators reported as KPI values. */
+    private const HWC_KPI_OUTCOME_IDS = [
+        532, 533, 538, 540, 542, 545, 546, 548, 550, 552, 553, 556, 558,
+        5618, 5619, 5624, 5626, 5628, 5631, 5632, 5634, 5636, 5638, 5639, 5642, 5644
+    ];
     private static ?array $departmentNameCache = null;
     private static ?string $departmentStatusAssessmentColumn = null;
 
@@ -178,6 +183,14 @@ class PerformanceService
         return (!empty($rule['outcome_treated_as_kpi']) || empty($rule['kpi_applicable']) || !empty($rule['block_kpi_entry']))
             ? 'OUTCOME'
             : 'KPI';
+    }
+
+    /** Filters type-8 Outcome series to its approved KPI reporting measures. */
+    private static function hwcKpiOutcomeSeries(array $series): array
+    {
+        return array_values(array_filter($series, static function (array $item): bool {
+            return in_array((int)($item['indicator_id'] ?? 0), self::HWC_KPI_OUTCOME_IDS, true);
+        }));
     }
 
     /**
@@ -633,8 +646,14 @@ class PerformanceService
         $departmentId = max(0, (int)($filters['department_id'] ?? $filters['dept_id'] ?? 0));
         $selectedTrendType = strtoupper((string)($filters['trend_type'] ?? ''));
         $selectedTrendType = in_array($selectedTrendType, ['KPI', 'OUTCOME'], true) ? $selectedTrendType : $effectiveType;
-        $trendFilters = ['indicator_type' => $effectiveType, 'limit' => $trendLimit, 'department_id' => $effectiveType === 'OUTCOME' ? $departmentId : 0];
+        $isHwcKpiView = $facilityTypeId === 8 && $effectiveType === 'OUTCOME' && $selectedTrendType === 'KPI';
+        // KPI reporting for AAM-SC uses the saved Outcome values. Retrieve
+        // the full Outcome set first, then retain only the approved KPI list.
+        $trendFilters = ['indicator_type' => $effectiveType, 'limit' => $isHwcKpiView ? 0 : $trendLimit, 'department_id' => $effectiveType === 'OUTCOME' ? $departmentId : 0];
         $effectiveSeries = self::indicatorTrends($con, $facId, $trendFilters)['series'];
+        if ($isHwcKpiView) {
+            $effectiveSeries = self::hwcKpiOutcomeSeries($effectiveSeries);
+        }
 
         return [
             'facility' => $facility,
@@ -643,10 +662,10 @@ class PerformanceService
             'effective_indicator_label' => $effectiveType === 'OUTCOME' && !empty($rule['outcome_treated_as_kpi']) ? 'Outcome as KPI' : $effectiveType,
             'summary' => $summary,
             'outcome_department_status' => $outcomeDepartmentStatus,
-            'month_status' => self::monthlyStatus($con, $facId, ['indicator_type' => $selectedTrendType, 'department_id' => $selectedTrendType === 'OUTCOME' ? $departmentId : 0]),
+            'month_status' => self::monthlyStatus($con, $facId, ['indicator_type' => $isHwcKpiView ? 'OUTCOME' : $selectedTrendType, 'department_id' => $selectedTrendType === 'OUTCOME' ? $departmentId : 0]),
             'trend_departments' => self::trendDepartments($con, $facId),
             'indicator_trends' => [
-                'KPI' => $effectiveType === 'KPI' ? $effectiveSeries : ($selectedTrendType === 'KPI' && isset($filters['trend_type']) ? self::indicatorTrends($con, $facId, ['indicator_type' => 'KPI', 'limit' => $trendLimit])['series'] : []),
+                'KPI' => $isHwcKpiView ? $effectiveSeries : ($effectiveType === 'KPI' ? $effectiveSeries : ($selectedTrendType === 'KPI' && isset($filters['trend_type']) ? self::indicatorTrends($con, $facId, ['indicator_type' => 'KPI', 'limit' => $trendLimit])['series'] : [])),
                 'OUTCOME' => $effectiveType === 'OUTCOME' ? $effectiveSeries : self::indicatorTrends($con, $facId, ['indicator_type' => 'OUTCOME', 'limit' => $trendLimit, 'department_id' => $departmentId])['series'],
                 'EFFECTIVE' => $effectiveSeries
             ],
