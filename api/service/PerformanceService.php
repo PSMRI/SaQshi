@@ -24,10 +24,21 @@ require_once __DIR__ . '/../core/FrameworkEngine.php';
  */
 class PerformanceService
 {
-    /** Type-8 Outcome indicators reported as KPI values. */
-    private const HWC_KPI_OUTCOME_IDS = [
-        532, 533, 538, 540, 542, 545, 546, 548, 550, 552, 553, 556, 558,
-        5618, 5619, 5624, 5626, 5628, 5631, 5632, 5634, 5636, 5638, 5639, 5642, 5644
+    /** Type-8 Outcome indicators reported as KPI values, with KPI display names. */
+    private const HWC_KPI_OUTCOME_NAMES = [
+        532 => 'No. of OPD Cases per month', 5618 => 'No. of OPD Cases per month',
+        533 => 'No. of follow up cases (repeat visit) per month', 5619 => 'No. of follow up cases (repeat visit) per month',
+        538 => 'No. of drop out cases following start of the treatment', 5624 => 'No. of drop out cases following start of the treatment',
+        540 => 'Drop out rate for NCDs', 5626 => 'Drop out rate for NCDs',
+        542 => 'No. of stock out days of essential medicines (as per service package)', 5628 => 'No. of stock out days of essential medicines (as per service package)',
+        545 => 'No of VHNDs conducted (for vulnerable population)', 5631 => 'No of VHNDs conducted (for vulnerable population)',
+        546 => 'No. of high risk pregnancy identified during ANC', 5632 => 'No. of high risk pregnancy identified during ANC',
+        548 => 'No. of Children with diarrhoea treated with ORS & Zn', 5634 => 'No. of Children with diarrhoea treated with ORS & Zn',
+        550 => 'No. of Anaemia cases treated successfully', 5636 => 'No. of Anaemia cases treated successfully',
+        552 => 'Percentage of cases on treatment achieved blood pressure control', 5638 => 'Percentage of cases on treatment achieved blood pressure control',
+        553 => 'Percentage of cases on treatment achieved blood sugar control', 5639 => 'Percentage of cases on treatment achieved blood sugar control',
+        556 => 'Client Satisfaction Score (Patients)', 5642 => 'Client Satisfaction Score (Patients)',
+        558 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 5644 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months'
     ];
     private static ?array $departmentNameCache = null;
     private static ?string $departmentStatusAssessmentColumn = null;
@@ -185,12 +196,20 @@ class PerformanceService
             : 'KPI';
     }
 
-    /** Filters type-8 Outcome series to its approved KPI reporting measures. */
+    /** Converts approved type-8 Outcome series into KPI reporting measures. */
     private static function hwcKpiOutcomeSeries(array $series): array
     {
-        return array_values(array_filter($series, static function (array $item): bool {
-            return in_array((int)($item['indicator_id'] ?? 0), self::HWC_KPI_OUTCOME_IDS, true);
-        }));
+        $result = [];
+        foreach ($series as $item) {
+            $indicatorId = (int)($item['indicator_id'] ?? 0);
+            $displayName = self::HWC_KPI_OUTCOME_NAMES[$indicatorId] ?? null;
+            if ($displayName === null) continue;
+            $item['indicator_type'] = 'KPI';
+            $item['indicator_code'] = 'KPI_' . $indicatorId;
+            $item['indicator_name'] = $displayName;
+            $result[] = $item;
+        }
+        return $result;
     }
 
     /**
