@@ -1510,7 +1510,26 @@
             $("checklistImportProgress").textContent = hasFile ? `Selected: ${this.files[0].name}. Preparing preview...` : "";
             if (hasFile) $("btnPreviewChecklistImport")?.click();
         });
-        $("btnDownloadChecklist")?.addEventListener("click", function(e){ e.preventDefault(); if(state.importSubmitting)return; const d=Number($("deptSelect")?.value||0); if(!d)return notify("warning","Select an activated department first."); window.location.href="/api"+API.excel+"?assessment_id="+state.assessment.assessment_id+"&dept_id="+d; });
+        $("btnDownloadChecklist")?.addEventListener("click", async function(e){
+            e.preventDefault();
+            if(state.importSubmitting)return;
+            const d=Number($("deptSelect")?.value||0);
+            if(!d)return notify("warning","Select an activated department first.");
+            if(!SQ.api||typeof SQ.api.download!=="function")return notify("error","Checklist download is not available.");
+            const button=this;
+            const original=button.innerHTML;
+            button.disabled=true;
+            button.setAttribute("aria-busy","true");
+            try{
+                await SQ.api.download(API.excel,{assessment_id:state.assessment.assessment_id,dept_id:d},`checklist_${state.assessment.assessment_id}_${d}.xlsx`);
+            }catch(error){
+                notify("error",error.message||"Unable to download the checklist. Save assessor information for this department first.");
+            }finally{
+                button.disabled=false;
+                button.removeAttribute("aria-busy");
+                button.innerHTML=original;
+            }
+        });
         $("checklistExcelFile")?.addEventListener("click", function (event) { if (state.importSubmitting) event.preventDefault(); });
         $("btnDeleteExcelImport")?.addEventListener("click", async function () {
             const deptId = Number($("deptSelect")?.value || 0);
