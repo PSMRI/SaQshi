@@ -41,7 +41,12 @@ try {
     if (!$stmt->get_result()->fetch_assoc()) Response::error('Save assessor information before downloading or uploading a checklist');
 
     $engine = FrameworkEngine::load($assessment['framework_code'] ?: 'saqshi-nqas');
-    $checkpoints = $engine->getCheckpoints((int)$assessment['Health_facilty_type'], $deptId);
+    $facilityTypeId = (int)$assessment['Health_facilty_type'];
+    $facilityType = $engine->getFacilityTypeById($facilityTypeId) ?? [];
+    $departmentDefinition = $engine->getDepartmentById($facilityTypeId, $deptId) ?? [];
+    $facilityTypeName = (string)($facilityType['facilities_type'] ?? $facilityType['fac_type_name'] ?? ('Facility Type ' . $facilityTypeId));
+    $departmentName = (string)($departmentDefinition['dept_name'] ?? $departmentDefinition['department_name'] ?? ('Department ' . $deptId));
+    $checkpoints = $engine->getCheckpoints($facilityTypeId, $deptId);
     $saved = [];
     $stmt = $con->prepare('SELECT checkpoint_id, response_value FROM assessment_response WHERE assessment_id = ? AND dept_id = ?');
     $stmt->bind_param('ii', $assessmentId, $deptId);
@@ -52,11 +57,11 @@ try {
     $book = new Spreadsheet();
     $meta = $book->getActiveSheet();
     $meta->setTitle('Metadata');
-    foreach ([['A1', 'Assessment ID'], ['B1', $assessmentId], ['A2', 'Department ID'], ['B2', $deptId], ['A3', 'Framework'], ['B3', $assessment['framework_code']], ['A5', 'Instructions'], ['B5', 'This workbook mirrors the Score Card checklist. Enter or update only User Compliance: 0 = Non Compliant, 1 = Partially Compliant, 2 = Fully Compliant.']] as [$cell, $value]) $meta->setCellValue($cell, $value);
-    $meta->getStyle('A1:A5')->getFont()->setBold(true);
-    $meta->getStyle('A1:A5')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('B8C9E6');
-    $meta->getStyle('A1:B5')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-    $meta->getStyle('B5')->getAlignment()->setWrapText(true);
+    foreach ([['A1', 'Assessment ID'], ['B1', $assessmentId], ['A2', 'Department ID'], ['B2', $deptId], ['A3', 'Framework'], ['B3', $assessment['framework_code']], ['A4', 'Facility Type'], ['B4', $facilityTypeName], ['A5', 'Department Name'], ['B5', $departmentName], ['A7', 'Instructions'], ['B7', 'This workbook mirrors the Score Card checklist. Enter or update only User Compliance: 0 = Non Compliant, 1 = Partially Compliant, 2 = Fully Compliant.']] as [$cell, $value]) $meta->setCellValue($cell, $value);
+    $meta->getStyle('A1:A7')->getFont()->setBold(true);
+    $meta->getStyle('A1:A7')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('B8C9E6');
+    $meta->getStyle('A1:B7')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+    $meta->getStyle('B7')->getAlignment()->setWrapText(true);
     $meta->getColumnDimension('A')->setWidth(18);
     $meta->getColumnDimension('B')->setWidth(105);
 
