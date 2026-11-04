@@ -5881,11 +5881,10 @@
       "formula_id": 522,
       "formula_code": "FORMULA_522",
       "formula_name": "Configured Formula",
-      "source_expression": "(out_come_numerotor/out_come_denominator)*100",
-      "expression": "(N/D)*100",
+      "source_expression": "out_come_numerotor",
+      "expression": "N",
       "variables": [
-        "N",
-        "D"
+        "N"
       ],
       "result_field": "R",
       "precision": 2,
@@ -5898,10 +5897,11 @@
       "formula_id": 523,
       "formula_code": "FORMULA_523",
       "formula_name": "Configured Formula",
-      "source_expression": "out_come_numerotor",
-      "expression": "N",
+      "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+      "expression": "(N/D)*100",
       "variables": [
-        "N"
+        "N",
+        "D"
       ],
       "result_field": "R",
       "precision": 2,
@@ -5982,11 +5982,10 @@
       "formula_id": 528,
       "formula_code": "FORMULA_528",
       "formula_name": "Configured Formula",
-      "source_expression": "(out_come_numerotor/out_come_denominator)*100",
-      "expression": "(N/D)*100",
+      "source_expression": "out_come_numerotor",
+      "expression": "N",
       "variables": [
-        "N",
-        "D"
+        "N"
       ],
       "result_field": "R",
       "precision": 2,
@@ -6015,10 +6014,11 @@
       "formula_id": 530,
       "formula_code": "FORMULA_530",
       "formula_name": "Configured Formula",
-      "source_expression": "out_come_numerotor",
-      "expression": "N",
+      "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+      "expression": "(N/D)*100",
       "variables": [
-        "N"
+        "N",
+        "D"
       ],
       "result_field": "R",
       "precision": 2,

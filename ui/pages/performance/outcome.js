@@ -217,10 +217,14 @@
         $("outcomeSelectedMeta").textContent = `${item.indicator_code || "-"} | ${item.department_name || "General"} | Formula ${item.formula_id || "-"}`;
         const numeratorField = (item.fields || []).find(field => field.field_id === "N") || {};
         const denominatorField = (item.fields || []).find(field => field.field_id === "D") || {};
+        const needsDenominator = formulaUsesDenominator(item);
         $("outcomeNumeratorLabel").textContent = numeratorField.label || "Numerator";
         $("outcomeDenominatorLabel").textContent = denominatorField.label || "Denominator";
+        $("outcomeDenominatorField").hidden = !needsDenominator;
+        $("outcomeDenominator").required = needsDenominator;
+        $("outcomeDenominator").disabled = !needsDenominator;
         $("outcomeNumerator").value = saved?.numerator_value ?? "";
-        $("outcomeDenominator").value = saved?.denominator_value ?? "";
+        $("outcomeDenominator").value = needsDenominator ? (saved?.denominator_value ?? "") : "";
         $("outcomeRemarks").value = saved?.remarks ?? "";
 
         calculateResult();
@@ -238,10 +242,21 @@
         }
     }
 
+    function formulaUsesDenominator(item) {
+        const formula = String(item?.formula || "").toUpperCase();
+        return formula.includes("DENOMINATOR") || /(^|[^A-Z])D([^A-Z]|$)/.test(formula);
+    }
+
     function calculateResult() {
         const d = num($("outcomeDenominator").value);
         const n = num($("outcomeNumerator").value);
-        $("outcomeResult").value = d > 0 ? ((n / d) * 100).toFixed(2) : "";
+        const hasNumerator = $("outcomeNumerator").value !== "";
+        const item = selectedItem();
+        $("outcomeResult").value = !hasNumerator
+            ? ""
+            : formulaUsesDenominator(item)
+                ? (d > 0 ? ((n / d) * 100).toFixed(2) : "")
+                : n.toFixed(2);
     }
 
     async function loadHistory() {
