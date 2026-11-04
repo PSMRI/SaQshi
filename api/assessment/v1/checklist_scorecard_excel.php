@@ -133,6 +133,9 @@ try {
     $sheet->getRowDimension(2)->setRowHeight(32);
     $sheet->setAutoFilter("A2:F{$lastRow}");
     $sheet->freezePane('A3');
+    // Apply unlocked protection last: broad report styling above can otherwise
+    // restore the default locked state on the User Compliance cells.
+    foreach ($checkpointRows as $checkpointRow) $sheet->getStyle('F' . $checkpointRow)->getProtection()->setLocked(false);
 
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment; filename="checklist_scorecard_' . $assessmentId . '_' . $deptId . '.xlsx"');
