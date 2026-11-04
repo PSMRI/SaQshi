@@ -24,24 +24,6 @@ require_once __DIR__ . '/../core/FrameworkEngine.php';
  */
 class PerformanceService
 {
-    /** Type-8 Outcome indicators reported as KPI values, with KPI display names. */
-    private const HWC_KPI_OUTCOME_NAMES = [
-        532 => 'No. of OPD Cases per month', 504 => 'No. of OPD Cases per month', 5618 => 'No. of OPD Cases per month', 6311 => 'No. of OPD Cases per month',
-        533 => 'No. of follow up cases (repeat visit) per month', 505 => 'No. of follow up cases (repeat visit) per month', 5619 => 'No. of follow up cases (repeat visit) per month', 6312 => 'No. of follow up cases (repeat visit) per month',
-        538 => 'No. of drop out cases following start of the treatment', 510 => 'No. of drop out cases following start of the treatment', 5624 => 'No. of drop out cases following start of the treatment', 6317 => 'No. of drop out cases following start of the treatment',
-        540 => 'Drop out rate for NCDs', 512 => 'Drop out rate for NCDs', 5626 => 'Drop out rate for NCDs', 6319 => 'Drop out rate for NCDs',
-        542 => 'No. of stock out days of essential medicines (as per service package)', 514 => 'No. of stock out days of essential medicines (as per service package)', 5628 => 'No. of stock out days of essential medicines (as per service package)', 6321 => 'No. of stock out days of essential medicines (as per service package)',
-        545 => 'No of VHNDs conducted (for vulnerable population)', 517 => 'No of VHNDs conducted (for vulnerable population)', 5631 => 'No of VHNDs conducted (for vulnerable population)', 6324 => 'No of VHNDs conducted (for vulnerable population)',
-        546 => 'No. of high risk pregnancy identified during ANC', 518 => 'No. of high risk pregnancy identified during ANC', 5632 => 'No. of high risk pregnancy identified during ANC', 6325 => 'No. of high risk pregnancy identified during ANC',
-        548 => 'No. of Children with diarrhoea treated with ORS & Zn', 520 => 'No. of Children with diarrhoea treated with ORS & Zn', 5634 => 'No. of Children with diarrhoea treated with ORS & Zn', 6327 => 'No. of Children with diarrhoea treated with ORS & Zn',
-        550 => 'No. of Anaemia cases treated successfully', 522 => 'No. of Anaemia cases treated successfully', 5636 => 'No. of Anaemia cases treated successfully', 6329 => 'No. of Anaemia cases treated successfully',
-        552 => 'Percentage of cases on treatment achieved blood pressure control', 524 => 'Percentage of cases on treatment achieved blood pressure control', 5638 => 'Percentage of cases on treatment achieved blood pressure control', 6331 => 'Percentage of cases on treatment achieved blood pressure control',
-        553 => 'Percentage of cases on treatment achieved blood sugar control', 525 => 'Percentage of cases on treatment achieved blood sugar control', 5639 => 'Percentage of cases on treatment achieved blood sugar control', 6332 => 'Percentage of cases on treatment achieved blood sugar control',
-        556 => 'Client Satisfaction Score (Patients)', 528 => 'Client Satisfaction Score (Patients)', 5642 => 'Client Satisfaction Score (Patients)', 6335 => 'Client Satisfaction Score (Patients)',
-        558 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 530 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 5644 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months', 6337 => 'Percentage of chronic cases under treatment at PHC/above for the last 3 months'
-    ];
-    private const HWC_BLOOD_PRESSURE_INDICATOR_IDS = [552, 524, 5638, 6331];
-    private const HWC_BLOOD_SUGAR_INDICATOR_IDS = [553, 525, 5639, 6332];
     private static ?array $departmentNameCache = null;
     private static ?string $departmentStatusAssessmentColumn = null;
 
@@ -198,55 +180,90 @@ class PerformanceService
             : 'KPI';
     }
 
-    /** Converts approved type-8 Outcome series into KPI reporting measures. */
+    /** Builds the type-8 KPI source map from Outcome configuration. */
+    private static function type8KpiSources(): array
+    {
+        $mapping = self::readJson(__DIR__ . '/../config/performance/type8_kpi_mapping.json', []);
+        $outcomes = self::readJson(__DIR__ . '/../config/performance/outcome.json', []);
+        $departmentIds = array_map('intval', (array)($mapping['department_ids'] ?? []));
+        $sources = [];
+
+        foreach (($outcomes['facility_types'] ?? []) as $facilityType) {
+            if ((int)($facilityType['facility_type_id'] ?? 0) !== 8) continue;
+            foreach (($facilityType['departments'] ?? []) as $department) {
+                $departmentId = (int)($department['department_id'] ?? 0);
+                if (!in_array($departmentId, $departmentIds, true)) continue;
+                $indicators = array_values((array)($department['indicators'] ?? []));
+                foreach ((array)($mapping['kpis'] ?? []) as $kpi) {
+                    $positions = isset($kpi['outcome_positions'])
+                        ? array_values((array)$kpi['outcome_positions'])
+                        : [(int)($kpi['outcome_position'] ?? -1)];
+                    foreach ($positions as $index => $position) {
+                        $indicator = $indicators[(int)$position] ?? null;
+                        if (!is_array($indicator)) continue;
+                        $indicatorId = (int)($indicator['indicator_id'] ?? 0);
+                        if ($indicatorId <= 0) continue;
+                        $sources[$indicatorId] = [
+                            'key' => (string)($kpi['key'] ?? ''),
+                            'name' => (string)($kpi['name'] ?? ''),
+                            'composite' => !empty($kpi['composite']),
+                            'component' => $index === 0 ? 'blood_pressure' : 'blood_sugar'
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $sources;
+    }
+
+    /** Converts configured type-8 Outcome series into their matching KPI reporting measures. */
     private static function hwcKpiOutcomeSeries(array $series): array
     {
+        $sources = self::type8KpiSources();
         $result = [];
-        $bloodControl = null;
-        $bloodControlPoints = [];
+        $composites = [];
+
         foreach ($series as $item) {
-            $indicatorId = (int)($item['indicator_id'] ?? 0);
-            $displayName = self::HWC_KPI_OUTCOME_NAMES[$indicatorId] ?? null;
-            if ($displayName === null) continue;
+            $source = $sources[(int)($item['indicator_id'] ?? 0)] ?? null;
+            if (!$source || $source['key'] === '') continue;
 
-            $bloodMetric = in_array($indicatorId, self::HWC_BLOOD_PRESSURE_INDICATOR_IDS, true)
-                ? 'blood_pressure'
-                : (in_array($indicatorId, self::HWC_BLOOD_SUGAR_INDICATOR_IDS, true) ? 'blood_sugar' : '');
-
-            if ($bloodMetric !== '') {
-                if ($bloodControl === null) {
-                    $bloodControl = $item;
-                    $bloodControl['indicator_type'] = 'KPI';
-                    $bloodControl['indicator_code'] = 'KPI_BLOOD_PRESSURE_AND_SUGAR_CONTROL';
-                    $bloodControl['indicator_name'] = 'Percentage of cases on treatment achieved blood pressure & blood sugar control';
-                    $bloodControl['composite'] = true;
-                    $bloodControl['points'] = [];
+            if ($source['composite']) {
+                $compositeKey = (int)($item['department_id'] ?? 0) . '|' . $source['key'];
+                if (!isset($composites[$compositeKey])) {
+                    $composites[$compositeKey] = $item;
+                    $composites[$compositeKey]['indicator_type'] = 'KPI';
+                    $composites[$compositeKey]['indicator_code'] = 'KPI_' . $source['key'];
+                    $composites[$compositeKey]['indicator_name'] = $source['name'];
+                    $composites[$compositeKey]['composite'] = true;
+                    $composites[$compositeKey]['points'] = [];
+                    $composites[$compositeKey]['_points'] = [];
                 }
-                foreach (($item['points'] ?? []) as $point) {
+                foreach ((array)($item['points'] ?? []) as $point) {
                     $period = (string)($point['period'] ?? '');
-                    if ($period !== '') {
-                        $bloodControlPoints[$period][$bloodMetric] = $point;
-                    }
+                    if ($period !== '') $composites[$compositeKey]['_points'][$period][$source['component']] = $point;
                 }
                 continue;
             }
 
             $item['indicator_type'] = 'KPI';
-            $item['indicator_code'] = 'KPI_' . $indicatorId;
-            $item['indicator_name'] = $displayName;
+            $item['indicator_code'] = 'KPI_' . $source['key'];
+            $item['indicator_name'] = $source['name'];
             $result[] = $item;
         }
 
-        if ($bloodControl !== null) {
-            ksort($bloodControlPoints);
-            foreach ($bloodControlPoints as $period => $components) {
+        foreach ($composites as $item) {
+            ksort($item['_points']);
+            foreach ($item['_points'] as $period => $components) {
                 $primary = $components['blood_pressure'] ?? $components['blood_sugar'] ?? [];
                 $primary['period'] = $period;
                 $primary['components'] = $components;
-                $bloodControl['points'][] = $primary;
+                $item['points'][] = $primary;
             }
-            $result[] = $bloodControl;
+            unset($item['_points']);
+            $result[] = $item;
         }
+
         return $result;
     }
 

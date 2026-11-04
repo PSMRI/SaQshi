@@ -1,0 +1,19 @@
+{
+  "facility_type_id": 8,
+  "source_indicator_type": "OUTCOME",
+  "department_ids": [25, 30, 31, 41],
+  "kpis": [
+    {"key": "OPD_CASES", "outcome_position": 0, "name": "No. of OPD Cases per month"},
+    {"key": "FOLLOW_UP_CASES", "outcome_position": 1, "name": "No. of follow up cases (repeat visit) per month"},
+    {"key": "TREATMENT_DROPOUT", "outcome_position": 6, "name": "No. of drop out cases following start of the treatment"},
+    {"key": "NCD_DROPOUT_RATE", "outcome_position": 8, "name": "Drop out rate for NCDs"},
+    {"key": "MEDICINE_STOCKOUT_DAYS", "outcome_position": 10, "name": "No. of stock out days of essential medicines (as per service package)"},
+    {"key": "VHND_CONDUCTED", "outcome_position": 13, "name": "No of VHNDs conducted (for vulnerable population)"},
+    {"key": "HIGH_RISK_PREGNANCY", "outcome_position": 14, "name": "No. of high risk pregnancy identified during ANC"},
+    {"key": "DIARRHOEA_ORS_ZINC", "outcome_position": 16, "name": "No. of Children with diarrhoea treated with ORS & Zn"},
+    {"key": "ANAEMIA_TREATED", "outcome_position": 18, "name": "No. of Anaemia cases treated successfully"},
+    {"key": "BLOOD_PRESSURE_AND_SUGAR_CONTROL", "outcome_positions": [20, 21], "name": "Percentage of cases on treatment achieved blood pressure & blood sugar control", "composite": true},
+    {"key": "PATIENT_SATISFACTION", "outcome_position": 24, "name": "Client Satisfaction Score (Patients)"},
+    {"key": "CHRONIC_TREATMENT_3_MONTHS", "outcome_position": 26, "name": "Percentage of chronic cases under treatment at PHC/above for the last 3 months"}
+  ]
+}
