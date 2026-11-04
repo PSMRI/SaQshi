@@ -26,7 +26,8 @@
         explainAI: "/ai/v1/explain_checkpoint.php",
         excel: "/assessment/v1/checklist_excel.php",
         excelTemplate: "/assessment/v1/checklist_scorecard_excel.php",
-        excelProgress: "/assessment/v1/checklist_excel_progress.php"
+        excelProgress: "/assessment/v1/checklist_excel_progress.php",
+        concernProgress: "/assessment/v1/checklist_concern_progress.php"
     };
 
     const state = {
@@ -1199,25 +1200,18 @@
     }
 
     async function loadConcernTotals() {
-        // The NQAS framework is large. Loading every concern in parallel starts
-        // several PHP processes that all parse the same framework JSON and can
-        // exhaust the server, resulting in intermittent 500 responses.
-        for (const item of state.concernChecklist) {
-            const concernId = Number(item.concern?.concern_id || 0);
-            if (!concernId) {
-                item.total = 0;
-                continue;
-            }
-
-            const response = await apiGet(API.subtypes, {
-                framework: state.assessment.framework_code || "saqshi-nqas",
-                dept_id: state.selected.deptId,
-                concern_id: concernId
-            });
-            item.total = (response?.data?.subtypes || []).reduce(function (total, subtype) {
-                return total + Number(subtype.checkpoint_count || 0);
-            }, 0);
-        }
+        const response = await apiGet(API.concernProgress, {
+            assessment_id: state.assessment.assessment_id,
+            dept_id: state.selected.deptId
+        });
+        const progressByConcern = new Map((response?.data?.concerns || []).map(function (row) {
+            return [Number(row.concern_id), row];
+        }));
+        state.concernChecklist.forEach(function (item) {
+            const progress = progressByConcern.get(Number(item.concern?.concern_id || 0)) || {};
+            item.total = Number(progress.total || 0);
+            item.answered = Number(progress.answered || 0);
+        });
         renderConcernTabs();
     }
 
@@ -1265,11 +1259,12 @@
 
     function concernProgress(item) {
         const checkpoints = item.groups.flatMap(function (group) { return group.checkpoints; });
-        const answered = checkpoints.filter(function (checkpoint) {
+        const loaded = item.groups.length > 0;
+        const answered = loaded ? checkpoints.filter(function (checkpoint) {
             return hasSavedResponse(checkpoint);
-        }).length;
+        }).length : Number(item.answered || 0);
         return {
-            total: item.groups.length ? checkpoints.length : item.total,
+            total: loaded ? checkpoints.length : item.total,
             answered: answered
         };
     }
