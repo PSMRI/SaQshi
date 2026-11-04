@@ -25,6 +25,7 @@
         saveResponsesBulk: "/assessment/v1/save-responses-bulk.php",
         explainAI: "/ai/v1/explain_checkpoint.php",
         excel: "/assessment/v1/checklist_excel.php",
+        excelTemplate: "/assessment/v1/checklist_scorecard_excel.php",
         excelProgress: "/assessment/v1/checklist_excel_progress.php"
     };
 
@@ -1521,7 +1522,7 @@
             button.disabled=true;
             button.setAttribute("aria-busy","true");
             try{
-                await SQ.api.download(API.excel,{assessment_id:state.assessment.assessment_id,dept_id:d},`checklist_${state.assessment.assessment_id}_${d}.xlsx`);
+                await SQ.api.download(API.excelTemplate,{assessment_id:state.assessment.assessment_id,dept_id:d},`checklist_scorecard_${state.assessment.assessment_id}_${d}.xlsx`);
             }catch(error){
                 notify("error",error.message||"Unable to download the checklist. Save assessor information for this department first.");
             }finally{
