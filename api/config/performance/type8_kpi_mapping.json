@@ -1,7 +1,7 @@
 {
   "facility_type_id": 8,
   "source_indicator_type": "OUTCOME",
-  "department_ids": [25, 30, 31, 41],
+  "department_ids": [25, 30, 31, 32, 41],
   "kpis": [
     {"key": "OPD_CASES", "outcome_position": 0, "name": "No. of OPD Cases per month"},
     {"key": "FOLLOW_UP_CASES", "outcome_position": 1, "name": "No. of follow up cases (repeat visit) per month"},

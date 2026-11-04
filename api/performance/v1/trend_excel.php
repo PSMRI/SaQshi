@@ -27,8 +27,7 @@ foreach (($data['indicator_trends'][$reportType] ?? []) as $item) {
     $groups[$groupId]['series'][] = $item;
 }
 if (!$groups) {
-    http_response_code(404);
-    exit('No ' . strtolower($reportType) . ' trend data available.');
+    Response::notFound('No ' . strtolower($reportType) . ' trend data available.');
 }
 
 $book = new Spreadsheet();
