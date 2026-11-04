@@ -1510,6 +1510,22 @@
     }
 
     function bindEvents() {
+        function setButtonBusy(button, busy, label) {
+            if (!button) return;
+            if (busy) {
+                if (!button.dataset.idleHtml) button.dataset.idleHtml = button.innerHTML;
+                button.setAttribute("aria-busy", "true");
+                button.classList.add("is-disabled");
+                if (label) button.innerHTML = `<span class="sq-inline-spinner" aria-hidden="true"></span>${escapeHtml(label)}`;
+                return;
+            }
+            button.removeAttribute("aria-busy");
+            button.classList.remove("is-disabled");
+            if (button.dataset.idleHtml) {
+                button.innerHTML = button.dataset.idleHtml;
+                delete button.dataset.idleHtml;
+            }
+        }
         const excelHelp = document.querySelector("#checklistExcelPanel p");
         if (excelHelp && !document.getElementById("checklistExcelHelpLink")) excelHelp.insertAdjacentHTML("beforeend", ' <a id="checklistExcelHelpLink" class="sq-upload-help-link" href="/ui/pages/assessment/checklist-upload-help.html" target="_blank" rel="noopener">How Excel Upload Works</a>');
         $("checklistExcelFile")?.addEventListener("change", function () {
@@ -1528,28 +1544,28 @@
             if(!d)return notify("warning","Select an activated department first.");
             if(!SQ.api||typeof SQ.api.download!=="function")return notify("error","Checklist download is not available.");
             const button=this;
-            const original=button.innerHTML;
-            button.disabled=true;
-            button.setAttribute("aria-busy","true");
+            setButtonBusy(button, true, "Downloading…");
             try{
                 await SQ.api.download(API.excelTemplate,{assessment_id:state.assessment.assessment_id,dept_id:d},`checklist_scorecard_${state.assessment.assessment_id}_${d}.xlsx`);
             }catch(error){
                 notify("error",error.message||"Unable to download the checklist. Save assessor information for this department first.");
             }finally{
-                button.disabled=false;
-                button.removeAttribute("aria-busy");
-                button.innerHTML=original;
+                setButtonBusy(button, false);
             }
         });
         $("checklistExcelFile")?.addEventListener("click", function (event) { if (state.importSubmitting) event.preventDefault(); });
         $("btnDeleteExcelImport")?.addEventListener("click", async function () {
             const deptId = Number($("deptSelect")?.value || 0);
             if (!deptId || !window.confirm("Delete only the responses saved from the uploaded Excel checklist? Responses entered one-by-one or Area of Concern-wise will remain. This cannot be undone.")) return;
+            const button = this;
+            button.disabled = true;
+            setButtonBusy(button, true, "Deleting…");
             try {
                 await apiPost(API.excelProgress, { action: "delete", assessment_id: state.assessment.assessment_id, dept_id: deptId });
                 state.importResponses = []; state.importSubmitting = false; $("btnSubmitChecklistImport").disabled = true; $("btnSubmitChecklistImport").textContent = "Final Submit"; $("btnPreviewChecklistImport").disabled = !$("checklistExcelFile").files?.length; $("checklistExcelFile").disabled = false; $("checklistExcelFile").parentElement?.classList.remove("is-disabled"); $("btnDownloadChecklist").classList.remove("is-disabled"); $("btnDownloadChecklist").removeAttribute("aria-disabled"); $("checklistImportPreview").classList.add("sq-hidden");
                 await loadExcelImportProgress(); notify("success", "Uploaded Excel responses deleted.");
             } catch (error) { notify("error", error.message || "Unable to delete uploaded Excel responses."); }
+            finally { button.disabled = false; setButtonBusy(button, false); }
         });
         $("btnPreviewChecklistImport")?.addEventListener("click", function () {
             const file = $("checklistExcelFile").files?.[0];
@@ -1557,6 +1573,9 @@
             const progress = $("checklistImportProgress");
             const preview = $("checklistImportPreview");
             if (!file || !deptId) return notify("warning", "Select an activated department and workbook first.");
+            const button = this;
+            button.disabled = true;
+            setButtonBusy(button, true, "Reviewing…");
 
             const form = new FormData();
             form.append("file", file);
@@ -1574,32 +1593,40 @@
                 if (event.lengthComputable) progress.textContent = "Uploading workbook: " + Math.round(event.loaded / event.total * 100) + "%";
             };
             request.onload = async function () {
-                let result = {};
-                try { result = JSON.parse(request.responseText); } catch (error) { /* response shown below */ }
-                const rows = result.data?.responses || [];
-                const errors = result.data?.errors || result.errors || [];
-                const failed = request.status < 200 || request.status >= 300 || result.status === "error";
-                let pendingRows = rows;
-                if (!failed && !errors.length) {
-                    const saved = await apiGet(API.excelProgress, { assessment_id: state.assessment.assessment_id, dept_id: deptId });
-                    const savedIds = new Set((saved?.data?.saved_checkpoint_ids || []).map(Number));
-                    pendingRows = rows.filter(row => !savedIds.has(Number(row.checkpoint_id)));
+                try {
+                    let result = {};
+                    try { result = JSON.parse(request.responseText); } catch (error) { /* response shown below */ }
+                    const rows = result.data?.responses || [];
+                    const errors = result.data?.errors || result.errors || [];
+                    const failed = request.status < 200 || request.status >= 300 || result.status === "error";
+                    let pendingRows = rows;
+                    if (!failed && !errors.length) {
+                        const saved = await apiGet(API.excelProgress, { assessment_id: state.assessment.assessment_id, dept_id: deptId });
+                        const savedIds = new Set((saved?.data?.saved_checkpoint_ids || []).map(Number));
+                        pendingRows = rows.filter(row => !savedIds.has(Number(row.checkpoint_id)));
+                    }
+                    state.importResponses = failed || errors.length ? [] : pendingRows;
+                    $("btnSubmitChecklistImport").disabled = state.importResponses.length === 0;
+                    $("btnSubmitChecklistImport").textContent = "Final Submit";
+                    preview.classList.remove("sq-hidden");
+                    if (failed) {
+                        progress.textContent = "Upload validation failed.";
+                        preview.innerHTML = `<strong>Unable to validate this workbook:</strong><p>${escapeHtml(result.message || "The server rejected the upload.")}</p>`;
+                        return;
+                    }
+                    progress.textContent = "Upload validation complete.";
+                    preview.innerHTML = errors.length
+                        ? `<strong>Fix these issues before import:</strong><ul>${errors.map(escapeHtml).map(error => `<li>${error}</li>`).join("")}</ul>`
+                        : renderExcelImportPreview(rows) + (pendingRows.length !== rows.length ? `<p><strong>Resume:</strong> ${rows.length - pendingRows.length} already saved; ${pendingRows.length} remaining to upload.</p>` : "");
+                } catch (error) {
+                    progress.textContent = "Upload validation failed. Please try again.";
+                    notify("error", error.message || "Unable to validate the workbook.");
+                } finally {
+                    button.disabled = false;
+                    setButtonBusy(button, false);
                 }
-                state.importResponses = failed || errors.length ? [] : pendingRows;
-                $("btnSubmitChecklistImport").disabled = state.importResponses.length === 0;
-                $("btnSubmitChecklistImport").textContent = "Final Submit";
-                preview.classList.remove("sq-hidden");
-                if (failed) {
-                    progress.textContent = "Upload validation failed.";
-                    preview.innerHTML = `<strong>Unable to validate this workbook:</strong><p>${escapeHtml(result.message || "The server rejected the upload.")}</p>`;
-                    return;
-                }
-                progress.textContent = "Upload validation complete.";
-                preview.innerHTML = errors.length
-                    ? `<strong>Fix these issues before import:</strong><ul>${errors.map(escapeHtml).map(error => `<li>${error}</li>`).join("")}</ul>`
-                    : renderExcelImportPreview(rows) + (pendingRows.length !== rows.length ? `<p><strong>Resume:</strong> ${rows.length - pendingRows.length} already saved; ${pendingRows.length} remaining to upload.</p>` : "");
             };
-            request.onerror = function () { progress.textContent = "Upload failed. Please try again."; };
+            request.onerror = function () { progress.textContent = "Upload failed. Please try again."; button.disabled = false; setButtonBusy(button, false); };
             request.send(form);
         });
         $("btnSubmitChecklistImport")?.addEventListener("click", async function () {
@@ -1608,6 +1635,7 @@
             const button = this;
             state.importSubmitting = true;
             button.disabled = true;
+            setButtonBusy(button, true, "Submitting…");
             const downloadButton = $("btnDownloadChecklist");
             const uploadInput = $("checklistExcelFile");
             downloadButton?.classList.add("is-disabled");
@@ -1639,12 +1667,16 @@
                     $("checklistImportProgressBar").style.width = `${Math.round(end * 100 / state.importResponses.length)}%`;
                 }
                 $("checklistImportProgress").textContent = `${state.importResponses.length} responses saved successfully.`;
+                setButtonBusy(button, false);
+                button.disabled = true;
+                button.textContent = "Upload Complete";
                 notify("success", "Excel assessment responses submitted successfully.");
                 await loadConcerns();
             } catch (error) {
                 notify("error", error.message || "Unable to save Excel assessment responses.");
                 state.importSubmitting = false;
                 button.disabled = false;
+                setButtonBusy(button, false);
                 downloadButton?.classList.remove("is-disabled");
                 uploadInput?.parentElement?.classList.remove("is-disabled");
                 downloadButton?.removeAttribute("aria-disabled");
