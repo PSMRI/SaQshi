@@ -62,8 +62,8 @@ try {
 
     $sheet = $book->createSheet();
     $sheet->setTitle('Checklist');
-    $sheet->mergeCells('A1:H1')->setCellValue('A1', 'Checkpoint-wise Details');
-    foreach (['A2' => 'Reference No', 'B2' => 'Measurable Elements', 'C2' => 'Checkpoints', 'D2' => 'Means of Verification', 'E2' => 'Assessment Method', 'F2' => 'User Compliance', 'G2' => 'Revised Score', 'H2' => 'Action Plan', 'I2' => 'Checkpoint ID'] as $cell => $value) $sheet->setCellValue($cell, $value);
+    $sheet->mergeCells('A1:F1')->setCellValue('A1', 'Checkpoint-wise Details');
+    foreach (['A2' => 'Reference No', 'B2' => 'Measurable Elements', 'C2' => 'Checkpoints', 'D2' => 'Means of Verification', 'E2' => 'Assessment Method', 'F2' => 'User Compliance', 'G2' => 'Checkpoint ID'] as $cell => $value) $sheet->setCellValue($cell, $value);
 
     $rowNo = 3;
     $lastConcern = null;
@@ -73,18 +73,21 @@ try {
         $reference = trim((string)($checkpoint['_reference_no'] ?? ''));
         $standard = trim((string)($checkpoint['_subtype_name'] ?? ''));
         if ($concern !== '' && $concern !== $lastConcern) {
-            $sheet->mergeCells("A{$rowNo}:H{$rowNo}")->setCellValue("A{$rowNo}", $concern);
-            $sheet->getStyle("A{$rowNo}:H{$rowNo}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('D9EAD3');
-            $sheet->getStyle("A{$rowNo}:H{$rowNo}")->getFont()->setBold(true);
+            $sheet->mergeCells("A{$rowNo}:F{$rowNo}")->setCellValue("A{$rowNo}", 'Area of Concern - ' . $concern);
+            $sheet->getStyle("A{$rowNo}:F{$rowNo}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('B7B7C8');
+            $sheet->getStyle("A{$rowNo}:F{$rowNo}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+            $sheet->getStyle("A{$rowNo}:F{$rowNo}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $lastConcern = $concern;
             $lastStandard = null;
             $rowNo++;
         }
         $standardKey = $reference . '|' . $standard;
         if ($standard !== '' && $standardKey !== $lastStandard) {
-            $sheet->mergeCells("A{$rowNo}:H{$rowNo}")->setCellValue("A{$rowNo}", trim($reference . ' ' . $standard));
-            $sheet->getStyle("A{$rowNo}:H{$rowNo}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('EAF2F8');
-            $sheet->getStyle("A{$rowNo}:H{$rowNo}")->getFont()->setBold(true);
+            $standardTitle = preg_match('/^standard\b/i', $reference) ? trim($reference . ' ' . $standard) : trim('Standard ' . $reference . ' ' . $standard);
+            $sheet->mergeCells("A{$rowNo}:F{$rowNo}")->setCellValue("A{$rowNo}", $standardTitle);
+            $sheet->getStyle("A{$rowNo}:F{$rowNo}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('156799');
+            $sheet->getStyle("A{$rowNo}:F{$rowNo}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+            $sheet->getStyle("A{$rowNo}:F{$rowNo}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $lastStandard = $standardKey;
             $rowNo++;
         }
@@ -98,9 +101,7 @@ try {
             'D' => (string)($checkpoint['Means_of_Verification'] ?? ''),
             'E' => (string)$method,
             'F' => $saved[$checkpointId] ?? '',
-            'G' => '',
-            'H' => '',
-            'I' => $checkpointId
+            'G' => $checkpointId
         ] as $column => $value) $sheet->setCellValue($column . $rowNo, $value);
         $sheet->getStyle("F{$rowNo}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFF2CC');
         $rowNo++;
@@ -110,19 +111,19 @@ try {
     $validation = $sheet->getDataValidation('F3');
     $validation->setType(DataValidation::TYPE_LIST)->setFormula1('"0,1,2"')->setAllowBlank(false)->setShowDropDown(true);
     $sheet->setDataValidation("F3:F{$lastRow}", $validation);
-    $sheet->getStyle('A1:H1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('156799');
-    $sheet->getStyle('A1:H1')->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-    $sheet->getStyle('A2:I2')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('86A86F');
-    $sheet->getStyle('A2:I2')->getFont()->setBold(true);
-    $sheet->getStyle("A2:I{$lastRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('B8C9DC');
-    $sheet->getStyle("A1:I{$lastRow}")->getAlignment()->setVertical(Alignment::VERTICAL_TOP)->setWrapText(true);
-    $sheet->getStyle('A1:I2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
-    $sheet->getStyle("F3:H{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-    foreach (['A' => 19, 'B' => 43, 'C' => 58, 'D' => 58, 'E' => 20, 'F' => 18, 'G' => 16, 'H' => 32] as $column => $width) $sheet->getColumnDimension($column)->setWidth($width);
-    $sheet->getColumnDimension('I')->setVisible(false);
+    $sheet->getStyle('A1:F1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('156799');
+    $sheet->getStyle('A1:F1')->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+    $sheet->getStyle('A2:G2')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('86A86F');
+    $sheet->getStyle('A2:G2')->getFont()->setBold(true);
+    $sheet->getStyle("A2:G{$lastRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('B8C9DC');
+    $sheet->getStyle("A1:G{$lastRow}")->getAlignment()->setVertical(Alignment::VERTICAL_TOP)->setWrapText(true);
+    $sheet->getStyle('A1:G2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+    $sheet->getStyle("F3:F{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    foreach (['A' => 19, 'B' => 43, 'C' => 58, 'D' => 58, 'E' => 20, 'F' => 18] as $column => $width) $sheet->getColumnDimension($column)->setWidth($width);
+    $sheet->getColumnDimension('G')->setVisible(false);
     $sheet->getRowDimension(1)->setRowHeight(28);
     $sheet->getRowDimension(2)->setRowHeight(32);
-    $sheet->setAutoFilter("A2:H{$lastRow}");
+    $sheet->setAutoFilter("A2:F{$lastRow}");
     $sheet->freezePane('A3');
 
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
