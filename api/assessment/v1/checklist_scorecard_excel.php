@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Protection;
 
 Security::requireMethod('GET');
 
@@ -114,7 +115,7 @@ try {
         $validation = $sheet->getDataValidation('F' . $checkpointRow);
         $validation->setType(DataValidation::TYPE_LIST)->setFormula1('"0,1,2"')->setAllowBlank(false)->setShowDropDown(true)->setShowErrorMessage(true)->setErrorStyle(DataValidation::STYLE_STOP)->setErrorTitle('Only 0, 1, or 2')->setError('Enter 0, 1, or 2 only.');
         $sheet->setDataValidation('F' . $checkpointRow, $validation);
-        $sheet->getStyle('F' . $checkpointRow)->getProtection()->setLocked(false);
+        $sheet->getStyle('F' . $checkpointRow)->getProtection()->setLocked(Protection::PROTECTION_UNPROTECTED);
     }
     $sheet->getProtection()->setSheet(true);
     $sheet->getProtection()->setSelectLockedCells(false);
@@ -135,7 +136,7 @@ try {
     $sheet->freezePane('A3');
     // Apply unlocked protection last: broad report styling above can otherwise
     // restore the default locked state on the User Compliance cells.
-    foreach ($checkpointRows as $checkpointRow) $sheet->getStyle('F' . $checkpointRow)->getProtection()->setLocked(false);
+    foreach ($checkpointRows as $checkpointRow) $sheet->getStyle('F' . $checkpointRow)->getProtection()->setLocked(Protection::PROTECTION_UNPROTECTED);
 
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment; filename="checklist_scorecard_' . $assessmentId . '_' . $deptId . '.xlsx"');
