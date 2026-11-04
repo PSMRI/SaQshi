@@ -21,6 +21,9 @@ class ResponseTypeService
         self::ensureColumn($con, 'assessment_response', 'response_json', "LONGTEXT NULL AFTER response_type");
         self::ensureColumn($con, 'assessment_response', 'max_score', "DECIMAL(10,2) NULL DEFAULT 2.00 AFTER score");
         self::ensureColumn($con, 'assessment_response', 'score_status', "VARCHAR(30) NULL DEFAULT 'SCORED' AFTER max_score");
+        // Keep the entry origin so an Excel import can be removed without
+        // touching responses saved checkpoint-by-checkpoint in the UI.
+        self::ensureColumn($con, 'assessment_response', 'submission_source', "VARCHAR(20) NOT NULL DEFAULT 'ONLINE' AFTER updated_on");
 
         $con->query("
             CREATE TABLE IF NOT EXISTS assessment_response_field_index (

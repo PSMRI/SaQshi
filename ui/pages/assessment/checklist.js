@@ -1494,7 +1494,8 @@
                     $("btnDownloadChecklist").setAttribute("aria-disabled", "true");
                 }
             } else if (saved) { $("checklistImportProgress").textContent = `Previously saved: ${saved} of ${total} responses.`; }
-            if (saved || staged.length) $("btnDeleteExcelImport").hidden = false;
+            const importedSaved = Number(progress.imported_saved_count || 0);
+            if (importedSaved || staged.length) $("btnDeleteExcelImport").hidden = false;
             else { $("btnDeleteExcelImport").hidden = true; }
         } catch (error) { console.warn("Unable to load Excel import progress.", error); }
     }
@@ -1534,7 +1535,7 @@
         $("checklistExcelFile")?.addEventListener("click", function (event) { if (state.importSubmitting) event.preventDefault(); });
         $("btnDeleteExcelImport")?.addEventListener("click", async function () {
             const deptId = Number($("deptSelect")?.value || 0);
-            if (!deptId || !window.confirm("Delete all uploaded Excel checklist responses for this department? This cannot be undone.")) return;
+            if (!deptId || !window.confirm("Delete only the responses saved from the uploaded Excel checklist? Responses entered one-by-one or Area of Concern-wise will remain. This cannot be undone.")) return;
             try {
                 await apiPost(API.excelProgress, { action: "delete", assessment_id: state.assessment.assessment_id, dept_id: deptId });
                 state.importResponses = []; state.importSubmitting = false; $("btnSubmitChecklistImport").disabled = true; $("btnSubmitChecklistImport").textContent = "Final Submit"; $("btnPreviewChecklistImport").disabled = !$("checklistExcelFile").files?.length; $("checklistExcelFile").disabled = false; $("checklistExcelFile").parentElement?.classList.remove("is-disabled"); $("btnDownloadChecklist").classList.remove("is-disabled"); $("btnDownloadChecklist").removeAttribute("aria-disabled"); $("checklistImportPreview").classList.add("sq-hidden");
@@ -1623,6 +1624,7 @@
                     await apiPost(API.saveResponsesBulk, {
                         assessment_id: state.assessment.assessment_id,
                         dept_id: deptId,
+                        submission_source: "EXCEL_UPLOAD",
                         responses: batches[index]
                     }, { timeout: 120000 });
                     $("checklistImportProgressBar").style.width = `${Math.round(end * 100 / state.importResponses.length)}%`;
