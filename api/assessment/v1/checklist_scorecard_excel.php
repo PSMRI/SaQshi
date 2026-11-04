@@ -91,15 +91,17 @@ try {
         $checkpointId = (int)($checkpoint['csqa_id'] ?? 0);
         $method = $checkpoint['Assessment_Method'] ?? '';
         if (is_array($method)) $method = implode('/', array_filter(array_map('strval', $method)));
-        $sheet->fromArray([
-            (string)($checkpoint['csqa_reference_id'] ?? ''),
-            (string)($checkpoint['Measurable_Element'] ?? ''),
-            (string)($checkpoint['Checkpoint'] ?? ''),
-            (string)($checkpoint['Means_of_Verification'] ?? ''),
-            (string)$method,
-            $saved[$checkpointId] ?? '',
-            '', '', $checkpointId
-        ], null, "A{$rowNo}");
+        foreach ([
+            'A' => (string)($checkpoint['csqa_reference_id'] ?? ''),
+            'B' => (string)($checkpoint['Measurable_Element'] ?? ''),
+            'C' => (string)($checkpoint['Checkpoint'] ?? ''),
+            'D' => (string)($checkpoint['Means_of_Verification'] ?? ''),
+            'E' => (string)$method,
+            'F' => $saved[$checkpointId] ?? '',
+            'G' => '',
+            'H' => '',
+            'I' => $checkpointId
+        ] as $column => $value) $sheet->setCellValue($column . $rowNo, $value);
         $sheet->getStyle("F{$rowNo}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFF2CC');
         $rowNo++;
     }
