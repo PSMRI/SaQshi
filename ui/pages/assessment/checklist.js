@@ -527,7 +527,8 @@
 
         const response = await apiGet(API.concerns, {
             framework: state.assessment.framework_code || "saqshi-nqas",
-            dept_id: state.selected.deptId
+            dept_id: state.selected.deptId,
+            assessment_id: state.assessment?.assessment_id || 0
         });
 
         const concerns = response?.data?.concerns || [];
@@ -1180,13 +1181,19 @@
         try {
             const concerns = state.concerns.length ? state.concerns : (await apiGet(API.concerns, {
                 framework: state.assessment.framework_code || "saqshi-nqas",
-                dept_id: state.selected.deptId
+                dept_id: state.selected.deptId,
+                assessment_id: state.assessment.assessment_id
             }))?.data?.concerns || [];
             state.concerns = concerns;
             state.concernChecklist = concerns.map(function (concern) {
                 // Totals are loaded independently from checklist details so all
                 // tabs can show their real workload before they are opened.
-                return { concern: concern, groups: [], total: null };
+                return {
+                    concern: concern,
+                    groups: [],
+                    total: Number(concern.checkpoint_count ?? 0),
+                    answered: Number(concern.answered_count ?? 0)
+                };
             });
             state.activeConcernId = Number(concerns[0]?.concern_id || 0);
             renderConcernTabs();
@@ -1200,6 +1207,10 @@
     }
 
     async function loadConcernTotals() {
+        if (state.concernChecklist.every(function (item) { return Number.isFinite(item.total); })) {
+            renderConcernTabs();
+            return;
+        }
         const response = await apiGet(API.concernProgress, {
             assessment_id: state.assessment.assessment_id,
             dept_id: state.selected.deptId
