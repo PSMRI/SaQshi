@@ -66,6 +66,7 @@ try {
     foreach (['A2' => 'Reference No', 'B2' => 'Measurable Elements', 'C2' => 'Checkpoints', 'D2' => 'Means of Verification', 'E2' => 'Assessment Method', 'F2' => 'User Compliance', 'G2' => 'Checkpoint ID'] as $cell => $value) $sheet->setCellValue($cell, $value);
 
     $rowNo = 3;
+    $checkpointRows = [];
     $lastConcern = null;
     $lastStandard = null;
     foreach ($checkpoints as $checkpoint) {
@@ -104,13 +105,20 @@ try {
             'G' => $checkpointId
         ] as $column => $value) $sheet->setCellValue($column . $rowNo, $value);
         $sheet->getStyle("F{$rowNo}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFF2CC');
+        $checkpointRows[] = $rowNo;
         $rowNo++;
     }
 
     $lastRow = $rowNo - 1;
-    $validation = $sheet->getDataValidation('F3');
-    $validation->setType(DataValidation::TYPE_LIST)->setFormula1('"0,1,2"')->setAllowBlank(false)->setShowDropDown(true);
-    $sheet->setDataValidation("F3:F{$lastRow}", $validation);
+    foreach ($checkpointRows as $checkpointRow) {
+        $validation = $sheet->getDataValidation('F' . $checkpointRow);
+        $validation->setType(DataValidation::TYPE_LIST)->setFormula1('"0,1,2"')->setAllowBlank(false)->setShowDropDown(true)->setShowErrorMessage(true)->setErrorStyle(DataValidation::STYLE_STOP)->setErrorTitle('Only 0, 1, or 2')->setError('Enter 0, 1, or 2 only.');
+        $sheet->setDataValidation('F' . $checkpointRow, $validation);
+        $sheet->getStyle('F' . $checkpointRow)->getProtection()->setLocked(false);
+    }
+    $sheet->getProtection()->setSheet(true);
+    $sheet->getProtection()->setSelectLockedCells(false);
+    $sheet->getProtection()->setSelectUnlockedCells(true);
     $sheet->getStyle('A1:F1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('156799');
     $sheet->getStyle('A1:F1')->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
     $sheet->getStyle('A2:G2')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('86A86F');
