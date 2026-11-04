@@ -1199,11 +1199,14 @@
     }
 
     async function loadConcernTotals() {
-        await Promise.all(state.concernChecklist.map(async function (item) {
+        // The NQAS framework is large. Loading every concern in parallel starts
+        // several PHP processes that all parse the same framework JSON and can
+        // exhaust the server, resulting in intermittent 500 responses.
+        for (const item of state.concernChecklist) {
             const concernId = Number(item.concern?.concern_id || 0);
             if (!concernId) {
                 item.total = 0;
-                return;
+                continue;
             }
 
             const response = await apiGet(API.subtypes, {
@@ -1214,7 +1217,7 @@
             item.total = (response?.data?.subtypes || []).reduce(function (total, subtype) {
                 return total + Number(subtype.checkpoint_count || 0);
             }, 0);
-        }));
+        }
         renderConcernTabs();
     }
 
