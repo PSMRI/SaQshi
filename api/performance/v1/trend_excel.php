@@ -15,17 +15,19 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 Security::requireMethod('GET');
 $facId = SessionManager::facilityId();
-$data = PerformanceService::dashboard($con, $facId, ['trend_type' => 'OUTCOME', 'all_indicators' => 1]);
+$reportType = strtoupper((string)($_GET['trend_type'] ?? 'OUTCOME'));
+$reportType = $reportType === 'KPI' ? 'KPI' : 'OUTCOME';
+$data = PerformanceService::dashboard($con, $facId, ['trend_type' => $reportType, 'all_indicators' => 1]);
 $groups = [];
-foreach ($data['indicator_trends']['OUTCOME'] as $item) {
+foreach (($data['indicator_trends'][$reportType] ?? []) as $item) {
     $id = (int)$item['department_id'];
-    if ($id <= 0) continue;
-    $groups[$id]['name'] = $item['department_name'] ?: 'Department ' . $id;
-    $groups[$id]['series'][] = $item;
+    $groupId = $reportType === 'KPI' ? 0 : $id;
+    if ($reportType === 'OUTCOME' && $id <= 0) continue;
+    $groups[$groupId]['name'] = $reportType === 'KPI' ? 'KPI Report' : ($item['department_name'] ?: 'Department ' . $id);
+    $groups[$groupId]['series'][] = $item;
 }
 if (!$groups) {
-    http_response_code(404);
-    exit('No outcome trend data available.');
+    Response::notFound('No ' . strtolower($reportType) . ' trend data available.');
 }
 
 $book = new Spreadsheet();
@@ -52,7 +54,7 @@ foreach ($groups as $group) {
     $text('C1', 'Report Time'); $text('D1', date('Y-m-d H:i:s'));
     $text('E1', 'Department'); $text('F1', $group['name']);
     $text('A2', 'Facility NIN No'); $text('B2', $data['facility']['nin_no'] ?? $data['facility']['NIN_no'] ?? $data['facility']['fac_nin'] ?? '-');
-    $text('A3', 'Report Type'); $text('B3', 'OUTCOME Performance Trend');
+    $text('A3', 'Report Type'); $text('B3', $reportType . ' Performance Trend');
     foreach (['Indicator Name', 'Formula', 'Numerator label', 'Denominator label'] as $i => $label) {
         $column = Coordinate::stringFromColumnIndex($i + 1);
         $text($column . '5', $label);
@@ -74,7 +76,18 @@ foreach ($groups as $group) {
         foreach ($periods as $i => $period) {
             if (!isset($points[$period])) continue;
             foreach (['numerator', 'denominator', 'result'] as $offset => $key) {
-                if (($points[$period][$key] ?? null) !== null) $sheet->setCellValue(Coordinate::stringFromColumnIndex(5 + $i * 3 + $offset) . $row, $points[$period][$key]);
+                $cell = Coordinate::stringFromColumnIndex(5 + $i * 3 + $offset) . $row;
+                $components = (array)($points[$period]['components'] ?? []);
+                if ($components) {
+                    $labels = ['blood_pressure' => 'BP', 'blood_sugar' => 'Blood sugar'];
+                    $values = [];
+                    foreach ($components as $component => $value) {
+                        if (($value[$key] ?? null) !== null) $values[] = ($labels[$component] ?? $component) . ': ' . $value[$key];
+                    }
+                    $text($cell, implode(' | ', $values));
+                } elseif (($points[$period][$key] ?? null) !== null) {
+                    $sheet->setCellValue($cell, $points[$period][$key]);
+                }
             }
         }
     }
@@ -103,6 +116,6 @@ foreach ($groups as $group) {
 }
 $book->setActiveSheetIndex(0);
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment; filename="outcome_trends_by_department.xlsx"');
+header('Content-Disposition: attachment; filename="' . strtolower($reportType) . '_trends_by_department.xlsx"');
 (new Xlsx($book))->save('php://output');
 exit;

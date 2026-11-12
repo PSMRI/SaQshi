@@ -31,6 +31,7 @@ try {
 
     $frameworkCode = $_GET['framework'] ?? 'saqshi-nqas';
     $deptId = isset($_GET['dept_id']) ? (int)$_GET['dept_id'] : 0;
+    $assessmentId = isset($_GET['assessment_id']) ? (int)$_GET['assessment_id'] : 0;
 
     if (trim($frameworkCode) === '') {
         Response::validation([
@@ -140,14 +141,42 @@ try {
         $deptId
     );
 
+    $savedCheckpointIds = [];
+    if ($assessmentId > 0) {
+        $assessmentStmt = $con->prepare('SELECT assessment_id FROM assessment_master WHERE assessment_id = ? AND fac_id_fk = ? LIMIT 1');
+        $assessmentStmt->bind_param('ii', $assessmentId, $facId);
+        $assessmentStmt->execute();
+        if (!$assessmentStmt->get_result()->fetch_assoc()) Response::error('Assessment not found for this facility');
+
+        $responseStmt = $con->prepare('SELECT checkpoint_id FROM assessment_response WHERE assessment_id = ? AND dept_id = ?');
+        $responseStmt->bind_param('ii', $assessmentId, $deptId);
+        $responseStmt->execute();
+        $responseResult = $responseStmt->get_result();
+        while ($response = $responseResult->fetch_assoc()) $savedCheckpointIds[(int)$response['checkpoint_id']] = true;
+    }
+
     $concernList = [];
 
     foreach ($concerns as $concern) {
+        $checkpointCount = 0;
+        $answeredCount = 0;
+        $seenCheckpointIds = [];
+        foreach (($concern['subtypes'] ?? []) as $subtype) {
+            foreach (($subtype['checkpoints'] ?? []) as $checkpoint) {
+                $checkpointId = (int)($checkpoint['csqa_id'] ?? 0);
+                if ($checkpointId <= 0 || isset($seenCheckpointIds[$checkpointId])) continue;
+                $seenCheckpointIds[$checkpointId] = true;
+                $checkpointCount++;
+                if (isset($savedCheckpointIds[$checkpointId])) $answeredCount++;
+            }
+        }
         $concernList[] = [
             'concern_id'    => (int)($concern['concern_id'] ?? 0),
             'concern_name'  => $concern['concern_name'] ?? '',
             'concern_des'   => $concern['concern_des'] ?? '',
-            'subtype_count' => count($concern['subtypes'] ?? [])
+            'subtype_count' => count($concern['subtypes'] ?? []),
+            'checkpoint_count' => $checkpointCount,
+            'answered_count' => $answeredCount
         ];
     }
 

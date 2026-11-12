@@ -5881,11 +5881,10 @@
       "formula_id": 522,
       "formula_code": "FORMULA_522",
       "formula_name": "Configured Formula",
-      "source_expression": "(out_come_numerotor/out_come_denominator)*100",
-      "expression": "(N/D)*100",
+      "source_expression": "out_come_numerotor",
+      "expression": "N",
       "variables": [
-        "N",
-        "D"
+        "N"
       ],
       "result_field": "R",
       "precision": 2,
@@ -5898,10 +5897,11 @@
       "formula_id": 523,
       "formula_code": "FORMULA_523",
       "formula_name": "Configured Formula",
-      "source_expression": "out_come_numerotor",
-      "expression": "N",
+      "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+      "expression": "(N/D)*100",
       "variables": [
-        "N"
+        "N",
+        "D"
       ],
       "result_field": "R",
       "precision": 2,
@@ -5982,11 +5982,10 @@
       "formula_id": 528,
       "formula_code": "FORMULA_528",
       "formula_name": "Configured Formula",
-      "source_expression": "(out_come_numerotor/out_come_denominator)*100",
-      "expression": "(N/D)*100",
+      "source_expression": "out_come_numerotor",
+      "expression": "N",
       "variables": [
-        "N",
-        "D"
+        "N"
       ],
       "result_field": "R",
       "precision": 2,
@@ -6015,10 +6014,11 @@
       "formula_id": 530,
       "formula_code": "FORMULA_530",
       "formula_name": "Configured Formula",
-      "source_expression": "out_come_numerotor",
-      "expression": "N",
+      "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+      "expression": "(N/D)*100",
       "variables": [
-        "N"
+        "N",
+        "D"
       ],
       "result_field": "R",
       "precision": 2,
@@ -25936,6 +25936,428 @@
       "decimal_supported": true,
       "denominator_zero_allowed": false,
       "is_active": true
-    }
+    },
+{
+    "formula_id": 6900,
+    "formula_code": "FORMULA_6900",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6901,
+    "formula_code": "FORMULA_6901",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6902,
+    "formula_code": "FORMULA_6902",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6903,
+    "formula_code": "FORMULA_6903",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6904,
+    "formula_code": "FORMULA_6904",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6905,
+    "formula_code": "FORMULA_6905",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6906,
+    "formula_code": "FORMULA_6906",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6907,
+    "formula_code": "FORMULA_6907",
+    "formula_name": "Configured Formula",
+    "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+    "expression": "(N/D)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6908,
+    "formula_code": "FORMULA_6908",
+    "formula_name": "Configured Formula",
+    "source_expression": "((out_come_denominator-out_come_numerotor)/out_come_denominator)*100",
+    "expression": "((D-N)/D)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6909,
+    "formula_code": "FORMULA_6909",
+    "formula_name": "Configured Formula",
+    "source_expression": "((out_come_numerotor-out_come_denominator)/out_come_numerotor)*100",
+    "expression": "((N-D)/N)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6910,
+    "formula_code": "FORMULA_6910",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6911,
+    "formula_code": "FORMULA_6911",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6912,
+    "formula_code": "FORMULA_6912",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6913,
+    "formula_code": "FORMULA_6913",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6914,
+    "formula_code": "FORMULA_6914",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6915,
+    "formula_code": "FORMULA_6915",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6916,
+    "formula_code": "FORMULA_6916",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6917,
+    "formula_code": "FORMULA_6917",
+    "formula_name": "Configured Formula",
+    "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+    "expression": "(N/D)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6918,
+    "formula_code": "FORMULA_6918",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6919,
+    "formula_code": "FORMULA_6919",
+    "formula_name": "Configured Formula",
+    "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+    "expression": "(N/D)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6920,
+    "formula_code": "FORMULA_6920",
+    "formula_name": "Configured Formula",
+    "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+    "expression": "(N/D)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6921,
+    "formula_code": "FORMULA_6921",
+    "formula_name": "Configured Formula",
+    "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+    "expression": "(N/D)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6922,
+    "formula_code": "FORMULA_6922",
+    "formula_name": "Configured Formula",
+    "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+    "expression": "(N/D)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6923,
+    "formula_code": "FORMULA_6923",
+    "formula_name": "Configured Formula",
+    "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+    "expression": "(N/D)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6924,
+    "formula_code": "FORMULA_6924",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6925,
+    "formula_code": "FORMULA_6925",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6926,
+    "formula_code": "FORMULA_6926",
+    "formula_name": "Configured Formula",
+    "source_expression": "(out_come_numerotor/out_come_denominator)*100",
+    "expression": "(N/D)*100",
+    "variables": [
+      "N",
+      "D"
+    ],
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  },
+  {
+    "formula_id": 6927,
+    "formula_code": "FORMULA_6927",
+    "formula_name": "Configured Formula",
+    "source_expression": "out_come_numerotor",
+    "expression": "N",
+    "variables": "N",
+    "result_field": "R",
+    "precision": 2,
+    "rounding": "HALF_UP",
+    "decimal_supported": true,
+    "denominator_zero_allowed": false,
+    "is_active": true
+  }
   ]
 }

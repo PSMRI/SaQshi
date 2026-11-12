@@ -18,6 +18,10 @@ try {
     $assessmentId = (int)($request['assessment_id'] ?? 0);
     $deptId = (int)($request['dept_id'] ?? 0);
     $responses = is_array($request['responses'] ?? null) ? $request['responses'] : [];
+    $submissionSource = strtoupper(trim((string)($request['submission_source'] ?? 'ONLINE')));
+    if (!in_array($submissionSource, ['ONLINE', 'EXCEL_UPLOAD'], true)) {
+        Response::validation(['submission_source' => 'Invalid response submission source']);
+    }
 
     if ($facId <= 0 || $userId <= 0) Response::error('Facility user session is required');
     if ($assessmentId <= 0 || $deptId <= 0) Response::validation(['assessment_id' => 'assessment_id and dept_id are required']);
@@ -53,7 +57,7 @@ try {
     $lastCheckpointId = 0;
     $facilityTypeId = 0;
 
-    $save = $con->prepare("INSERT INTO assessment_response (assessment_id, dept_id, checkpoint_id, response_value, response_type, response_json, score, max_score, score_status, remarks, evidence_url, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE response_value = VALUES(response_value), response_type = VALUES(response_type), response_json = VALUES(response_json), score = VALUES(score), max_score = VALUES(max_score), score_status = VALUES(score_status), remarks = VALUES(remarks), evidence_url = VALUES(evidence_url), updated_by = VALUES(updated_by), updated_on = CURRENT_TIMESTAMP");
+    $save = $con->prepare("INSERT INTO assessment_response (assessment_id, dept_id, checkpoint_id, response_value, response_type, response_json, score, max_score, score_status, remarks, evidence_url, updated_by, submission_source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE response_value = VALUES(response_value), response_type = VALUES(response_type), response_json = VALUES(response_json), score = VALUES(score), max_score = VALUES(max_score), score_status = VALUES(score_status), remarks = VALUES(remarks), evidence_url = VALUES(evidence_url), updated_by = VALUES(updated_by), submission_source = VALUES(submission_source), updated_on = CURRENT_TIMESTAMP");
     if (!$save) throw new RuntimeException('Response save prepare failed: ' . $con->error);
 
     foreach ($responses as $row) {
@@ -71,7 +75,7 @@ try {
         $scoreStatus = (string)$calculated['score_status'];
         $remarks = trim((string)($row['remarks'] ?? ''));
         $evidenceUrl = trim((string)($row['evidence_url'] ?? ''));
-        $save->bind_param('iiisssddsssi', $assessmentId, $deptId, $checkpointId, $responseValue, $responseType, $responseJson, $score, $maxScore, $scoreStatus, $remarks, $evidenceUrl, $userId);
+        $save->bind_param('iiisssddsssis', $assessmentId, $deptId, $checkpointId, $responseValue, $responseType, $responseJson, $score, $maxScore, $scoreStatus, $remarks, $evidenceUrl, $userId, $submissionSource);
         if (!$save->execute()) throw new RuntimeException('Response save failed: ' . $save->error);
         ResponseTypeService::replaceFieldIndex($con, $assessmentId, $deptId, $checkpointId, $userId, $calculated['fields'] ?? []);
         $saved[] = ['checkpoint_id' => $checkpointId, 'response_value' => $responseValue, 'response_json' => json_decode($responseJson, true)];

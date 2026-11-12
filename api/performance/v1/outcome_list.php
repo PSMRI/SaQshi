@@ -22,12 +22,12 @@ try {
     $facilityTypeId = (int)($_GET['facility_type_id'] ?? $facility['fac_type_id'] ?? 0);
     $departmentId = (int)($_GET['department_id'] ?? $_GET['dept_id'] ?? $_GET['fac_dept_id'] ?? 0);
     $rule = PerformanceService::facilityTypeRule($facilityTypeId);
+    // Outcome reporting is configured by facility type, not by the departments
+    // activated for an assessment.  An assessment may therefore be incomplete
+    // (or not yet created) without preventing monthly outcome entry.
     $activeAssessment = PerformanceService::activeAssessment($con, $facId);
     $activeDepartments = PerformanceService::activeDepartmentIds($con, $facId);
-    $items = PerformanceService::filterByDepartmentIds(
-        OutcomeService::list($facilityTypeId, $departmentId),
-        $activeDepartments
-    );
+    $items = OutcomeService::list($facilityTypeId, $departmentId);
 
     if ($departmentId > 0) {
         $items = array_values(array_filter($items, fn($item) => (int)($item['department_id'] ?? 0) === $departmentId));

@@ -232,11 +232,12 @@ try {
                 score_status,
                 remarks,
                 evidence_url,
-                updated_by
+                updated_by,
+                submission_source
             )
         VALUES
             (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ONLINE'
             )
         ON DUPLICATE KEY UPDATE
             response_value = VALUES(response_value),
@@ -248,6 +249,7 @@ try {
             remarks = VALUES(remarks),
             evidence_url = VALUES(evidence_url),
             updated_by = VALUES(updated_by),
+            submission_source = 'ONLINE',
             updated_on = CURRENT_TIMESTAMP
     ";
 

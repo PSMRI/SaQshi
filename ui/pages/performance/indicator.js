@@ -73,6 +73,13 @@
         return { year: num(parts[0]), month: num(parts[1]) };
     }
 
+    function shortMonth(period) {
+        const parts = String(period || "").split("-");
+        if (parts.length !== 2) return period || "-";
+        const names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return `${names[Number(parts[1]) - 1] || parts[1]} ${String(parts[0]).slice(-2)}`;
+    }
+
     function applyInitialQuery() {
         const params = new URLSearchParams(window.location.search);
         const type = (params.get("indicator_type") || params.get("type") || "").toUpperCase();
@@ -172,6 +179,8 @@
     }
 
     function renderHistory() {
+        const target = $("indicatorHistoryRows");
+        if (!target) return;
         const period = selectedPeriod();
         const deptId = departmentRequired() ? ($("indicatorDepartmentFilter")?.value || "") : "0";
         const rows = state.history.filter(row =>
@@ -181,7 +190,7 @@
             && String(row.indicator_type || "").toUpperCase() === effectiveIndicatorType()
         );
 
-        $("indicatorHistoryRows").innerHTML = rows.length
+        target.innerHTML = rows.length
             ? rows.map(row => `
                 <div class="sq-performance-row">
                     <strong>${esc(row.indicator_name)}</strong>
@@ -316,6 +325,37 @@
         renderHistory();
     }
 
+    async function loadAllMonths() {
+        const deptId = departmentRequired() ? ($("indicatorDepartmentFilter")?.value || "") : 0;
+        const response = await SQ.api.get("/performance/v1/indicator_history.php", {
+            indicator_type: effectiveIndicatorType(),
+            department_id: deptId
+        }, { loader: false, showError: false });
+        const months = (response?.data?.items || []).reduce(function (groups, row) {
+            const period = `${String(row.entry_year || "").padStart(4, "0")}-${String(row.entry_month || "").padStart(2, "0")}`;
+            if (!groups[period]) groups[period] = { period, count: 0 };
+            groups[period].count++;
+            return groups;
+        }, {});
+        renderAllMonths(Object.values(months).sort((a, b) => b.period.localeCompare(a.period)));
+    }
+
+    function renderAllMonths(months) {
+        const target = $("indicatorAllMonths");
+        const count = Array.isArray(months) ? months.length : 0;
+        $("indicatorAllMonthsCount").textContent = `${count} saved month${count === 1 ? "" : "s"}`;
+        target.innerHTML = count
+            ? months.map(month => `<div class="sq-indicator-month-row"><strong>${esc(shortMonth(month.period))}</strong><button type="button" class="sq-btn sq-btn-light" data-indicator-month="${esc(month.period)}">Edit</button></div>`).join("")
+            : "No saved months found for this selection.";
+    }
+
+    async function editMonth(period) {
+        if (!/^\d{4}-\d{2}$/.test(String(period || ""))) return;
+        $("indicatorPeriodFilter").value = period;
+        await loadIndicators();
+        startEditMode();
+    }
+
     async function loadIndicators() {
         let deptId = $("indicatorDepartmentFilter")?.value || "";
         const response = await SQ.api.get("/performance/v1/indicator_list.php", {
@@ -353,6 +393,7 @@
         state.editMode = false;
 
         await loadHistory();
+        await loadAllMonths();
         state.selectedIndex = firstPendingIndex(0);
         showItem();
     }
@@ -426,6 +467,10 @@
         $("btnIndicatorNext")?.addEventListener("click", goNext);
         $("btnIndicatorBack")?.addEventListener("click", goBack);
         $("btnIndicatorEditCompleted")?.addEventListener("click", startEditMode);
+        $("indicatorAllMonths")?.addEventListener("click", event => {
+            const button = event.target.closest("[data-indicator-month]");
+            if (button) editMonth(button.getAttribute("data-indicator-month")).catch(console.error);
+        });
     }
 
     function moveToolbarIntoPageHeader() {

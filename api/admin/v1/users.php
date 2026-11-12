@@ -206,7 +206,7 @@ try {
 
     $errors = [];
 
-    if (!Security::isValidPersonName($firstName, true)) {
+    if (!Security::isValidPersonName($firstName)) {
         $errors['f_name'] = 'Enter a valid first name using letters, spaces, apostrophes, hyphens or periods only';
     }
 

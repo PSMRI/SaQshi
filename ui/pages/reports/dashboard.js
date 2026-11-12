@@ -63,6 +63,30 @@
         });
     }
 
+    async function downloadPerformanceReport(type, button) {
+        if (!SQ.api || typeof SQ.api.download !== "function") {
+            notify("error", "Excel download is not available.");
+            return;
+        }
+
+        const original = button.innerHTML;
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        try {
+            await SQ.api.download(
+                "/performance/v1/trend_excel.php",
+                { trend_type: type, all_indicators: 1 },
+                `${String(type).toLowerCase()}_trends_by_department.xlsx`
+            );
+        } catch (error) {
+            notify("error", error.message || `Unable to download the ${type} report.`);
+        } finally {
+            button.disabled = false;
+            button.removeAttribute("aria-busy");
+            button.innerHTML = original;
+        }
+    }
+
     function setText(id, value) {
         const el = $(id);
 
@@ -344,7 +368,7 @@
         $("reportStatusFilter")?.addEventListener("change", renderRows);
         $("btnRefreshReport")?.addEventListener("click", loadReports);
 
-        document.addEventListener("click", function (event) {
+        document.addEventListener("click", async function (event) {
             const score = event.target.closest("[data-report-score]");
 
             if (score) {
@@ -375,13 +399,7 @@
 
             if (performanceReport) {
                 const type = performanceReport.dataset.performanceReport || "";
-
-                if (SQ.router && typeof SQ.router.navigate === "function") {
-                    SQ.router.navigate("performance/trend", {
-                        indicator_type: type,
-                        all_indicators: 1
-                    });
-                }
+                await downloadPerformanceReport(type, performanceReport);
             }
         });
     }

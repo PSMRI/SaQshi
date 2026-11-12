@@ -57,6 +57,11 @@
         return `${names[month - 1] || parts[1]} ${String(parts[0]).slice(-2)}`;
     }
 
+    function renderMonthCount(rows) {
+        const count = Array.isArray(rows) ? rows.length : 0;
+        setText("perfMonthCount", count);
+    }
+
     function chartSvg(points, style) {
         const width = 260;
         const height = 86;
@@ -191,22 +196,15 @@
             department_id: state.departmentId,
             period: document.getElementById("perfPeriodFilter")?.value || currentPeriod()
         }, { loader: false, showError: false });
-        const summary = response?.data?.summary || {};
+        const monthStatus = response?.data?.month_status || [];
         const trends = response?.data?.indicator_trends || {};
-        const outcomeDepartmentStatus = response?.data?.outcome_department_status || {};
         state.trends = trends;
         state.departments = response?.data?.trend_departments || [];
         state.effectiveType = response?.data?.effective_indicator_type || "KPI";
         state.effectiveLabel = response?.data?.effective_indicator_label || response?.data?.effective_indicator_type || "Performance";
 
-        setText("perfTotalMonths", summary.total_months || 0);
-        setText("perfTotalOutcomeDepartments", outcomeDepartmentStatus.total_departments || 0);
-        setText("perfCompletedOutcomeDepartments", outcomeDepartmentStatus.completed_departments || 0);
-        setText("perfKpiIndicators", state.effectiveType === "OUTCOME" ? (summary.outcome_indicators || 0) : (summary.kpi_indicators || 0));
-        setText("perfOutcomeIndicators", summary.outcome_indicators || 0);
-        setText("perfKpiIndicatorLabel", state.effectiveLabel === "Outcome as KPI" ? "Outcome as KPI Indicators" : "KPI Indicators");
-        setText("perfOutcomeIndicatorLabel", "Outcome Indicators");
         renderDepartmentFilter();
+        renderMonthCount(monthStatus);
         renderTrendSections();
     }
 

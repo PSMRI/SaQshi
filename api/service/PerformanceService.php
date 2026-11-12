@@ -180,6 +180,93 @@ class PerformanceService
             : 'KPI';
     }
 
+    /** Builds the type-8 KPI source map from Outcome configuration. */
+    private static function type8KpiSources(): array
+    {
+        $mapping = self::readJson(__DIR__ . '/../config/performance/type8_kpi_mapping.json', []);
+        $outcomes = self::readJson(__DIR__ . '/../config/performance/outcome.json', []);
+        $departmentIds = array_map('intval', (array)($mapping['department_ids'] ?? []));
+        $sources = [];
+
+        foreach (($outcomes['facility_types'] ?? []) as $facilityType) {
+            if ((int)($facilityType['facility_type_id'] ?? 0) !== 8) continue;
+            foreach (($facilityType['departments'] ?? []) as $department) {
+                $departmentId = (int)($department['department_id'] ?? 0);
+                if (!in_array($departmentId, $departmentIds, true)) continue;
+                $indicators = array_values((array)($department['indicators'] ?? []));
+                foreach ((array)($mapping['kpis'] ?? []) as $kpi) {
+                    $positions = isset($kpi['outcome_positions'])
+                        ? array_values((array)$kpi['outcome_positions'])
+                        : [(int)($kpi['outcome_position'] ?? -1)];
+                    foreach ($positions as $index => $position) {
+                        $indicator = $indicators[(int)$position] ?? null;
+                        if (!is_array($indicator)) continue;
+                        $indicatorId = (int)($indicator['indicator_id'] ?? 0);
+                        if ($indicatorId <= 0) continue;
+                        $sources[$indicatorId] = [
+                            'key' => (string)($kpi['key'] ?? ''),
+                            'name' => (string)($kpi['name'] ?? ''),
+                            'composite' => !empty($kpi['composite']),
+                            'component' => $index === 0 ? 'blood_pressure' : 'blood_sugar'
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $sources;
+    }
+
+    /** Converts configured type-8 Outcome series into their matching KPI reporting measures. */
+    private static function hwcKpiOutcomeSeries(array $series): array
+    {
+        $sources = self::type8KpiSources();
+        $result = [];
+        $composites = [];
+
+        foreach ($series as $item) {
+            $source = $sources[(int)($item['indicator_id'] ?? 0)] ?? null;
+            if (!$source || $source['key'] === '') continue;
+
+            if ($source['composite']) {
+                $compositeKey = (int)($item['department_id'] ?? 0) . '|' . $source['key'];
+                if (!isset($composites[$compositeKey])) {
+                    $composites[$compositeKey] = $item;
+                    $composites[$compositeKey]['indicator_type'] = 'KPI';
+                    $composites[$compositeKey]['indicator_code'] = 'KPI_' . $source['key'];
+                    $composites[$compositeKey]['indicator_name'] = $source['name'];
+                    $composites[$compositeKey]['composite'] = true;
+                    $composites[$compositeKey]['points'] = [];
+                    $composites[$compositeKey]['_points'] = [];
+                }
+                foreach ((array)($item['points'] ?? []) as $point) {
+                    $period = (string)($point['period'] ?? '');
+                    if ($period !== '') $composites[$compositeKey]['_points'][$period][$source['component']] = $point;
+                }
+                continue;
+            }
+
+            $item['indicator_type'] = 'KPI';
+            $item['indicator_code'] = 'KPI_' . $source['key'];
+            $item['indicator_name'] = $source['name'];
+            $result[] = $item;
+        }
+
+        foreach ($composites as $item) {
+            ksort($item['_points']);
+            foreach ($item['_points'] as $period => $components) {
+                $primary = $components['blood_pressure'] ?? $components['blood_sugar'] ?? [];
+                $primary['period'] = $period;
+                $primary['components'] = $components;
+                $item['points'][] = $primary;
+            }
+            unset($item['_points']);
+            $result[] = $item;
+        }
+
+        return $result;
+    }
+
     /**
      * Handles facility meta processing for this API workflow.
      */
@@ -221,6 +308,31 @@ class PerformanceService
         }
 
         return $empty;
+    }
+
+    /**
+     * The facilities database is authoritative for the signed-in facility's
+     * type.  The JSON master is useful for names and offline configuration,
+     * but can lag behind a facility-type update and must not determine which
+     * performance data is shown.
+     */
+    private static function databaseFacilityTypeId(mysqli $con, int $facId): int
+    {
+        if ($facId <= 0) {
+            return 0;
+        }
+
+        $stmt = $con->prepare('SELECT Health_facilty_type FROM facilities WHERE fac_id = ? LIMIT 1');
+        if (!$stmt) {
+            return 0;
+        }
+
+        $stmt->bind_param('i', $facId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc() ?: [];
+        $stmt->close();
+
+        return (int)($row['Health_facilty_type'] ?? 0);
     }
 
     /**
@@ -624,6 +736,11 @@ class PerformanceService
         self::ensureTable($con);
         $facility = self::facilityMeta($facId);
         $facilityTypeId = (int)($facility['fac_type_id'] ?? 0);
+        $databaseFacilityTypeId = self::databaseFacilityTypeId($con, $facId);
+        if ($databaseFacilityTypeId > 0) {
+            $facilityTypeId = $databaseFacilityTypeId;
+            $facility['fac_type_id'] = $databaseFacilityTypeId;
+        }
         $rule = self::facilityTypeRule($facilityTypeId);
         $effectiveType = self::effectivePerformanceType($facilityTypeId);
         $summary = self::summary($con, $facId);
@@ -633,8 +750,14 @@ class PerformanceService
         $departmentId = max(0, (int)($filters['department_id'] ?? $filters['dept_id'] ?? 0));
         $selectedTrendType = strtoupper((string)($filters['trend_type'] ?? ''));
         $selectedTrendType = in_array($selectedTrendType, ['KPI', 'OUTCOME'], true) ? $selectedTrendType : $effectiveType;
-        $trendFilters = ['indicator_type' => $effectiveType, 'limit' => $trendLimit, 'department_id' => $effectiveType === 'OUTCOME' ? $departmentId : 0];
+        $isHwcKpiView = $facilityTypeId === 8 && $effectiveType === 'OUTCOME' && $selectedTrendType === 'KPI';
+        // KPI reporting for AAM-SC uses the saved Outcome values. Retrieve
+        // the full Outcome set first, then retain only the approved KPI list.
+        $trendFilters = ['indicator_type' => $effectiveType, 'limit' => $isHwcKpiView ? 0 : $trendLimit, 'department_id' => $effectiveType === 'OUTCOME' ? $departmentId : 0];
         $effectiveSeries = self::indicatorTrends($con, $facId, $trendFilters)['series'];
+        if ($isHwcKpiView) {
+            $effectiveSeries = self::hwcKpiOutcomeSeries($effectiveSeries);
+        }
 
         return [
             'facility' => $facility,
@@ -643,10 +766,10 @@ class PerformanceService
             'effective_indicator_label' => $effectiveType === 'OUTCOME' && !empty($rule['outcome_treated_as_kpi']) ? 'Outcome as KPI' : $effectiveType,
             'summary' => $summary,
             'outcome_department_status' => $outcomeDepartmentStatus,
-            'month_status' => self::monthlyStatus($con, $facId, ['indicator_type' => $selectedTrendType, 'department_id' => $selectedTrendType === 'OUTCOME' ? $departmentId : 0]),
+            'month_status' => self::monthlyStatus($con, $facId, ['indicator_type' => $isHwcKpiView ? 'OUTCOME' : $selectedTrendType, 'department_id' => $selectedTrendType === 'OUTCOME' ? $departmentId : 0]),
             'trend_departments' => self::trendDepartments($con, $facId),
             'indicator_trends' => [
-                'KPI' => $effectiveType === 'KPI' ? $effectiveSeries : ($selectedTrendType === 'KPI' && isset($filters['trend_type']) ? self::indicatorTrends($con, $facId, ['indicator_type' => 'KPI', 'limit' => $trendLimit])['series'] : []),
+                'KPI' => $isHwcKpiView ? $effectiveSeries : ($effectiveType === 'KPI' ? $effectiveSeries : ($selectedTrendType === 'KPI' && isset($filters['trend_type']) ? self::indicatorTrends($con, $facId, ['indicator_type' => 'KPI', 'limit' => $trendLimit])['series'] : [])),
                 'OUTCOME' => $effectiveType === 'OUTCOME' ? $effectiveSeries : self::indicatorTrends($con, $facId, ['indicator_type' => 'OUTCOME', 'limit' => $trendLimit, 'department_id' => $departmentId])['series'],
                 'EFFECTIVE' => $effectiveSeries
             ],

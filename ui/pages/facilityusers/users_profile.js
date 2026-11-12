@@ -225,7 +225,7 @@
         const namePattern = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
         for (const [label, value] of nameFields) {
             const trimmed = value.trim();
-            if ((label === "First name" && !trimmed) || (trimmed && !namePattern.test(trimmed))) {
+            if (trimmed && !namePattern.test(trimmed)) {
                 notify("warning", `${label} can contain letters and spaces only.`);
                 return;
             }
@@ -237,7 +237,7 @@
             notify("warning", "Enter a valid email address.");
             return;
         }
-        if (!/^\d{10}$/.test(mobile)) {
+        if (mobile && !/^\d{10}$/.test(mobile)) {
             notify("warning", "Mobile number must contain exactly 10 digits.");
             return;
         }

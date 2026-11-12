@@ -56,6 +56,19 @@
         return Number.isInteger(parsed) ? String(parsed) : parsed.toFixed(2);
     }
 
+    function pointValue(point, field = "result") {
+        const components = point?.components;
+        if (!components) return fmt(point?.[field]);
+
+        const labels = {
+            blood_pressure: "BP",
+            blood_sugar: "Blood sugar"
+        };
+        return Object.entries(components)
+            .map(([key, value]) => `${labels[key] || key}: ${fmt(value?.[field])}`)
+            .join(" | ");
+    }
+
     function shortMonth(period) {
         const parts = String(period || "").split("-");
         if (parts.length !== 2) return period || "-";
@@ -135,13 +148,13 @@
             const barHeight = Math.max(2, height - padY - y);
             return `
                 <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${barHeight.toFixed(1)}" rx="3">
-                    <title>${esc(shortMonth(coords[index].point.period))}: ${esc(fmt(coords[index].point.result))}</title>
+                    <title>${esc(shortMonth(coords[index].point.period))}: ${esc(pointValue(coords[index].point))}</title>
                 </rect>
             `;
         }).join("");
         const circles = coords.map(coord => `
             <circle cx="${coord.x.toFixed(1)}" cy="${coord.y.toFixed(1)}" r="3">
-                <title>${esc(shortMonth(coord.point.period))}: ${esc(fmt(coord.point.result))}</title>
+                <title>${esc(shortMonth(coord.point.period))}: ${esc(pointValue(coord.point))}</title>
             </circle>
         `).join("");
 
@@ -174,6 +187,7 @@
                 const latest = points[points.length - 1] || {};
                 const editUrl = indicatorEntryUrl(item.indicator_type, item.department_id, latest.period);
                 const readonly = isReadonly();
+                const canEdit = !readonly && !item.composite;
                 return `
                     <div class="sq-trend-chart-card">
                         <div class="sq-trend-chart-head">
@@ -183,14 +197,14 @@
                         ${chartSvg(points, style)}
                         <div class="sq-trend-points">
                             ${points.map(point => `
-                                ${readonly ? `<span>${esc(shortMonth(point.period))}: ${esc(fmt(point.result))}</span>` : `<a href="${esc(indicatorEntryUrl(item.indicator_type, item.department_id, point.period))}">
-                                    ${esc(shortMonth(point.period))}: ${esc(fmt(point.result))}
+                                ${!canEdit ? `<span>${esc(shortMonth(point.period))}: ${esc(pointValue(point))}</span>` : `<a href="${esc(indicatorEntryUrl(item.indicator_type, item.department_id, point.period))}">
+                                    ${esc(shortMonth(point.period))}: ${esc(pointValue(point))}
                                 </a>`}
                             `).join("")}
                         </div>
                         <div class="sq-trend-chart-foot">
                             <span>${esc(points.length)} month${points.length === 1 ? "" : "s"}</span>
-                            ${readonly ? `<span>View only</span>` : `<a href="${esc(editUrl)}">Edit latest</a>`}
+                            ${!canEdit ? `<span>${readonly ? "View only" : "Edit in Outcome indicators"}</span>` : `<a href="${esc(editUrl)}">Edit latest</a>`}
                         </div>
                     </div>
                 `;
@@ -201,7 +215,7 @@
             ? series.map(item => {
                 const points = item.points || [];
                 const latest = points[points.length - 1] || {};
-                return `${item.indicator_name || "Indicator"} has ${points.length} month${points.length === 1 ? "" : "s"} of data. Latest ${shortMonth(latest.period)} result is ${fmt(latest.result)}.`;
+                return `${item.indicator_name || "Indicator"} has ${points.length} month${points.length === 1 ? "" : "s"} of data. Latest ${shortMonth(latest.period)} result is ${pointValue(latest)}.`;
             }).join(" ")
             : "No trend data available.";
 
@@ -261,11 +275,14 @@
             .replace(/"/g, "&quot;");
     }
 
-    async function downloadOutcomePdf() {
-        const button = $("btnOutcomePdf");
-        const series = filterByDepartment(state.effectiveType === "OUTCOME" ? (state.trends.EFFECTIVE || state.trends.OUTCOME || []) : (state.trends.OUTCOME || []));
+    async function downloadTrendPdf(type) {
+        const isKpi = type === "KPI";
+        const button = $(isKpi ? "btnKpiPdf" : "btnOutcomePdf");
+        const series = isKpi
+            ? (state.trends.KPI || [])
+            : filterByDepartment(state.effectiveType === "OUTCOME" ? (state.trends.EFFECTIVE || state.trends.OUTCOME || []) : (state.trends.OUTCOME || []));
         if (!series.length) {
-            if (SQ.toast) SQ.toast("No outcome trend data to download.", "warning");
+            if (SQ.toast) SQ.toast(`No ${isKpi ? "KPI" : "outcome"} trend data to download.`, "warning");
             return;
         }
         button.disabled = true;
@@ -273,7 +290,7 @@
         try {
             await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
             const pages = [];
-            const title = $("trendEffectiveTitle")?.textContent || "Outcome Trends";
+            const title = isKpi ? "KPI Trends" : ($("trendEffectiveTitle")?.textContent || "Outcome Trends");
             const style = $("trendChartStyle")?.value || "line";
             for (let start = 0; start < series.length; start += 4) {
                 const canvas = document.createElement("canvas");
@@ -309,7 +326,7 @@
                         coords.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill(); });
                     }
                     ctx.fillStyle = "#475569"; ctx.font = "18px Arial"; ctx.textAlign = "center";
-                    coords.forEach(p => { ctx.fillText(shortMonth(p.point.period), p.x, bottom + 25); ctx.fillText(fmt(p.point.result), p.x, Math.max(top + 95, p.y - 10)); });
+                    coords.forEach(p => { ctx.fillText(shortMonth(p.point.period), p.x, bottom + 25); ctx.fillText(pointValue(p.point), p.x, Math.max(top + 95, p.y - 10)); });
                     ctx.textAlign = "left"; ctx.lineWidth = 1;
                 });
                 const data = canvas.toDataURL("image/jpeg", .9).split(",")[1];
@@ -334,9 +351,9 @@
             for (let i = 1; i < offsets.length; i++) add(`${String(offsets[i]).padStart(10, "0")} 00000 n \n`);
             add(`trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
             const url = URL.createObjectURL(new Blob(chunks, { type: "application/pdf" }));
-            const link = document.createElement("a"); link.href = url; link.download = "outcome_trends.pdf"; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+            const link = document.createElement("a"); link.href = url; link.download = `${isKpi ? "kpi" : "outcome"}_trends.pdf`; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
         } catch (error) {
-            console.error(error); if (SQ.toast) SQ.toast("Unable to download outcome trends PDF.", "error");
+            console.error(error); if (SQ.toast) SQ.toast(`Unable to download ${isKpi ? "KPI" : "outcome"} trends PDF.`, "error");
         } finally { button.disabled = false; button.removeAttribute("aria-busy"); }
     }
 
@@ -368,7 +385,7 @@
                     <td>${excelText(item.denominator_label || "")}</td>
                     ${periods.map(period => {
                         const point = byPeriod.get(period);
-                        return ["numerator", "denominator", "result"].map(field => `<td class="num">${point && point[field] != null ? excelText(fmt(point[field])) : ""}</td>`).join("");
+                        return ["numerator", "denominator", "result"].map(field => `<td class="num">${point ? excelText(pointValue(point, field)) : ""}</td>`).join("");
                     }).join("")}
                 </tr>
             `;
@@ -499,7 +516,8 @@
             loadTrend().catch(console.error);
         });
         $("trendChartStyle")?.addEventListener("change", renderAll);
-        $("btnOutcomePdf")?.addEventListener("click", downloadOutcomePdf);
+        $("btnOutcomePdf")?.addEventListener("click", () => downloadTrendPdf("OUTCOME"));
+        $("btnKpiPdf")?.addEventListener("click", () => downloadTrendPdf("KPI"));
         $("btnDownloadOutcomeTrend")?.addEventListener("click", event => downloadWithProgress("OUTCOME", event.currentTarget));
         $("btnDownloadKpiTrend")?.addEventListener("click", event => downloadWithProgress("KPI", event.currentTarget));
         loadTrend().catch(console.error);

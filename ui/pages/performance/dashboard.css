@@ -27,10 +27,12 @@
 .sq-performance-section-title h4{margin:0;color:var(--sq-text-primary);font-size:.88rem}
 .sq-performance-section-title span{color:var(--sq-text-muted);font-size:.68rem}
 .sq-performance-months{display:grid;grid-template-columns:repeat(6,minmax(110px,1fr));gap:.45rem}
-.sq-performance-month-card{display:grid;place-items:center;min-height:34px;padding:.4rem .55rem;border:1px solid var(--sq-border);border-radius:8px;background:var(--sq-bg-surface)}
+.sq-performance-month-card{display:grid;grid-template-columns:minmax(70px,1fr) auto auto;align-items:center;gap:.45rem;min-height:34px;padding:.4rem .55rem;border:1px solid var(--sq-border);border-radius:8px;background:var(--sq-bg-surface)}
 .sq-performance-month-card strong{color:var(--sq-text-primary);font-size:.8rem}
 .sq-performance-month-card span,.sq-performance-month-card em{color:var(--sq-text-muted);font-size:.65rem;font-style:normal}
 .sq-performance-month-card b{color:var(--sq-text-primary)}
+.sq-performance-month-card .sq-btn{min-height:26px;padding:3px 8px;font-size:.68rem}.sq-performance-months-title{margin-top:0}
+.sq-performance-month-count{display:flex;align-items:baseline;gap:.45rem;margin-bottom:.55rem;color:var(--sq-text-muted);font-size:.76rem}.sq-performance-month-count strong{color:var(--sq-text-primary);font-size:1.05rem}
 .sq-performance-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin-top:.2rem}
 .sq-performance-chart-grid>div>.sq-performance-section-title{margin:.25rem 0 .45rem;padding:.45rem .6rem;border:1px solid #bfdbfe;border-left:4px solid #2563eb;border-radius:7px;background:#eff6ff}
 .sq-performance-chart-grid>div>.sq-performance-section-title h4{color:#1d4ed8}

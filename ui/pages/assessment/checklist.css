@@ -520,7 +520,7 @@ body:has(.sq-checklist-page) .sq-content{
     background:#f8fafc;
 }
 
-.sq-import-progress-track{height:10px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:999px;overflow:hidden;margin:.45rem 0 .8rem}.sq-import-progress-track span{display:block;height:100%;width:0;background:#059669;transition:width .25s ease}.sq-checklist-import-actions .is-disabled{pointer-events:none;opacity:.55;cursor:not-allowed}
+.sq-checklist-import-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.55rem;margin:.65rem 0}.sq-checklist-import-actions>.sq-btn{flex:0 0 auto;min-width:0;margin:0!important;white-space:nowrap}.sq-checklist-import-actions .is-disabled{pointer-events:none;opacity:.55;cursor:not-allowed}.sq-btn[aria-busy="true"]{cursor:wait}.sq-inline-spinner{display:inline-block;width:.9rem;height:.9rem;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sq-button-spin .7s linear infinite;vertical-align:-.12em}@keyframes sq-button-spin{to{transform:rotate(360deg)}}.sq-import-progress-track{height:10px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:999px;overflow:hidden;margin:.45rem 0 .8rem}.sq-import-progress-track span{display:block;height:100%;width:0;background:#059669;transition:width .25s ease}
 
 @media (max-width:640px){
     .sq-checklist-page{
@@ -556,3 +556,5 @@ body:has(.sq-checklist-page) .sq-content{
         justify-content:flex-start;
     }
 }
+
+@media (max-width:640px){.sq-checklist-import-actions>.sq-btn{width:100%;justify-content:center}}
