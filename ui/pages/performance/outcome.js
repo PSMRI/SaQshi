@@ -91,6 +91,19 @@
 
     function renderDepartments() {
         const select = $("outcomeDepartmentFilter");
+        const departmentRequired = state.rule?.outcome_department_required !== false;
+
+        // AAM-SC (facility type 8) has outcome indicators without a user
+        // department choice. Keep the configured department on each indicator
+        // so history and saved entries remain correctly keyed.
+        select.hidden = !departmentRequired;
+        select.disabled = !departmentRequired;
+
+        if (!departmentRequired) {
+            select.value = "";
+            return;
+        }
+
         const existing = select.value;
         const departments = [...new Map(
             state.allItems.map(item => [String(item.department_id || 0), item.department_name || "General"])
@@ -148,7 +161,8 @@
         const rows = state.history.filter(function (row) {
             const period = selectedPeriod();
             const deptId = $("outcomeDepartmentFilter")?.value || "";
-            return String(row.dept_id || row.department_id || "") === String(deptId)
+            const departmentRequired = state.rule?.outcome_department_required !== false;
+            return (!departmentRequired || String(row.dept_id || row.department_id || "") === String(deptId))
                 && num(row.entry_month) === period.month
                 && num(row.entry_year) === period.year;
         });
@@ -262,10 +276,11 @@
     async function loadHistory() {
         const period = selectedPeriod();
         const deptId = $("outcomeDepartmentFilter")?.value || "";
+        const departmentRequired = state.rule?.outcome_department_required !== false;
         const response = await SQ.api.get("/performance/v1/outcome_history.php", {
             month: period.month,
             year: period.year,
-            department_id: deptId
+            department_id: departmentRequired ? deptId : ""
         }, {
             loader: false,
             showError: false
@@ -288,14 +303,15 @@
         state.facility = response?.data?.facility || {};
         state.rule = response?.data?.rule || {};
         state.allItems = response?.data?.items || [];
+        const departmentRequired = state.rule?.outcome_department_required !== false;
 
-        if (!deptId) {
+        if (!deptId || !departmentRequired) {
             renderDepartments();
         }
 
-        state.items = deptId
-            ? state.allItems.filter(item => String(item.department_id || "") === String(deptId))
-            : [];
+        state.items = departmentRequired
+            ? (deptId ? state.allItems.filter(item => String(item.department_id || "") === String(deptId)) : [])
+            : state.allItems;
 
         state.selectedIndex = 0;
         state.editMode = false;
