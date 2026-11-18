@@ -47,6 +47,17 @@
             : empty("No data available.");
     }
 
+    function assessmentCompletionByFacilityType(rows) {
+        return rows && rows.length
+            ? `<div class="sq-state-list">${rows.map(row => {
+                const completed = Number(row.completed_assessments || 0);
+                const total = Number(row.count || 0);
+                const percentage = Number(row.completion_percentage || 0);
+                return `<div class="sq-state-row"><span><strong>${esc(row.facility_type || "-")}</strong><br><small><b>${completed}</b> of <b>${total}</b> facilities completed</small></span><b>${percentage}%</b></div>`;
+            }).join("")}</div>`
+            : empty("No facility type data available.");
+    }
+
     function renderSchoolCategoryCards(summary) {
         const container = document.getElementById("stateSchoolCategoryCards");
         if (!container) return;
@@ -284,7 +295,7 @@
                 renderSchoolCategoryCards(data.school_category_summary || {});
             }
 
-            setHtml("stateFacilityTypes", list(data.facility_category?.facility_types || [], "facility_type", "count"));
+            setHtml("stateFacilityTypes", assessmentCompletionByFacilityType(data.facility_category?.facility_types || []));
             setHtml("stateCertification", list(data.certification_summary?.status || [], "status", "count"));
             setHtml("stateLatestCompletedScoreBands", list([
                 { label: "Below 60%", count: scoreBands.below_60 || 0 },

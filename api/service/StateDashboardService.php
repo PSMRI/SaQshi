@@ -158,14 +158,32 @@ class StateDashboardService
         $facilities = self::filteredFacilities($filters);
         $total = count($facilities);
         $typeCounts = [];
+        $completedTypeCounts = [];
         $districtCounts = [];
+
+        // Count a facility once when it has at least one completed assessment.
+        // The facility master remains the denominator so types with no completed
+        // assessments are still visible on the dashboard.
+        $facilityTypeMap = self::facilityTypeMap();
+        foreach (self::rows($con, "
+            SELECT f.Health_facilty_type AS facility_type_id, COUNT(DISTINCT a.fac_id_fk) AS completed_count
+            FROM assessment_master a
+            INNER JOIN facilities f ON f.fac_id = a.fac_id_fk
+            WHERE UPPER(COALESCE(a.status, '')) = 'COMPLETED'
+            GROUP BY f.Health_facilty_type
+        ") as $assessment) {
+            $facilityTypeId = (int)($assessment['facility_type_id'] ?? 0);
+            $type = $facilityTypeMap[$facilityTypeId] ?? ('Facility type ' . $facilityTypeId);
+            $completedTypeCounts[$type] = (int)($assessment['completed_count'] ?? 0);
+        }
 
         foreach ($facilities as $facility) {
             $type = self::facilityTypeLabel($facility);
+            $type = $type !== '' ? $type : 'Unknown';
             $district = trim((string)($facility['Dist_Name'] ?? $facility['district'] ?? 'Unknown'));
             $block = trim((string)($facility['Block_Name'] ?? $facility['block'] ?? 'Unknown'));
 
-            $typeCounts[$type !== '' ? $type : 'Unknown'] = ($typeCounts[$type !== '' ? $type : 'Unknown'] ?? 0) + 1;
+            $typeCounts[$type] = ($typeCounts[$type] ?? 0) + 1;
             $districtName = $district !== '' ? $district : 'Unknown';
             $blockName = $block !== '' ? $block : 'Unknown';
 
@@ -196,7 +214,9 @@ class StateDashboardService
             $facilityTypes[] = [
                 'facility_type' => $type,
                 'count' => $count,
-                'percentage' => self::percent((float)$count, (float)$total)
+                'percentage' => self::percent((float)$count, (float)$total),
+                'completed_assessments' => (int)($completedTypeCounts[$type] ?? 0),
+                'completion_percentage' => self::percent((float)($completedTypeCounts[$type] ?? 0), (float)$count)
             ];
         }
 

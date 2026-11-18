@@ -331,17 +331,22 @@
         }) : rows;
         const schools = Object.values(visibleRows.reduce(function (map, row) {
             const key = String(row.fac_id_fk || row.NIN_no || row.fac_name || "unknown");
-            if (!map[key]) map[key] = { key, id: row.fac_id_fk, name: row.fac_name, code: row.NIN_no, state: row.state_name, district: row.district, block: row.block, rounds: {} };
+            if (!map[key]) map[key] = { key, id: row.fac_id_fk, name: row.fac_name, code: row.NIN_no, state: row.state_name, district: row.district, block: row.block, rounds: {}, assessments: [] };
             const round = String(row.round_no || row.round_id || "Unassigned");
             if (!map[key].rounds[round]) map[key].rounds[round] = [];
             map[key].rounds[round].push(row);
+            map[key].assessments.push(row);
             return map;
         }, {}));
         document.getElementById("stateAssessRows").innerHTML = schools.length
             ? `<table class="sq-state-table sq-assessment-facility-table"><thead><tr><th>District</th><th>Block</th><th>NIN</th><th>Facility name</th><th>Assessments</th></tr></thead><tbody>${schools.map(function (school) {
                 const assessmentCount = Object.values(school.rounds).reduce((total, entries) => total + entries.length, 0);
                 const detailId = String(school.key || school.id || school.code || school.name || assessmentCount);
-                return `<tr><td><button type="button" class="sq-state-inline-expand" data-assess-expand="${esc(detailId)}" aria-expanded="false" aria-label="Show ${esc(assessmentCount)} assessments">+</button>${esc(school.district || "-")}</td><td>${esc(school.block || "-")}</td><td>${esc(school.code || "-")}</td><td><strong>${esc(school.name || "School / Facility")}</strong><small>Facility ID: ${esc(school.id || "-")}</small></td><td>${esc(assessmentCount)}</td></tr><tr class="sq-state-facility-detail-row" data-assess-detail="${esc(detailId)}" hidden><td colspan="5"><div class="sq-state-school-drill">${Object.keys(school.rounds).map(function (round) {
+                const completedAssessments = school.assessments.filter(function (row) { return String(row.status || "").toUpperCase() === "COMPLETED"; });
+                const comparisonButton = completedAssessments.length >= 2
+                    ? `<button type="button" class="sq-btn sq-btn-primary sq-btn-sm sq-assessment-comparison-download" style="margin-left:8px;padding:4px 7px;vertical-align:middle" data-score-comparison="${esc(school.id)}" title="Download indicator scorecard comparison" aria-label="Download indicator scorecard comparison"><i class="bi bi-download" aria-hidden="true"></i></button>`
+                    : "";
+                return `<tr><td><button type="button" class="sq-state-inline-expand" data-assess-expand="${esc(detailId)}" aria-expanded="false" aria-label="Show ${esc(assessmentCount)} assessments">+</button>${esc(school.district || "-")}</td><td>${esc(school.block || "-")}</td><td>${esc(school.code || "-")}</td><td><strong>${esc(school.name || "School / Facility")}</strong><small>Facility ID: ${esc(school.id || "-")}</small></td><td>${esc(assessmentCount)}</td></tr><tr class="sq-state-facility-detail-row" data-assess-detail="${esc(detailId)}" hidden><td colspan="5"><div class="sq-state-school-drill">${Object.keys(school.rounds).map(function (round, roundIndex) {
                     const entries = school.rounds[round];
                     const completed = entries.filter(function (row) { return String(row.status || "").toUpperCase() === "COMPLETED"; });
                     const roundScore = completed[0]?.round_score;
@@ -351,7 +356,7 @@
                     const roundProgress = `${esc(entries.length)} assessment record${entries.length === 1 ? "" : "s"}`;
                     const roundButton = isEducationProfile() ? `View Assessment Round ${esc(round)} Domains` : `View Assessment Round ${esc(round)} ${esc(label)} Scores`;
                     const itemButton = isEducationProfile() ? "View class domains" : `View ${esc(label)} scores`;
-                    return `<details class="sq-state-round-drill"><summary>${roundTitle} · ${roundProgress} ${roundScore ? categoryBadge(roundScore.category) : ""}</summary><div class="sq-assessment-detail-wrap">${completed.length && hasRound && roundScore?.models?.length ? `<button type="button" class="sq-btn sq-btn-light" data-round-domain-dialog="${esc(completed[0].assessment_id)}">${roundButton}</button>` : ""}<table class="sq-assessment-detail-table"><thead><tr><th>Assessment</th><th>Status</th><th>Departments</th><th>Responses<br>0 / 1 / 2</th><th>Checkpoint completion</th><th>Score</th><th>Start / planned end</th><th>Completed / cancelled</th><th>Indicator responses</th></tr></thead><tbody>${entries.map(function (row) {
+                    return `<details class="sq-state-round-drill"><summary>${roundTitle} · ${roundProgress} ${roundScore ? categoryBadge(roundScore.category) : ""}${roundIndex === 0 ? comparisonButton : ""}</summary><div class="sq-assessment-detail-wrap">${completed.length && hasRound && roundScore?.models?.length ? `<button type="button" class="sq-btn sq-btn-light" data-round-domain-dialog="${esc(completed[0].assessment_id)}">${roundButton}</button>` : ""}<table class="sq-assessment-detail-table"><thead><tr><th>Assessment</th><th>Status</th><th>Departments</th><th>Responses<br>0 / 1 / 2</th><th>Checkpoint completion</th><th>Score</th><th>Start / planned end</th><th>Completed / cancelled</th><th>Indicator responses</th></tr></thead><tbody>${entries.map(function (row) {
                         const done = String(row.status || "").toUpperCase() === "COMPLETED";
                         const departmentTotal = number(row.total_departments);
                         const departmentCompleted = number(row.completed_departments);
@@ -485,6 +490,45 @@
         }
     }
 
+    async function downloadScoreComparison(facilityId) {
+        window.location.assign(`/api/state/v1/assessment_indicator_comparison.php?facility_id=${encodeURIComponent(facilityId)}&download=1`);
+        return;
+        const response = await SQ.api.get("/state/v1/assessment_indicator_comparison.php", { facility_id: facilityId }, { loader: false, showError: false });
+        const data = response?.data || {};
+        const assessments = data.assessments || [];
+        const indicators = data.indicators || [];
+        if (assessments.length < 2 || !indicators.length) throw new Error("No comparable indicator responses were found.");
+
+        const csvValue = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
+        const ordinal = index => {
+            const number = index + 1;
+            const suffix = number % 100 >= 11 && number % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[number % 10] || "th");
+            return `${number}${suffix} assessment`;
+        };
+        const output = [["Department", "Area of Concern", "Reference No", "Measurable Elements", "Checkpoint", "Means of Verification", "Assessment Method", ...assessments.map((item, index) => `${ordinal(index)}: ${item.assessment_name}`)]];
+        indicators.forEach(function (indicator) {
+            output.push([
+                indicator.department,
+                indicator.area_of_concern,
+                indicator.reference_no,
+                indicator.measurable_element,
+                indicator.indicator,
+                indicator.means_of_verification,
+                indicator.assessment_method,
+                ...assessments.map(item => indicator.scores?.[item.assessment_id] ?? "Not assessed")
+            ]);
+        });
+        const facility = state.rows.find(row => Number(row.fac_id_fk) === Number(facilityId)) || {};
+        const blob = new Blob(["\ufeff", output.map(row => row.map(csvValue).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const facilityName = String(facility.fac_name || "facility").replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "");
+        link.href = url;
+        link.download = `${facilityName || "facility"}_indicator_comparison.csv`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
     async function exportAssessments() {
         const button = document.getElementById("stateAssessExport");
         // Export assessment rows, not the grouped facility rows used by the screen.
@@ -560,6 +604,15 @@
                 load();
             });
             document.addEventListener("click", function (event) {
+                const scoreComparisonButton = event.target.closest("[data-score-comparison]");
+                if (scoreComparisonButton) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    downloadScoreComparison(scoreComparisonButton.getAttribute("data-score-comparison")).catch(function (error) {
+                        SQ.notification?.error?.(error?.message || "Unable to download indicator comparison.");
+                    });
+                    return;
+                }
                 const button = event.target.closest("[data-model-dialog]");
                 if (button) openDomainDialog(button.getAttribute("data-model-dialog"));
                 const roundButton = event.target.closest("[data-round-domain-dialog]");
